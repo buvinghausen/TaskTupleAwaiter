@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26906.1
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskTupleAwaiter", "TaskTupleAwaiter\TaskTupleAwaiter.csproj", "{518541F8-A410-4DCE-ABBB-67C1F9DB8A1D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskTupleAwaiter.Tests", "TaskTupleAwaiter.Tests\TaskTupleAwaiter.Tests.csproj", "{D3D04E52-F183-4F9C-8BEB-F5397E9050FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{518541F8-A410-4DCE-ABBB-67C1F9DB8A1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{518541F8-A410-4DCE-ABBB-67C1F9DB8A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{518541F8-A410-4DCE-ABBB-67C1F9DB8A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{518541F8-A410-4DCE-ABBB-67C1F9DB8A1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3D04E52-F183-4F9C-8BEB-F5397E9050FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3D04E52-F183-4F9C-8BEB-F5397E9050FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3D04E52-F183-4F9C-8BEB-F5397E9050FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3D04E52-F183-4F9C-8BEB-F5397E9050FE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EBDD5179-F11E-49C0-AD39-392E3F57803A}
+	EndGlobalSection
+EndGlobal
