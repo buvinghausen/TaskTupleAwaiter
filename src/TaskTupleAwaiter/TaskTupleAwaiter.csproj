@@ -1,34 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>Joseph Musser, Brian Buvinghausen</Authors>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Company>Buvinghausen Solutions</Company>
-    <Description>
-	    Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<WarningsAsErrors />
+		<Authors>Joseph Musser, Brian Buvinghausen</Authors>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Company>Buvinghausen Solutions</Company>
+		<Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 
-	    var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
+var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
 
-	    Based on the work of Joseph Musser
-	    https://github.com/jnm2
-    </Description>
-    <Copyright>Copyright © 2017</Copyright>
-    <PackageLicenseUrl>https://github.com/buvinghausen/ValueTupleAwaiter/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-    <PackageTags>C# 7.0 Value Tuple Async Await Elegant Code</PackageTags>
-    <RepositoryUrl>https://github.com/buvinghausen/SequentialGuid</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-  </PropertyGroup>
+Based on the work of Joseph Musser https://github.com/jnm2</Description>
+		<Copyright>Copyright © 2017 Brian Buvinghausen</Copyright>
+		<PackageLicenseUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/LICENSE</PackageLicenseUrl>
+		<PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+		<PackageTags>C# 7.0 Value Tuple Async Await Elegant Code</PackageTags>
+		<RepositoryUrl>https://github.com/buvinghausen/TaskTupleAwaiter</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<AssemblyVersion>1.0.1.0</AssemblyVersion>
+		<FileVersion>1.0.1.0</FileVersion>
+	</PropertyGroup>
 
 </Project>
