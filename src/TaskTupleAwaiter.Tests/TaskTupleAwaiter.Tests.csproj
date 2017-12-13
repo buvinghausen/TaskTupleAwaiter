@@ -2,10 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net452;netcoreapp1.0;netcoreapp1.1;netcoreapp2.0</TargetFrameworks>
-		<IsPackable>false</IsPackable>
 		<LangVersion>latest</LangVersion>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors />
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
