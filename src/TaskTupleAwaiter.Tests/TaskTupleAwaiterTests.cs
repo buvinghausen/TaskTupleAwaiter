@@ -131,13 +131,13 @@ namespace TaskTupleAwaiter.Tests
 
 		private static async Task<string> GetStringAsync()
 		{
-			await Task.Delay(1000);
+			await Task.Delay(500);
 			return Guid.NewGuid().ToString();
 		}
 
 		private static async Task<Guid> GetGuidAsync()
 		{
-			await Task.Delay(1000);
+			await Task.Delay(500);
 			return Guid.NewGuid();
 		}
 	}
