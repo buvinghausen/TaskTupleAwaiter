@@ -21,7 +21,7 @@ Based on the work of Joseph Musser https://github.com/jnm2
 		<Copyright>Copyright © 2017 Brian Buvinghausen</Copyright>
 		<PackageLicenseUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/LICENSE</PackageLicenseUrl>
 		<PackageReleaseNotes>Support .NET Framework 4.5 &amp; .NET Standard 1.0</PackageReleaseNotes>
-		<PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiterd/blob/master/README.md</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
 		<PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
 		<RepositoryUrl>https://github.com/buvinghausen/TaskTupleAwaiter</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
