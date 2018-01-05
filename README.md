@@ -4,3 +4,5 @@ Async helper library to allow leveraging the new ValueTuple data types in C# 7.0
 ```csharp
 var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
 ```
+
+[![NuGet](https://img.shields.io/nuget/v/TaskTupleAwaiter.svg)](https://www.nuget.org/packages/TaskTupleAwaiter/)
