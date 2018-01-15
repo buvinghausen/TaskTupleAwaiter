@@ -809,14 +809,14 @@ namespace TaskTupleAwaiter
 		public static TaskAwaiter GetAwaiter(this (Task, Task) tasks) =>
 			Task.WhenAll(tasks.Item1, tasks.Item2).GetAwaiter();
 
-		public static ConfiguredTaskAwaitable ConfigureAwait((Task, Task) tasks,
+		public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task) tasks,
 			bool continueOnCapturedContext) => Task.WhenAll(tasks.Item1, tasks.Item2)
 			.ConfigureAwait(continueOnCapturedContext);
 
 		public static TaskAwaiter GetAwaiter(this (Task, Task, Task) tasks) =>
 			Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3).GetAwaiter();
 
-		public static ConfiguredTaskAwaitable ConfigureAwait((Task, Task, Task) tasks,
+		public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task) tasks,
 			bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3)
 			.ConfigureAwait(continueOnCapturedContext);
@@ -826,7 +826,7 @@ namespace TaskTupleAwaiter
 				.GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task) tasks, bool continueOnCapturedContext) => Task
+			this (Task, Task, Task, Task) tasks, bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4)
 			.ConfigureAwait(continueOnCapturedContext);
 
@@ -836,7 +836,7 @@ namespace TaskTupleAwaiter
 			.GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) => Task
+			this (Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5)
 			.ConfigureAwait(continueOnCapturedContext);
 
@@ -846,7 +846,7 @@ namespace TaskTupleAwaiter
 				tasks.Item6).GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task, Task, Task) tasks,
+			this (Task, Task, Task, Task, Task, Task) tasks,
 			bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5,
 				tasks.Item6).ConfigureAwait(continueOnCapturedContext);
@@ -857,7 +857,7 @@ namespace TaskTupleAwaiter
 				tasks.Item6, tasks.Item7).GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task, Task, Task, Task) tasks,
+			this (Task, Task, Task, Task, Task, Task, Task) tasks,
 			bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5,
 				tasks.Item6, tasks.Item7).ConfigureAwait(continueOnCapturedContext);
@@ -868,7 +868,7 @@ namespace TaskTupleAwaiter
 				tasks.Item6, tasks.Item7, tasks.Item8).GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task, Task, Task, Task, Task) tasks,
+			this (Task, Task, Task, Task, Task, Task, Task, Task) tasks,
 			bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5,
 				tasks.Item6, tasks.Item7, tasks.Item8)
@@ -881,7 +881,7 @@ namespace TaskTupleAwaiter
 				tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9).GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks,
+			this (Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks,
 			bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5,
 				tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9)
@@ -895,7 +895,7 @@ namespace TaskTupleAwaiter
 				.GetAwaiter();
 
 		public static ConfiguredTaskAwaitable ConfigureAwait(
-			(Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks,
+			this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks,
 			bool continueOnCapturedContext) => Task
 			.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5,
 				tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10)
