@@ -9,7 +9,7 @@
 		<Authors>Joseph Musser,Brian Buvinghausen</Authors>
 		<Company>Buvinghausen Solutions</Company>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.1.1</Version>
+		<Version>1.1.2</Version>
 		<Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 
 var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
