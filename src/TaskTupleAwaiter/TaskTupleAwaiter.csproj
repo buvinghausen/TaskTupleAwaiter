@@ -1,32 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard1.0;net45</TargetFrameworks>
-		<LangVersion>latest</LangVersion>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<WarningsAsErrors />
-		<Title>TaskTupleAwaiter</Title>
-		<Authors>Joseph Musser,Brian Buvinghausen</Authors>
-		<Company>Buvinghausen Solutions</Company>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.1.2</Version>
-		<Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard1.0;net45</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <Title>TaskTupleAwaiter</Title>
+    <Authors>Joseph Musser,Brian Buvinghausen</Authors>
+    <Company>Buvinghausen Solutions</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.1.2</Version>
+    <Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 
 var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
 
 Based on the work of Joseph Musser https://github.com/jnm2
-		</Description>
-		<Copyright>Copyright © 2018 Brian Buvinghausen</Copyright>
-		<PackageLicenseUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/LICENSE</PackageLicenseUrl>
-		<PackageReleaseNotes>Rev copyright &amp; fix package project url</PackageReleaseNotes>
-		<PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
-		<PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
-		<RepositoryUrl>https://github.com/buvinghausen/TaskTupleAwaiter</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-	</PropertyGroup>
+    </Description>
+    <Copyright>Copyright © 2018 Brian Buvinghausen</Copyright>
+    <PackageLicenseUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageReleaseNotes>Rev copyright &amp; fix package project url</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
+    <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
+    <RepositoryUrl>https://github.com/buvinghausen/TaskTupleAwaiter</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.0' OR '$(TargetFramework)' == 'net45'">
-		<PackageReference Include="System.ValueTuple" Version="4.3.0" />
-	</ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.0' OR '$(TargetFramework)' == 'net45'">
+    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+  </ItemGroup>
 
 </Project>
