@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Security;
 using System.Threading.Tasks;
 // ReSharper disable ImpureMethodCallOnReadonlyValueField
 
@@ -23,7 +24,7 @@ namespace TaskTupleAwaiter
 			GetAwaiter<T1, T2>(this (Task<T1>, Task<T2>) tasks) =>
 			new TupleTaskAwaiter<T1, T2>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>) _tasks;
 			private readonly TaskAwaiter _whenAllAwaiter;
@@ -38,6 +39,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2) GetResult()
 			{
@@ -64,7 +69,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>) _tasks;
 
@@ -83,6 +88,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -98,7 +107,7 @@ namespace TaskTupleAwaiter
 			this (Task<T1>, Task<T2>, Task<T3>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
 			private readonly TaskAwaiter _whenAllAwaiter;
@@ -111,7 +120,13 @@ namespace TaskTupleAwaiter
 			}
 
 			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
-			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
+
+			public void OnCompleted(Action continuation) =>
+				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3) GetResult()
 			{
@@ -141,7 +156,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
 				private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
@@ -159,6 +174,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -173,7 +192,7 @@ namespace TaskTupleAwaiter
 			this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3, T4>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
 			private readonly TaskAwaiter _whenAllAwaiter;
@@ -189,6 +208,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4) GetResult()
 			{
@@ -220,7 +243,7 @@ namespace TaskTupleAwaiter
 
 			public Awaiter GetAwaiter() => new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
 				private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
@@ -238,6 +261,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3, T4) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -254,7 +281,7 @@ namespace TaskTupleAwaiter
 				this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3, T4, T5>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
 			private readonly TaskAwaiter _whenAllAwaiter;
@@ -271,6 +298,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4, T5) GetResult()
 			{
@@ -303,7 +334,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
 
@@ -323,6 +354,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3, T4, T5) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -339,7 +374,7 @@ namespace TaskTupleAwaiter
 				this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3, T4, T5, T6>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>)
 				_tasks;
@@ -357,6 +392,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4, T5, T6) GetResult()
 			{
@@ -390,7 +429,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
 				private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
@@ -409,6 +448,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3, T4, T5, T6) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -425,7 +468,7 @@ namespace TaskTupleAwaiter
 				this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>)
 					tasks) => new TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>,
 				Task<T7>) _tasks;
@@ -445,6 +488,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4, T5, T6, T7) GetResult()
 			{
@@ -479,7 +526,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>
 					, Task<T7>) _tasks;
@@ -501,6 +548,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3, T4, T5, T6, T7) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -519,7 +570,7 @@ namespace TaskTupleAwaiter
 					Task<T8>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>,
 				Task<T7>, Task<T8>) _tasks;
@@ -539,6 +590,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4, T5, T6, T7, T8) GetResult()
 			{
@@ -573,7 +628,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>
 					, Task<T7>, Task<T8>) _tasks;
@@ -595,6 +650,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3, T4, T5, T6, T7, T8) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -613,7 +672,7 @@ namespace TaskTupleAwaiter
 					Task<T8>, Task<T9>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>,
 				Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -633,6 +692,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9) GetResult()
 			{
@@ -668,7 +731,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>
 					, Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -690,6 +753,10 @@ namespace TaskTupleAwaiter
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
 				public (T1, T2, T3, T4, T5, T6, T7, T8, T9) GetResult()
 				{
 					_whenAllAwaiter.GetResult();
@@ -708,7 +775,7 @@ namespace TaskTupleAwaiter
 					Task<T8>, Task<T9>, Task<T10>) tasks) =>
 			new TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(tasks);
 
-		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : INotifyCompletion
+		public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>,
 				Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -728,6 +795,10 @@ namespace TaskTupleAwaiter
 
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
+
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) GetResult()
 			{
@@ -764,7 +835,7 @@ namespace TaskTupleAwaiter
 			public Awaiter GetAwaiter() =>
 				new Awaiter(_tasks, _continueOnCapturedContext);
 
-			public struct Awaiter : INotifyCompletion
+			public struct Awaiter : ICriticalNotifyCompletion
 			{
 				private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>
 					, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -785,6 +856,10 @@ namespace TaskTupleAwaiter
 
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
+
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 				public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) GetResult()
 				{
