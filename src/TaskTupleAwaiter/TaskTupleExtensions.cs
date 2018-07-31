@@ -150,7 +150,7 @@ namespace TaskTupleAwaiter
 					bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -229,7 +229,7 @@ namespace TaskTupleAwaiter
 					bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -314,7 +314,7 @@ namespace TaskTupleAwaiter
 					bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -400,7 +400,8 @@ namespace TaskTupleAwaiter
 					bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3,
+						tasks.Item4, tasks.Item5, tasks.Item6)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -492,7 +493,8 @@ namespace TaskTupleAwaiter
 						tasks, bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3,
+						tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -586,7 +588,8 @@ namespace TaskTupleAwaiter
 						Task<T8>) tasks, bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3,
+						tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -681,7 +684,8 @@ namespace TaskTupleAwaiter
 						Task<T8>, Task<T9>) tasks, bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3,
+						tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -734,8 +738,8 @@ namespace TaskTupleAwaiter
 				_whenAllAwaiter.GetResult();
 				return (_tasks.Item1.Result, _tasks.Item2.Result, _tasks.Item3.Result,
 					_tasks.Item4.Result, _tasks.Item5.Result, _tasks.Item6.Result,
-					_tasks.Item7.Result, _tasks.Item8.Result, _tasks.Item9.Result, _tasks.Item10
-						.Result);
+					_tasks.Item7.Result, _tasks.Item8.Result, _tasks.Item9.Result,
+					_tasks.Item10.Result);
 			}
 		}
 
@@ -777,7 +781,9 @@ namespace TaskTupleAwaiter
 						Task<T8>, Task<T9>, Task<T10>) tasks, bool continueOnCapturedContext)
 				{
 					_tasks = tasks;
-					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2)
+					_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3,
+						tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9,
+						tasks.Item10)
 						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
 				}
 
@@ -791,8 +797,8 @@ namespace TaskTupleAwaiter
 					_whenAllAwaiter.GetResult();
 					return (_tasks.Item1.Result, _tasks.Item2.Result, _tasks.Item3.Result,
 						_tasks.Item4.Result, _tasks.Item5.Result, _tasks.Item6.Result,
-						_tasks.Item7.Result, _tasks.Item8.Result, _tasks.Item9.Result, _tasks
-							.Item10.Result);
+						_tasks.Item7.Result, _tasks.Item8.Result, _tasks.Item9.Result,
+						_tasks.Item10.Result);
 				}
 			}
 		}
