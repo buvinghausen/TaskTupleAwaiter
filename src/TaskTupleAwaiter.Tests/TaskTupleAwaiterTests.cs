@@ -142,16 +142,15 @@ namespace TaskTupleAwaiter.Tests
 		{
 			var task1 = GetStringAsync();
 			var task2 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, slowTask).ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c) = await waitAllTask;
+			var awaitable = (task1, task2, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted);
 		}
 
 		[Theory]
@@ -161,17 +160,15 @@ namespace TaskTupleAwaiter.Tests
 			var task1 = GetStringAsync();
 			var task2 = GetStringAsync();
 			var task3 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, slowTask).ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d) = await waitAllTask;
+			var awaitable = (task1, task2, task3, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted);
 		}
 
 		[Theory]
@@ -182,18 +179,15 @@ namespace TaskTupleAwaiter.Tests
 			var task2 = GetStringAsync();
 			var task3 = GetStringAsync();
 			var task4 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, task4, slowTask).ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(task4.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d, e) = await waitAllTask;
+			var awaitable = (task1, task2, task3, task4, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted);
 		}
 
 		[Theory]
@@ -205,19 +199,15 @@ namespace TaskTupleAwaiter.Tests
 			var task3 = GetStringAsync();
 			var task4 = GetStringAsync();
 			var task5 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, task4, task5, slowTask).ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(task4.IsCompleted);
-				Assert.True(task5.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d, e, f) = await waitAllTask;
+			var awaitable = (task1, task2, task3, task4, task5, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted & task5.IsCompleted);
 		}
 
 		[Theory]
@@ -230,20 +220,16 @@ namespace TaskTupleAwaiter.Tests
 			var task4 = GetStringAsync();
 			var task5 = GetStringAsync();
 			var task6 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, task4, task5, task6, slowTask).ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(task4.IsCompleted);
-				Assert.True(task5.IsCompleted);
-				Assert.True(task6.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d, e, f, g) = await waitAllTask;
+			var awaitable = (task1, task2, task3, task4, task5, task6, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted & task5.IsCompleted
+			            & task6.IsCompleted);
 		}
 
 
@@ -258,21 +244,16 @@ namespace TaskTupleAwaiter.Tests
 			var task5 = GetStringAsync();
 			var task6 = GetStringAsync();
 			var task7 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, task4, task5, task6, task7, slowTask).ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(task4.IsCompleted);
-				Assert.True(task5.IsCompleted);
-				Assert.True(task6.IsCompleted);
-				Assert.True(task7.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d, e, f, g, h) = await waitAllTask;
+			var awaitable = (task1, task2, task3, task4, task5, task6, task7, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted & task5.IsCompleted
+			            & task6.IsCompleted & task7.IsCompleted);
 		}
 
 		[Theory]
@@ -287,23 +268,16 @@ namespace TaskTupleAwaiter.Tests
 			var task6 = GetStringAsync();
 			var task7 = GetStringAsync();
 			var task8 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, task4, task5, task6, task7, task8, slowTask)
-				.ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(task4.IsCompleted);
-				Assert.True(task5.IsCompleted);
-				Assert.True(task6.IsCompleted);
-				Assert.True(task7.IsCompleted);
-				Assert.True(task8.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d, e, f, g, h, i) = await waitAllTask;
+			var awaitable = (task1, task2, task3, task4, task5, task6, task7, task8, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted & task5.IsCompleted
+			            & task6.IsCompleted & task7.IsCompleted & task8.IsCompleted);
 		}
 
 		[Theory]
@@ -319,42 +293,28 @@ namespace TaskTupleAwaiter.Tests
 			var task7 = GetStringAsync();
 			var task8 = GetStringAsync();
 			var task9 = GetStringAsync();
-			var slowTask = GetIntSlowAsync();
-			var waitAllTask = (task1, task2, task3, task4, task5, task6, task7, task8, task9, slowTask)
-				.ConfigureAwait(continueOnCapturedContext);
+			var slow = new TaskCompletionSource<int>();
 
-			waitAllTask.GetAwaiter().OnCompleted(() =>
-			{
-				Assert.True(task1.IsCompleted);
-				Assert.True(task2.IsCompleted);
-				Assert.True(task3.IsCompleted);
-				Assert.True(task4.IsCompleted);
-				Assert.True(task5.IsCompleted);
-				Assert.True(task6.IsCompleted);
-				Assert.True(task7.IsCompleted);
-				Assert.True(task8.IsCompleted);
-				Assert.True(task9.IsCompleted);
-				Assert.True(slowTask.IsCompleted);
-			});
-			var (a, b, c, d, e, f, g, h, i, k) = await waitAllTask;
+			var awaitable = (task1, task2, task3, task4, task5, task6, task7, task8, task9, slow.Task).ConfigureAwait(continueOnCapturedContext);
+
+			Assert.False(awaitable.GetAwaiter().IsCompleted);
+			slow.SetResult(42);
+			await awaitable;
+
+			Assert.True(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted & task5.IsCompleted
+			            & task6.IsCompleted & task7.IsCompleted & task8.IsCompleted & task9.IsCompleted);
 		}
 
 		private static async Task<string> GetStringAsync()
 		{
-			await Task.Delay(500);
+			await Task.Yield();
 			return Guid.NewGuid().ToString();
 		}
 
 		private static async Task<Guid> GetGuidAsync()
 		{
-			await Task.Delay(500);
+			await Task.Yield();
 			return Guid.NewGuid();
-		}
-
-		private static async Task<int> GetIntSlowAsync()
-		{
-			await Task.Delay(1000);
-			return 42;
 		}
 	}
 }
