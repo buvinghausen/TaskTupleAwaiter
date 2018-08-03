@@ -144,6 +144,53 @@ namespace TaskTupleAwaiter.Tests
 					Assert.ThrowsAny<DummyException>(adapter.GetResult)));
 		}
 
+		[Theory, MemberData(nameof(EachArity))]
+		public static void NonConfiguredAwaitUsesSynchronizationContext(int arity)
+		{
+			AssertUsesSynchronizationContext(arity, configureAwait: null, shouldUseSynchronizationContext: true);
+		}
+
+		[Theory, MemberData(nameof(EachArity))]
+		public static void ConfigureAwaitTrueUsesSynchronizationContext(int arity)
+		{
+			AssertUsesSynchronizationContext(arity, configureAwait: true, shouldUseSynchronizationContext: true);
+		}
+
+		[Theory, MemberData(nameof(EachArity))]
+		public static void ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity)
+		{
+			AssertUsesSynchronizationContext(arity, configureAwait: false, shouldUseSynchronizationContext: false);
+		}
+
+		private static void AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
+		{
+			var source = new TaskCompletionSource<object>();
+
+			var adapters = AwaiterAdapter.CreateAdapters(Enumerable.Repeat(source.Task, arity).ToArray(), continueOnCapturedContext: configureAwait);
+
+			var copyableContext = new CopyableSynchronizationContext();
+			using (TempSyncContext(copyableContext))
+			{
+				var actualContinuationContextByAdapterIndex = new SynchronizationContext[adapters.Count];
+
+				for (var i = 0; i < adapters.Count; i++)
+				{
+					var adapterIndex = i;
+					adapters[i].OnCompleted(() => actualContinuationContextByAdapterIndex[adapterIndex] = SynchronizationContext.Current);
+				}
+
+				source.SetResult(null);
+
+				for (var i = 0; i < adapters.Count; i++)
+				{
+					if (shouldUseSynchronizationContext)
+						Assert.Same(expected: copyableContext, actual: actualContinuationContextByAdapterIndex[i]);
+					else
+						Assert.Null(actualContinuationContextByAdapterIndex[i]);
+				}
+			}
+		}
+
 		private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters, Func<AwaiterAdapter, bool> predicate)
 		{
 			if (adapters == null) throw new ArgumentNullException(nameof(adapters));
