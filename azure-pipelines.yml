@@ -1,0 +1,30 @@
+pool:
+  vmImage: 'VS2017-Win2016'
+
+variables:
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: VSBuild@1
+  displayName: 'Build and pack'
+  inputs:
+    solution: '**/*.sln'
+    msbuildArgs: '/t:Pack /p:PackageOutputPath="$(build.artifactstagingdirectory)"'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    restoreNugetPackages: true
+
+- task: VSTest@2
+  displayName: Test
+  inputs:
+    testAssemblyVer2: |
+     **\$(BuildConfiguration)\*test*.dll
+     !**\obj\**
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
