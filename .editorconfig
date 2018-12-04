@@ -4,16 +4,12 @@ root = true
 #Global settings
 [*]
 charset = utf-8
-indent_size = 4
-indent_style = tab
+indent_size = 2
+indent_style = space
 insert_final_newline = true
 max_line_length = 80
 trim_trailing_whitespace = true
 
-#Leave JSON, TypeScript, F#, and Python with spaces
-[*.{json,ts,tsx,fs,fsx,py}]
-indent_size = 2
-indent_style = space
 
 #Markdown
 [*.md]
@@ -22,6 +18,8 @@ trim_trailing_whitespace = false
 
 # Dotnet code style settings
 [*.{cs,vb}]
+indent_size = 4
+indent_style = tab
 # Sort using and Import directives with System.* appearing first
 dotnet_sort_system_directives_first = true
 
