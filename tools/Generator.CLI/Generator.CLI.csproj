@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandDotNet" Version="2.7.5" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.10.0" />
+  </ItemGroup>
+
+</Project>
