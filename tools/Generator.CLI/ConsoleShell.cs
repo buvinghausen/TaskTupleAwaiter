@@ -94,12 +94,9 @@ namespace Generator.CLI
 
 				Console.WriteLine($"Writing file {file}.");
 
-				using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Write, 1024, true))
+				using (var streamWriter = new StreamWriter(file))
 				{
-					using (var streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
-					{
-						await streamWriter.WriteAsync(content);
-					}
+					await streamWriter.WriteAsync(content);
 				}
 
 				Console.WriteLine($"Success.");

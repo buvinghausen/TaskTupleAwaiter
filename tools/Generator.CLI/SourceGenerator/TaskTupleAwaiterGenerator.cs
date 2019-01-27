@@ -8,7 +8,7 @@ namespace Generator.CLI.SourceGenerator
 		public static string GenerateContent(int arity)
 		{
 			/**
-			 * based on https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/src/TaskTupleAwaiter/TaskTupleExtensions.cs
+			 * based on https://github.com/buvinghausen/TaskTupleAwaiter/blob/ead4851edaf7553fc938a22377e48ff9f5c70cdc/src/TaskTupleAwaiter/TaskTupleExtensions.cs
 			 * https://github.com/buvinghausen/TaskTupleAwaiter/commit/ead4851edaf7553fc938a22377e48ff9f5c70cdc
 			 */
 			var sb = new StringBuilder();
