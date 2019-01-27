@@ -1,17 +1,17 @@
 # TaskTupleAwaiter tools
 
-these folders contain tools for the project
+These folders contain tools for the project.
 
-Generator.CLI can be used like 
+Usage:
 
- - ```generator d D:\ -v false -a 20 --format true```
- - ```generator f D:\FileName.cs -v false -a 20 --format true```
+## Generator.CLI
+
+ - `generator d D:\ -v false -a 20 --format true`
+ - `generator f D:\FileName.cs -v false -a 20 --format true`
  
- d = directory
- f = file
+ d = directory  
+ f = file  
 
- -v verify compilation
- -a arity 
- --format whether or not a formatter should be applied
-
-
+ -v Verifies the compilation.  
+ -a Maximum arity used for the operation.  
+ --format Whether or not a formatter should be applied.  

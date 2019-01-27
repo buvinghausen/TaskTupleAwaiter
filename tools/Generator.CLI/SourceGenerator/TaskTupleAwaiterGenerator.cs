@@ -16,21 +16,22 @@ namespace Generator.CLI.SourceGenerator
 			AddArityOne(sb);
 			if (arity > 1)
 			{
-				for (var i = 2; i < arity; i++)
+				for (var i = 2; i <= arity; i++)
 				{
 					AddGeneratedArity(sb, i);
 				}
 
 				sb.AppendLine($"#region Task");
-				for (var i = 2; i < arity; i++)
+				for (var i = 2; i <= arity; i++)
 				{
 					AddTasks(sb, i);
 				}
 				sb.AppendLine($"#endregion Task");
 			}
 
-			// namespace close brace
+			// class close brace
 			sb.Append("}");
+			// namespace close brace
 			sb.Append("}");
 			return sb.ToString();
 		}
@@ -61,7 +62,7 @@ namespace Generator.CLI.SourceGenerator
 		{
 			sb.Append($@"
 		public static TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
-			ConfigureAwait<{GenericParameterList(i)}>(this ({TaskifiedList(i)}) tasks,
+			ConfigureAwait<{GenericParameterList(i)}>(this ({ListOfTaskOfEachTypeParameter(i)}) tasks,
 				bool continueOnCapturedContext) =>
 			new TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>(tasks,
 				continueOnCapturedContext);
@@ -71,10 +72,10 @@ namespace Generator.CLI.SourceGenerator
 
 public struct TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
 {{
-	private readonly ({TaskifiedList(i)}) _tasks;
+	private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
 	private readonly bool _continueOnCapturedContext;
 
-	public TupleConfiguredTaskAwaitable(({TaskifiedList(i)}) tasks,
+	public TupleConfiguredTaskAwaitable(({ListOfTaskOfEachTypeParameter(i)}) tasks,
 		bool continueOnCapturedContext)
 	{{
 		_tasks = tasks;
@@ -86,10 +87,10 @@ public struct TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
 
 	public struct Awaiter : ICriticalNotifyCompletion
 	{{
-		private readonly ({TaskifiedList(i)}) _tasks;
+		private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
 		private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-		public Awaiter(({TaskifiedList(i)}) tasks,
+		public Awaiter(({ListOfTaskOfEachTypeParameter(i)}) tasks,
 			bool continueOnCapturedContext)
 		{{
 			_tasks = tasks;
@@ -122,10 +123,10 @@ public struct TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
 
 public struct TupleTaskAwaiter<{GenericParameterList(i)}> : ICriticalNotifyCompletion
 {{
-	private readonly ({TaskifiedList(i)}) _tasks;
+	private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
 	private readonly TaskAwaiter _whenAllAwaiter;
 
-	public TupleTaskAwaiter(({TaskifiedList(i)}) tasks)
+	public TupleTaskAwaiter(({ListOfTaskOfEachTypeParameter(i)}) tasks)
 	{{
 		_tasks = tasks;
 		_whenAllAwaiter = Task.WhenAll({Pattern(i, "tasks.Item{0}")})
@@ -155,7 +156,7 @@ public struct TupleTaskAwaiter<{GenericParameterList(i)}> : ICriticalNotifyCompl
 		{
 			sb.Append($@"
 		public static TupleTaskAwaiter<{GenericParameterList(i)}> GetAwaiter<{GenericParameterList(i)}>(
-					this ({TaskifiedList(i)}) tasks) =>
+					this ({ListOfTaskOfEachTypeParameter(i)}) tasks) =>
 					new TupleTaskAwaiter<{GenericParameterList(i)}>(tasks);
 ");
 		}

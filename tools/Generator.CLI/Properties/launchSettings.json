@@ -2,7 +2,7 @@
   "profiles": {
     "Generator.CLI": {
       "commandName": "Project",
-      "commandLineArgs": "generate d D:\\ -a 20 -v true --format true"
+      "commandLineArgs": "generate d .\\ -a 20 -v true --format true"
     }
   }
 }

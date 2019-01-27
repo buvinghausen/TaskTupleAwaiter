@@ -5,33 +5,27 @@ namespace Generator.CLI.SourceGenerator
 	public static class CommonTokens
 	{
 		/// <summary>
-		/// Returns T1, T2, T3 ...
+		/// Creates syntax which declares a type parameter list similar to <c>T1, T2, T3</c>.
 		/// </summary>
-		/// <param name="i"></param>
-		/// <returns>Returns T1, T2, T3 ...</returns>
-		public static string GenericParameterList(int i)
+		public static string GenericParameterList(int maxArity)
 		{
-			return string.Join(',', Enumerable.Range(1, i).Select(d => $"T{d}"));
+			return Pattern(maxArity, "T{0}");
 		}
 
 		/// <summary>
-		/// Returns Task&lt;T1&gt;, Task&lt;T2&gt;, Task&lt;T3&gt; ...
+		/// Creates syntax which declares a type parameter list similar to <c>Task&lt;T1&gt;, Task&lt;T2&gt;, Task&lt;T3&gt;</c>.
 		/// </summary>
-		/// <param name="i"></param>
-		/// <returns>Returns Task&lt;T1&gt;, Task&lt;T2&gt;, Task&lt;T3&gt; ...</returns>
-		public static string TaskifiedList(int i)
+		public static string ListOfTaskOfEachTypeParameter(int maxArity)
 		{
-			return string.Join(',', Enumerable.Range(1, i).Select(d => $"Task<T{d}>"));
+			return Pattern(maxArity, "Task<T{0}>");
 		}
 
 		/// <summary>
-		/// Returns Task&lt;T1&gt;, Task&lt;T2&gt;, Task&lt;T3&gt; ...
+		/// Creates code according to the given pattern and separator. Produces <c>T1, T2, T3</c> for pattern <c>T{0}</c> with separator <c>, </c>
 		/// </summary>
-		/// <param name="i"></param>
-		/// <returns>Returns Task&lt;T1&gt;, Task&lt;T2&gt;, Task&lt;T3&gt; ...</returns>
-		public static string Pattern(int i, string pattern, string seperator = ", ")
+		public static string Pattern(int maxArity, string pattern, string separator = ", ")
 		{
-			return string.Join(seperator, Enumerable.Range(1, i).Select(d => string.Format(pattern, d)));
+			return string.Join(separator, Enumerable.Range(1, maxArity).Select(d => string.Format(pattern, d)));
 		}
 	}
 }

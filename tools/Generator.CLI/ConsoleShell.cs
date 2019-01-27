@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using CommandDotNet;
 using CommandDotNet.Attributes;
 using Generator.CLI.SourceGenerator;
@@ -20,15 +22,15 @@ namespace Generator.CLI
 		{
 			[ApplicationMetadata(
 				Name = "f",
-				Description = "Generates a file using the given parameters")]
-			public int File(
+				Description = "Generates a file using the given parameters.")]
+			public async Task<int> File(
 				[Argument(Name = "f", Description = "Path where the generated file should be located.")]
 				string file,
-				[Option(ShortName = "a", Description = "Level of arity used to generate the file")]
+				[Option(ShortName = "a", Description = "Highest arity used to generate the file.")]
 				int arity = 16,
-				[Option(ShortName = "v", Description = "Verifies if the code compiles", BooleanMode = BooleanMode.Explicit)]
+				[Option(ShortName = "v", Description = "Verifies whether the code compiles.", BooleanMode = BooleanMode.Explicit)]
 				bool verifyCompilation = true,
-				[Option(Description = "Specifies if the file should be formatted", BooleanMode = BooleanMode.Explicit)]
+				[Option(Description = "Specifies if the file should be formatted.", BooleanMode = BooleanMode.Explicit)]
 				bool format = false
 				)
 			{
@@ -44,6 +46,7 @@ namespace Generator.CLI
 							Console.WriteLine("Test compilation failed.");
 							return 1;
 						}
+						Console.WriteLine("Test compilation successful.");
 					}
 
 					if (!System.IO.Directory.Exists(Path.GetDirectoryName(file)))
@@ -54,7 +57,7 @@ namespace Generator.CLI
 
 					try
 					{
-						SaveContent(file, content, format);
+						await SaveContentAsync(file, content, format);
 						return 0;
 					}
 					catch (Exception e)
@@ -72,7 +75,7 @@ namespace Generator.CLI
 				}
 			}
 
-			private static void SaveContent(string file, string content, bool format)
+			private static async Task SaveContentAsync(string file, string content, bool format)
 			{
 				if (format)
 				{
@@ -83,22 +86,36 @@ namespace Generator.CLI
 						.ToFullString();
 				}
 
+				if (System.IO.File.Exists(file))
+				{
+					Console.WriteLine($"Deleting old file at {file}.");
+					System.IO.File.Delete(file);
+				}
+
 				Console.WriteLine($"Writing file {file}.");
-				System.IO.File.WriteAllText(file, content, Encoding.UTF8);
-				Console.WriteLine($"success.");
+
+				using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Write, 1024, true))
+				{
+					using (var streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
+					{
+						await streamWriter.WriteAsync(content);
+					}
+				}
+
+				Console.WriteLine($"Success.");
 			}
 
 			[ApplicationMetadata(
 				Name = "d",
-				Description = "Generates a file using the given parameters at the specified directory with the file name TaskTupleGenerator.cs")]
-			public int Directory(
+				Description = "Generates the file at {directory}\\TaskTupleGenerator.cs.")]
+			public Task<int> Directory(
 				[Argument(Name = "d", Description = "Folder at which the file should be generated.")]
 				string directory,
-				[Option(ShortName = "a", Description = "Level of arity used to generate the file")]
+				[Option(ShortName = "a", Description = "Highest arity used to generate the file.")]
 				int arity = 16,
-				[Option(ShortName = "v", Description = "Verifies if the code compiles", BooleanMode = BooleanMode.Explicit)]
+				[Option(ShortName = "v", Description = "Verifies whether the code compiles.", BooleanMode = BooleanMode.Explicit)]
 				bool verifyCompilation = true,
-				[Option(Description = "Specifies if the file should be formatted", BooleanMode = BooleanMode.Explicit)]
+				[Option(Description = "Specifies if the file should be formatted.", BooleanMode = BooleanMode.Explicit)]
 				bool format = false
 				)
 			{
