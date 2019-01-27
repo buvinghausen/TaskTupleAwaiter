@@ -7,7 +7,7 @@ namespace Generator.CLI
 		static int Main(string[] args)
 		{
 			var runner = new CommandDotNet.AppRunner<ConsoleShell>();
-#if (DEBUG)
+#if DEBUG
 			runner.Run(args);
 			while (true)
 			{
@@ -23,7 +23,6 @@ namespace Generator.CLI
 #else
 			return runner.Run(args);
 #endif
-
 		}
 	}
 }
