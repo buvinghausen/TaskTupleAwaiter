@@ -38,11 +38,11 @@ namespace Generator.CLI.SourceGenerator
 
 		private static void AddGeneratedArity(StringBuilder sb, int i)
 		{
-			sb.AppendLine($"#region (Task<T1>..Task<T{i}>)");
+			sb.AppendLine($"		#region (Task<T1>..Task<T{i}>)");
 			AddGetAwaiter(sb, i);
 			AddTupleTaskAwaiter(sb, i);
 			AddTupleConfiguredTaskAwaitable(sb, i);
-			sb.AppendLine($"#endregion (Task<T1>..Task<T{i}>)");
+			sb.AppendLine($"		#endregion");
 		}
 
 		private static void AddTasks(StringBuilder sb, int i)
@@ -60,60 +60,58 @@ namespace Generator.CLI.SourceGenerator
 
 		private static void AddTupleConfiguredTaskAwaitable(StringBuilder sb, int i)
 		{
-			sb.Append($@"
-		public static TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
-			ConfigureAwait<{GenericParameterList(i)}>(this ({ListOfTaskOfEachTypeParameter(i)}) tasks,
+			sb.Append($@"		public static TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
+			ConfigureAwait<{GenericParameterList(i)}>(
+				this ({ListOfTaskOfEachTypeParameter(i)}) tasks,
 				bool continueOnCapturedContext) =>
 			new TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>(tasks,
 				continueOnCapturedContext);
 ");
 
-			sb.Append($@"
-
-public struct TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
-{{
-	private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
-	private readonly bool _continueOnCapturedContext;
-
-	public TupleConfiguredTaskAwaitable(({ListOfTaskOfEachTypeParameter(i)}) tasks,
-		bool continueOnCapturedContext)
-	{{
-		_tasks = tasks;
-		_continueOnCapturedContext = continueOnCapturedContext;
-	}}
-
-	public Awaiter GetAwaiter() =>
-		new Awaiter(_tasks, _continueOnCapturedContext);
-
-	public struct Awaiter : ICriticalNotifyCompletion
-	{{
-		private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
-		private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
-
-		public Awaiter(({ListOfTaskOfEachTypeParameter(i)}) tasks,
-			bool continueOnCapturedContext)
+			sb.Append($@"		public struct TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
 		{{
-			_tasks = tasks;
-			_whenAllAwaiter = Task.WhenAll({Pattern(i, "_tasks.Item{0}")})
-				.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
+			private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
+			private readonly bool _continueOnCapturedContext;
+
+			public TupleConfiguredTaskAwaitable(({ListOfTaskOfEachTypeParameter(i)}) tasks, bool continueOnCapturedContext)
+			{{
+				_tasks = tasks;
+				_continueOnCapturedContext = continueOnCapturedContext;
+			}}
+
+			public Awaiter GetAwaiter() =>
+				new Awaiter(_tasks, _continueOnCapturedContext);
+
+			public struct Awaiter : ICriticalNotifyCompletion
+			{{
+				private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
+
+				private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter
+					_whenAllAwaiter;
+
+				public Awaiter(({ListOfTaskOfEachTypeParameter(i)}) tasks, bool continueOnCapturedContext)
+				{{
+					_tasks = tasks;
+					_whenAllAwaiter = Task.WhenAll({Pattern(i, "tasks.Item{0}")})
+						.ConfigureAwait(continueOnCapturedContext).GetAwaiter();
+				}}
+
+				public bool IsCompleted => _whenAllAwaiter.IsCompleted;
+
+				public void OnCompleted(Action continuation) =>
+					_whenAllAwaiter.OnCompleted(continuation);
+
+				[SecurityCritical]
+				public void UnsafeOnCompleted(Action continuation) =>
+					_whenAllAwaiter.UnsafeOnCompleted(continuation);
+
+				public ({GenericParameterList(i)}) GetResult()
+				{{
+					_whenAllAwaiter.GetResult();
+					return ({Pattern(i, "_tasks.Item{0}.Result")});
+				}}
+			}}
 		}}
-
-		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
-
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
-
-		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
-
-		public ({GenericParameterList(i)}) GetResult()
-		{{
-			_whenAllAwaiter.GetResult();
-			return ({Pattern(i, "_tasks.Item{0}.Result")});
-		}}
-	}}
-}}
 ");
 		}
 
@@ -121,33 +119,32 @@ public struct TupleConfiguredTaskAwaitable<{GenericParameterList(i)}>
 		{
 			sb.Append($@"
 
-public struct TupleTaskAwaiter<{GenericParameterList(i)}> : ICriticalNotifyCompletion
-{{
-	private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
-	private readonly TaskAwaiter _whenAllAwaiter;
+		public struct TupleTaskAwaiter<{GenericParameterList(i)}> : ICriticalNotifyCompletion
+		{{
+			private readonly ({ListOfTaskOfEachTypeParameter(i)}) _tasks;
+			private readonly TaskAwaiter _whenAllAwaiter;
 
-	public TupleTaskAwaiter(({ListOfTaskOfEachTypeParameter(i)}) tasks)
-	{{
-		_tasks = tasks;
-		_whenAllAwaiter = Task.WhenAll({Pattern(i, "tasks.Item{0}")})
-			.GetAwaiter();
-	}}
+			public TupleTaskAwaiter(({ListOfTaskOfEachTypeParameter(i)}) tasks)
+			{{
+				_tasks = tasks;
+				_whenAllAwaiter = Task.WhenAll({Pattern(i, "tasks.Item{0}")}).GetAwaiter();
+			}}
 
-	public bool IsCompleted => _whenAllAwaiter.IsCompleted;
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
-	public void OnCompleted(Action continuation) =>
-		_whenAllAwaiter.OnCompleted(continuation);
+			public void OnCompleted(Action continuation) =>
+				_whenAllAwaiter.OnCompleted(continuation);
 
-	[SecurityCritical]
-	public void UnsafeOnCompleted(Action continuation) =>
-		_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			[SecurityCritical]
+			public void UnsafeOnCompleted(Action continuation) =>
+				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-	public ({GenericParameterList(i)}) GetResult()
-	{{
-		_whenAllAwaiter.GetResult();
-		return ({Pattern(i, "_tasks.Item{0}.Result")});
-	}}
-}}
+			public ({GenericParameterList(i)}) GetResult()
+			{{
+				_whenAllAwaiter.GetResult();
+				return ({Pattern(i, "_tasks.Item{0}.Result")});
+			}}
+		}}
 ");
 		}
 
@@ -156,15 +153,14 @@ public struct TupleTaskAwaiter<{GenericParameterList(i)}> : ICriticalNotifyCompl
 		{
 			sb.Append($@"
 		public static TupleTaskAwaiter<{GenericParameterList(i)}> GetAwaiter<{GenericParameterList(i)}>(
-					this ({ListOfTaskOfEachTypeParameter(i)}) tasks) =>
-					new TupleTaskAwaiter<{GenericParameterList(i)}>(tasks);
+			this ({ListOfTaskOfEachTypeParameter(i)}) tasks) =>
+			new TupleTaskAwaiter<{GenericParameterList(i)}>(tasks);
 ");
 		}
 
 		private static void AddFileHeader(StringBuilder sb)
 		{
-			sb.Append(@"
-using System;
+			sb.Append(@"using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 using System.Threading.Tasks;
@@ -175,23 +171,22 @@ namespace TaskTupleAwaiter
 	// Hopefully this will make its way into the compiler someday...
 	// Ported from jnm2: https://gist.github.com/jnm2/3660db29457d391a34151f764bfe6ef7
 	public static class TaskTupleExtensions
-{
+	{
 ");
 		}
 
 
 		private static void AddArityOne(StringBuilder sb)
 		{
-			sb.Append(@"
-#region (Task<T1>)
-	public static TaskAwaiter<T1>
-		GetAwaiter<T1>(this ValueTuple<Task<T1>> tasks) => tasks.Item1.GetAwaiter();
+			sb.Append(@"		#region (Task<T1>)
+		public static TaskAwaiter<T1>
+			GetAwaiter<T1>(this ValueTuple<Task<T1>> tasks) => tasks.Item1.GetAwaiter();
 
-	public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(
-		this ValueTuple<Task<T1>> tasks, bool continueOnCapturedContext) =>
-		tasks.Item1.ConfigureAwait(continueOnCapturedContext);
-#endregion
-			");
+		public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(
+			this ValueTuple<Task<T1>> tasks, bool continueOnCapturedContext) =>
+			tasks.Item1.ConfigureAwait(continueOnCapturedContext);
+		#endregion
+");
 		}
 	}
 }
