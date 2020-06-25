@@ -20,7 +20,15 @@ Based on the work of Joseph Musser https://github.com/jnm2
     <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
     <RepositoryUrl>https://github.com/buvinghausen/TaskTupleAwaiter</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <None Include="../../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
