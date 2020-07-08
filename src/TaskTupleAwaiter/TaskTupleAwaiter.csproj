@@ -29,7 +29,6 @@ Based on the work of Joseph Musser https://github.com/jnm2
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
-
   <ItemGroup>
     <None Include="../../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
   </ItemGroup>
