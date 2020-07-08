@@ -13,7 +13,7 @@ var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
 
 Based on the work of Joseph Musser https://github.com/jnm2
     </Description>
-    <Copyright>Copyright © 2018 Brian Buvinghausen</Copyright>
+    <Copyright>Copyright © 2020 Brian Buvinghausen</Copyright>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReleaseNotes>Fix TupleConfiguredTaskAwaitable to wait for all tasks credit to maxbrodin</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
