@@ -5,8 +5,6 @@
     <Title>TaskTupleAwaiter</Title>
     <Authors>Joseph Musser,Brian Buvinghausen</Authors>
     <Company>Buvinghausen Solutions</Company>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.2.1</Version>
     <Description>
       Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
@@ -17,7 +15,6 @@ Based on the work of Joseph Musser https://github.com/jnm2
     </Description>
     <Copyright>Copyright © 2020 Brian Buvinghausen</Copyright>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageReleaseNotes>Fix TupleConfiguredTaskAwaitable to wait for all tasks credit to maxbrodin</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
     <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
     <RepositoryUrl>https://github.com/buvinghausen/TaskTupleAwaiter</RepositoryUrl>
