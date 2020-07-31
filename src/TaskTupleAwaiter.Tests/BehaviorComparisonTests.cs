@@ -181,13 +181,11 @@ namespace TaskTupleAwaiter.Tests
 
 				source.SetResult(null);
 
-				for (var i = 0; i < adapters.Count; i++)
-				{
-					if (shouldUseSynchronizationContext)
-						Assert.Same(expected: copyableContext, actual: actualContinuationContextByAdapterIndex[i]);
-					else
-						Assert.Null(actualContinuationContextByAdapterIndex[i]);
-				}
+				var expected = shouldUseSynchronizationContext ? copyableContext : null;
+
+				Assert.All(
+					adapters.Zip(actualContinuationContextByAdapterIndex, (adapter, result) => (Adapter: adapter, Result: result)),
+					r => Assert.Same(expected, r.Result));
 			}
 		}
 
