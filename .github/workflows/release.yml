@@ -1,0 +1,22 @@
+name: Release to NuGet
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core 5.0 Preview 7 SDK
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.100-preview.7.20366.6
+    - name: Create NuGet Package
+      run: dotnet pack -c Release -o . /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/buvinghausen/TaskTupleAwaiter/releases/tag/${{ github.event.release.tag_name }}"
+    - name: Publish NuGet Package
+      run: dotnet nuget push *.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json 
