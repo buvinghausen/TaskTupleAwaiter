@@ -7,9 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		.github\workflows\ci.yml = .github\workflows\ci.yml
 		Directory.Build.props = Directory.Build.props
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
+		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskTupleAwaiter", "src\TaskTupleAwaiter\TaskTupleAwaiter.csproj", "{D406BDDD-6965-4CB2-955E-95C6D0359A40}"
