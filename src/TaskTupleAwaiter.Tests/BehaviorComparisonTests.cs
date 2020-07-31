@@ -145,24 +145,24 @@ namespace TaskTupleAwaiter.Tests
 		}
 
 		[Theory, MemberData(nameof(EachArity))]
-		public static void NonConfiguredAwaitUsesSynchronizationContext(int arity)
+		public static async Task NonConfiguredAwaitUsesSynchronizationContext(int arity)
 		{
-			AssertUsesSynchronizationContext(arity, configureAwait: null, shouldUseSynchronizationContext: true);
+			await AssertUsesSynchronizationContext(arity, configureAwait: null, shouldUseSynchronizationContext: true);
 		}
 
 		[Theory, MemberData(nameof(EachArity))]
-		public static void ConfigureAwaitTrueUsesSynchronizationContext(int arity)
+		public static async Task ConfigureAwaitTrueUsesSynchronizationContext(int arity)
 		{
-			AssertUsesSynchronizationContext(arity, configureAwait: true, shouldUseSynchronizationContext: true);
+			await AssertUsesSynchronizationContext(arity, configureAwait: true, shouldUseSynchronizationContext: true);
 		}
 
 		[Theory, MemberData(nameof(EachArity))]
-		public static void ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity)
+		public static async Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity)
 		{
-			AssertUsesSynchronizationContext(arity, configureAwait: false, shouldUseSynchronizationContext: false);
+			await AssertUsesSynchronizationContext(arity, configureAwait: false, shouldUseSynchronizationContext: false);
 		}
 
-		private static void AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
+		private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
 		{
 			var source = new TaskCompletionSource<object>();
 
@@ -171,23 +171,23 @@ namespace TaskTupleAwaiter.Tests
 			var copyableContext = new CopyableSynchronizationContext();
 			using (TempSyncContext(copyableContext))
 			{
-				var actualContinuationContextByAdapterIndex = new SynchronizationContext[adapters.Count];
+				var resultSourcesByAdapterIndex = adapters.Select(_ => new TaskCompletionSource<SynchronizationContext>()).ToArray();
 
 				for (var i = 0; i < adapters.Count; i++)
 				{
 					var adapterIndex = i;
-					adapters[i].OnCompleted(() => actualContinuationContextByAdapterIndex[adapterIndex] = SynchronizationContext.Current);
+					adapters[i].OnCompleted(() => resultSourcesByAdapterIndex[adapterIndex].SetResult(SynchronizationContext.Current));
 				}
 
 				source.SetResult(null);
 
-				for (var i = 0; i < adapters.Count; i++)
-				{
-					if (shouldUseSynchronizationContext)
-						Assert.Same(expected: copyableContext, actual: actualContinuationContextByAdapterIndex[i]);
-					else
-						Assert.Null(actualContinuationContextByAdapterIndex[i]);
-				}
+				var resultsByAdapterIndex = await Task.WhenAll(resultSourcesByAdapterIndex.Select(s => s.Task));
+
+				var expected = shouldUseSynchronizationContext ? copyableContext : null;
+
+				Assert.All(
+					adapters.Zip(resultsByAdapterIndex, (adapter, result) => (Adapter: adapter, Result: result)),
+					r => Assert.Same(expected, r.Result));
 			}
 		}
 
