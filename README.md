@@ -10,4 +10,4 @@ var (policy, preferences) = await (
 ).ConfigureAwait(false);
 ```
 
-![Continuous Integration](https://github.com/buvinghausen/TaskTupleAwaiter/workflows/Continuous%20Integration/badge.svg?branch=master)[![NuGet](https://img.shields.io/nuget/v/TaskTupleAwaiter.svg)](https://www.nuget.org/packages/TaskTupleAwaiter/)
+![Continuous Integration](https://github.com/buvinghausen/TaskTupleAwaiter/workflows/Continuous%20Integration/badge.svg)[![NuGet](https://img.shields.io/nuget/v/TaskTupleAwaiter.svg)](https://www.nuget.org/packages/TaskTupleAwaiter/)
