@@ -21,4 +21,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build -v n /p:CollectCoverage=true /p:CoverletOutput='../../' /p:CoverletOutputFormat=opencover /p:Threshold=94 /p:SkipAutoProps=true /p:UseSourceLink=true
+      run: dotnet test --no-build -v n /p:CollectCoverage=true /p:CoverletOutput='../../' /p:CoverletOutputFormat=opencover /p:Threshold=96 /p:SkipAutoProps=true /p:UseSourceLink=true
