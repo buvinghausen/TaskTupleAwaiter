@@ -2,23 +2,23 @@ name: Continuous Integration
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      DOTNET_NOLOGO: 1
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core 5.0 Preview 7 SDK
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100-preview.7.20366.6
+      env:
+        DOTNET_NOLOGO: 1
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --no-restore -c Release
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-build -c Release -v n
