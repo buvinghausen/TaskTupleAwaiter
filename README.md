@@ -1,4 +1,6 @@
 # TaskTupleAwaiter
+![Continuous Integration](https://github.com/buvinghausen/TaskTupleAwaiter/workflows/Continuous%20Integration/badge.svg)[![NuGet](https://img.shields.io/nuget/v/TaskTupleAwaiter.svg)](https://www.nuget.org/packages/TaskTupleAwaiter/)
+
 Async helper library to allow leveraging the new ValueTuple data types in C# 7.0 to thread and run tasks with disparate return types.
 
 ```csharp
@@ -10,4 +12,4 @@ var (policy, preferences) = await (
 ).ConfigureAwait(false);
 ```
 
-![Continuous Integration](https://github.com/buvinghausen/TaskTupleAwaiter/workflows/Continuous%20Integration/badge.svg)[![NuGet](https://img.shields.io/nuget/v/TaskTupleAwaiter.svg)](https://www.nuget.org/packages/TaskTupleAwaiter/)
+
