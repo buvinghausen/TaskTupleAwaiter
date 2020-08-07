@@ -16,9 +16,9 @@ jobs:
       env:
         DOTNET_NOLOGO: 1
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    - name: Install dependencies
+    - name: Restore
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore -c Release
+      run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build -c Release -v n
+      run: dotnet test --no-build -v n /p:CollectCoverage=true /p:CoverletOutput='../../' /p:CoverletOutputFormat=opencover /p:Threshold=94 /p:SkipAutoProps=true /p:UseSourceLink=true
