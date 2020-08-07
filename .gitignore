@@ -151,3 +151,9 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+
+#Code Coverage
+coverage.*.info
+coverage.*.json
+coverage.*.xml
+
