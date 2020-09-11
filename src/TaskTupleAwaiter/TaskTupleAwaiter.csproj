@@ -2,9 +2,7 @@
 
   <PropertyGroup>
     <Title>TaskTupleAwaiter</Title>
-    <Description>
-      Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
-Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
+    <Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 
 var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
 
