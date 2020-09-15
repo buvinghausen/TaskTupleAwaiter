@@ -16,6 +16,12 @@ jobs:
       env:
         DOTNET_NOLOGO: 1
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    - name: Download dotnet-install
+      run: Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1'
+    - name: Setup 2.1 Runtime
+      run: .\dotnet-install.ps1 -Runtime dotnet -Version 2.1.22
+    - name: Setup 3.1 Runtime
+      run: .\dotnet-install.ps1 -Runtime dotnet -Version 3.1.8
     - name: Restore
       run: dotnet restore
     - name: Build
