@@ -9,19 +9,21 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core 5.0 RC 1 SDK
+    - name: Setup .NET 5.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.100-rc.1.20452.10
+        dotnet-version: 5.0.*
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.*
+    - name: Setup .NET Core 2.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.*
       env:
         DOTNET_NOLOGO: 1
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    - name: Download dotnet-install
-      run: Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1'
-    - name: Setup 2.1 Runtime
-      run: .\dotnet-install.ps1 -Runtime dotnet -Version 2.1.22
-    - name: Setup 3.1 Runtime
-      run: .\dotnet-install.ps1 -Runtime dotnet -Version 3.1.8
     - name: Restore
       run: dotnet restore
     - name: Build
