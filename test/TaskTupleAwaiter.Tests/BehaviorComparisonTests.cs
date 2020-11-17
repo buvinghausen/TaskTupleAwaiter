@@ -21,13 +21,13 @@ namespace TaskTupleAwaiter.Tests
 		}
 
 		public static IEnumerable<object[]> EachArity() =>
-			from arity in Enumerable.Range(1, 10)
-			select new object[] { arity };
+			Enumerable.Range(1, 10).Select(arity => new object[] { arity });
 
 		public static IEnumerable<object[]> EachIndexForEachArity() =>
-			from arity in Enumerable.Range(1, 10)
-			from whichToWaitFor in Enumerable.Range(0, arity - 1)
-			select new object[] { arity, whichToWaitFor };
+			Enumerable.Range(1, 10)
+				.SelectMany(arity => Enumerable.Range(0, arity - 1),
+					(arity, whichToWaitFor) =>
+						new object[] { arity, whichToWaitFor });
 
 		[Theory, MemberData(nameof(EachIndexForEachArity))]
 		public static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
@@ -55,9 +55,9 @@ namespace TaskTupleAwaiter.Tests
 		{
 			var source = new TaskCompletionSource<object>();
 
-			var tasks = (
-				from index in Enumerable.Range(0, arity)
-				select index == whichToWaitFor ? source.Task : CanceledTask).ToArray();
+			var tasks = Enumerable.Range(0, arity)
+				.Select(index =>
+					index == whichToWaitFor ? source.Task : CanceledTask).ToArray();
 
 			var adapters = AwaiterAdapter.CreateAllAdapters(tasks);
 
@@ -76,9 +76,9 @@ namespace TaskTupleAwaiter.Tests
 		{
 			var source = new TaskCompletionSource<object>();
 
-			var tasks = (
-				from index in Enumerable.Range(0, arity)
-				select index == whichToWaitFor ? source.Task : FailedTask).ToArray();
+			var tasks = Enumerable.Range(0, arity)
+				.Select(index =>
+					index == whichToWaitFor ? source.Task : FailedTask).ToArray();
 
 			var adapters = AwaiterAdapter.CreateAllAdapters(tasks);
 
@@ -105,9 +105,8 @@ namespace TaskTupleAwaiter.Tests
 		[Theory, MemberData(nameof(EachArity))]
 		public static void ResultsAreInCorrectOrder(int arity)
 		{
-			var tasks = (
-				from index in Enumerable.Range(0, arity)
-				select Task.FromResult<object>(index)).ToArray();
+			var tasks = Enumerable.Range(0, arity)
+				.Select(index => Task.FromResult<object>(index)).ToArray();
 
 			var adapters = AwaiterAdapter.CreateNonVoidResultAdapters(tasks);
 
@@ -127,9 +126,8 @@ namespace TaskTupleAwaiter.Tests
 		[Theory, MemberData(nameof(EachArity))]
 		public static void FirstExceptionIsThrown(int arity)
 		{
-			var sources = (
-				from index in Enumerable.Range(0, arity)
-				select new TaskCompletionSource<object>()).ToArray();
+			var sources = Enumerable.Range(0, arity)
+				.Select(_ => new TaskCompletionSource<object>()).ToArray();
 
 			var adapters = AwaiterAdapter.CreateAllAdapters(sources.Select(source => source.Task).ToArray());
 
@@ -140,27 +138,21 @@ namespace TaskTupleAwaiter.Tests
 
 			AssertAllAdapters(adapters, adapter =>
 				ReferenceEquals(
-					sources[0].Task.Exception.InnerException,
+					sources[0].Task.Exception?.InnerException,
 					Assert.ThrowsAny<DummyException>(adapter.GetResult)));
 		}
 
 		[Theory, MemberData(nameof(EachArity))]
-		public static async Task NonConfiguredAwaitUsesSynchronizationContext(int arity)
-		{
-			await AssertUsesSynchronizationContext(arity, configureAwait: null, shouldUseSynchronizationContext: true);
-		}
+		public static Task NonConfiguredAwaitUsesSynchronizationContext(int arity) =>
+			AssertUsesSynchronizationContext(arity, configureAwait: null, shouldUseSynchronizationContext: true);
 
 		[Theory, MemberData(nameof(EachArity))]
-		public static async Task ConfigureAwaitTrueUsesSynchronizationContext(int arity)
-		{
-			await AssertUsesSynchronizationContext(arity, configureAwait: true, shouldUseSynchronizationContext: true);
-		}
+		public static Task ConfigureAwaitTrueUsesSynchronizationContext(int arity) =>
+			AssertUsesSynchronizationContext(arity, configureAwait: true, shouldUseSynchronizationContext: true);
 
 		[Theory, MemberData(nameof(EachArity))]
-		public static async Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity)
-		{
-			await AssertUsesSynchronizationContext(arity, configureAwait: false, shouldUseSynchronizationContext: false);
-		}
+		public static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
+			AssertUsesSynchronizationContext(arity, configureAwait: false, shouldUseSynchronizationContext: false);
 
 		private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
 		{

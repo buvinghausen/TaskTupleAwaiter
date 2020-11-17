@@ -9,14 +9,11 @@ namespace TaskTupleAwaiter.Tests
 
 		private sealed class OnDisposeAction : IDisposable
 		{
-			private Action action;
+			private Action _action;
 
-			public OnDisposeAction(Action action)
-			{
-				this.action = action;
-			}
+			public OnDisposeAction(Action action) => _action = action;
 
-			public void Dispose() => Interlocked.Exchange(ref action, null)?.Invoke();
+			public void Dispose() => Interlocked.Exchange(ref _action, null)?.Invoke();
 		}
 	}
 }
