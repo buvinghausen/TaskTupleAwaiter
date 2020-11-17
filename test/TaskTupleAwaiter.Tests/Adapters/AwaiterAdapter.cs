@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace TaskTupleAwaiter.Tests
+namespace TaskTupleAwaiter.Tests.Adapters
 {
 	/// <summary>
 	///     A common abstraction used to compare the behavior of awaiting <c>Task.WhenAll</c>

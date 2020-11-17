@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using static TaskTupleAwaiter.TaskTupleExtensions;
 
-namespace TaskTupleAwaiter.Tests
+namespace TaskTupleAwaiter.Tests.Adapters
 {
 	partial class AwaiterAdapter
 	{

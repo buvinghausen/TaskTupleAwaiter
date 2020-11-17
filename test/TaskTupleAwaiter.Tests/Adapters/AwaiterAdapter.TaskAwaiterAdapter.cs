@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace TaskTupleAwaiter.Tests
+namespace TaskTupleAwaiter.Tests.Adapters
 {
 	partial class AwaiterAdapter
 	{
