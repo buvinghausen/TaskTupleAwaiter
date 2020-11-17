@@ -7,22 +7,19 @@ namespace TaskTupleAwaiter.Tests
 	{
 		private sealed class VoidResultConfiguredTaskAwaiterAdapter : AwaiterAdapter
 		{
-			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter;
+			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _awaiter;
 
-			public VoidResultConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter, string description) : base(description)
-			{
-				this.awaiter = awaiter;
-			}
+			public VoidResultConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter, string description) : base(description) => _awaiter = awaiter;
 
-			public override bool IsCompleted => awaiter.IsCompleted;
+			public override bool IsCompleted => _awaiter.IsCompleted;
 
-			public override void OnCompleted(Action continuation) => awaiter.OnCompleted(continuation);
+			public override void OnCompleted(Action continuation) => _awaiter.OnCompleted(continuation);
 
-			public override void UnsafeOnCompleted(Action continuation) => awaiter.UnsafeOnCompleted(continuation);
+			public override void UnsafeOnCompleted(Action continuation) => _awaiter.UnsafeOnCompleted(continuation);
 
 			public override object[] GetResult()
 			{
-				awaiter.GetResult();
+				_awaiter.GetResult();
 				return null;
 			}
 		}

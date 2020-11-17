@@ -7,20 +7,17 @@ namespace TaskTupleAwaiter.Tests
 	{
 		public readonly struct AwaiterAdapterAwaiter : ICriticalNotifyCompletion
 		{
-			private readonly AwaiterAdapter awaiterAdapter;
+			private readonly AwaiterAdapter _awaiterAdapter;
 
-			public AwaiterAdapterAwaiter(AwaiterAdapter awaiterAdapter)
-			{
-				this.awaiterAdapter = awaiterAdapter;
-			}
+			public AwaiterAdapterAwaiter(AwaiterAdapter awaiterAdapter) => _awaiterAdapter = awaiterAdapter;
 
-			public bool IsCompleted => awaiterAdapter.IsCompleted;
+			public bool IsCompleted => _awaiterAdapter.IsCompleted;
 
-			public void OnCompleted(Action continuation) => awaiterAdapter.OnCompleted(continuation);
+			public void OnCompleted(Action continuation) => _awaiterAdapter.OnCompleted(continuation);
 
-			public void UnsafeOnCompleted(Action continuation) => awaiterAdapter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _awaiterAdapter.UnsafeOnCompleted(continuation);
 
-			public object[] GetResult() => awaiterAdapter.GetResult();
+			public object[] GetResult() => _awaiterAdapter.GetResult();
 		}
 	}
 }
