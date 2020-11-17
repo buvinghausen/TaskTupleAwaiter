@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 namespace TaskTupleAwaiter.Tests
 {
 	/// <summary>
-	/// A common abstraction used to compare the behavior of awaiting <c>Task.WhenAll</c>
-	/// versus awaiting a tuple.
+	///     A common abstraction used to compare the behavior of awaiting <c>Task.WhenAll</c>
+	///     versus awaiting a tuple.
 	/// </summary>
 	public abstract partial class AwaiterAdapter
 	{
@@ -22,37 +22,29 @@ namespace TaskTupleAwaiter.Tests
 		public sealed override string ToString() => _description;
 
 		/// <summary>
-		/// Enable tests to <see langword="await" /> the adapter itself.
+		///     Enable tests to <see langword="await" /> the adapter itself.
 		/// </summary>
 		public AwaiterAdapterAwaiter GetAwaiter() => new(this);
 
 		public static IReadOnlyList<AwaiterAdapter> CreateAllAdapters(Task<object>[] tasks) => new[]
 		{
-			CreateTaskTupleAwaiter(tasks),
-			CreateTaskTupleAwaiter(tasks, continueOnCapturedContext: true),
-			CreateTaskTupleAwaiter(tasks, continueOnCapturedContext: false),
-			CreateVoidResultTaskTupleAwaiter(tasks),
-			CreateVoidResultTaskTupleAwaiter(tasks, continueOnCapturedContext: true),
-			CreateVoidResultTaskTupleAwaiter(tasks, continueOnCapturedContext: false),
-			CreateTaskWhenAll(tasks),
-			CreateTaskWhenAll(tasks, continueOnCapturedContext: true),
-			CreateTaskWhenAll(tasks, continueOnCapturedContext: false),
-			CreateVoidResultTaskWhenAll(tasks),
-			CreateVoidResultTaskWhenAll(tasks, continueOnCapturedContext: true),
-			CreateVoidResultTaskWhenAll(tasks, continueOnCapturedContext: false)
+			CreateTaskTupleAwaiter(tasks), CreateTaskTupleAwaiter(tasks, true),
+			CreateTaskTupleAwaiter(tasks, false), CreateVoidResultTaskTupleAwaiter(tasks),
+			CreateVoidResultTaskTupleAwaiter(tasks, true), CreateVoidResultTaskTupleAwaiter(tasks, false),
+			CreateTaskWhenAll(tasks), CreateTaskWhenAll(tasks, true), CreateTaskWhenAll(tasks, false),
+			CreateVoidResultTaskWhenAll(tasks), CreateVoidResultTaskWhenAll(tasks, true),
+			CreateVoidResultTaskWhenAll(tasks, false)
 		};
 
 		public static IReadOnlyList<AwaiterAdapter> CreateNonVoidResultAdapters(Task<object>[] tasks) => new[]
 		{
-			CreateTaskTupleAwaiter(tasks),
-			CreateTaskTupleAwaiter(tasks, continueOnCapturedContext: true),
-			CreateTaskTupleAwaiter(tasks, continueOnCapturedContext: false),
-			CreateTaskWhenAll(tasks),
-			CreateTaskWhenAll(tasks, continueOnCapturedContext: true),
-			CreateTaskWhenAll(tasks, continueOnCapturedContext: false)
+			CreateTaskTupleAwaiter(tasks), CreateTaskTupleAwaiter(tasks, true),
+			CreateTaskTupleAwaiter(tasks, false), CreateTaskWhenAll(tasks), CreateTaskWhenAll(tasks, true),
+			CreateTaskWhenAll(tasks, false)
 		};
 
-		public static IReadOnlyList<AwaiterAdapter> CreateAdapters(Task<object>[] tasks, bool? continueOnCapturedContext) => new[]
+		public static IReadOnlyList<AwaiterAdapter>
+			CreateAdapters(Task<object>[] tasks, bool? continueOnCapturedContext) => new[]
 		{
 			CreateTaskTupleAwaiter(tasks, continueOnCapturedContext),
 			CreateVoidResultTaskTupleAwaiter(tasks, continueOnCapturedContext),
@@ -63,11 +55,9 @@ namespace TaskTupleAwaiter.Tests
 		public static AwaiterAdapter CreateTaskWhenAll(Task<object>[] tasks, bool? continueOnCapturedContext = null)
 		{
 			if (continueOnCapturedContext != null)
-			{
 				return new ConfiguredTaskAwaiterAdapter(
 					Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(),
 					$"await Task.WhenAll(…).ConfigureAwait({continueOnCapturedContext.Value})");
-			}
 
 			return new TaskAwaiterAdapter(Task.WhenAll(tasks).GetAwaiter(), "await Task.WhenAll(…)");
 		}
@@ -75,16 +65,15 @@ namespace TaskTupleAwaiter.Tests
 		public static AwaiterAdapter CreateVoidResultTaskWhenAll(Task[] tasks, bool? continueOnCapturedContext = null)
 		{
 			if (continueOnCapturedContext != null)
-			{
 				return new VoidResultConfiguredTaskAwaiterAdapter(
 					Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(),
 					$"await Task.WhenAll(…).ConfigureAwait({continueOnCapturedContext.Value})");
-			}
 
 			return new VoidResultTaskAwaiterAdapter(Task.WhenAll(tasks).GetAwaiter(), "await Task.WhenAll(…)");
 		}
 
-		public static AwaiterAdapter CreateTaskTupleAwaiter(Task<object>[] tasks, bool? continueOnCapturedContext = null)
+		public static AwaiterAdapter CreateTaskTupleAwaiter(Task<object>[] tasks,
+			bool? continueOnCapturedContext = null)
 		{
 			if (continueOnCapturedContext != null)
 			{
@@ -188,7 +177,8 @@ namespace TaskTupleAwaiter.Tests
 			}
 		}
 
-		public static AwaiterAdapter CreateVoidResultTaskTupleAwaiter(Task[] tasks, bool? continueOnCapturedContext = null)
+		public static AwaiterAdapter CreateVoidResultTaskTupleAwaiter(Task[] tasks,
+			bool? continueOnCapturedContext = null)
 		{
 			if (continueOnCapturedContext != null)
 			{

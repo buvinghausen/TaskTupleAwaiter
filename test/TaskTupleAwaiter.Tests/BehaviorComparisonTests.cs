@@ -9,16 +9,16 @@ namespace TaskTupleAwaiter.Tests
 {
 	public static class BehaviorComparisonTests
 	{
-		private static Task<object> CompletedTask { get; } = Task.FromResult<object>(null);
-		private static Task<object> CanceledTask { get; }
-		private static Task<object> FailedTask { get; } = TaskFromException(new DummyException());
-
 		static BehaviorComparisonTests()
 		{
 			var canceled = new TaskCompletionSource<object>();
 			canceled.SetCanceled();
 			CanceledTask = canceled.Task;
 		}
+
+		private static Task<object> CompletedTask { get; } = Task.FromResult<object>(null);
+		private static Task<object> CanceledTask { get; }
+		private static Task<object> FailedTask { get; } = TaskFromException(new DummyException());
 
 		public static IEnumerable<object[]> EachArity() =>
 			Enumerable.Range(1, 10).Select(arity => new object[] { arity });
@@ -29,7 +29,8 @@ namespace TaskTupleAwaiter.Tests
 					(arity, whichToWaitFor) =>
 						new object[] { arity, whichToWaitFor });
 
-		[Theory, MemberData(nameof(EachIndexForEachArity))]
+		[Theory]
+		[MemberData(nameof(EachIndexForEachArity))]
 		public static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
 		{
 			var source = new TaskCompletionSource<object>();
@@ -50,7 +51,8 @@ namespace TaskTupleAwaiter.Tests
 			AssertAllAdapters(adapters, adapter => adapter.IsCompleted);
 		}
 
-		[Theory, MemberData(nameof(EachIndexForEachArity))]
+		[Theory]
+		[MemberData(nameof(EachIndexForEachArity))]
 		public static async Task WaitsForAllTasksToCompleteWhenAllCancel(int arity, int whichToWaitFor)
 		{
 			var source = new TaskCompletionSource<object>();
@@ -71,7 +73,8 @@ namespace TaskTupleAwaiter.Tests
 			AssertAllAdapters(adapters, adapter => adapter.IsCompleted);
 		}
 
-		[Theory, MemberData(nameof(EachIndexForEachArity))]
+		[Theory]
+		[MemberData(nameof(EachIndexForEachArity))]
 		public static async Task WaitsForAllTasksToCompleteWhenAllFail(int arity, int whichToWaitFor)
 		{
 			var source = new TaskCompletionSource<object>();
@@ -92,7 +95,8 @@ namespace TaskTupleAwaiter.Tests
 			AssertAllAdapters(adapters, adapter => adapter.IsCompleted);
 		}
 
-		[Theory, MemberData(nameof(EachArity))]
+		[Theory]
+		[MemberData(nameof(EachArity))]
 		public static void CompletesSynchronouslyIfAllTasksWereCompletedSynchronously(int arity)
 		{
 			var tasks = Enumerable.Repeat(CompletedTask, arity).ToArray();
@@ -102,7 +106,8 @@ namespace TaskTupleAwaiter.Tests
 			AssertAllAdapters(adapters, adapter => adapter.IsCompleted);
 		}
 
-		[Theory, MemberData(nameof(EachArity))]
+		[Theory]
+		[MemberData(nameof(EachArity))]
 		public static void ResultsAreInCorrectOrder(int arity)
 		{
 			var tasks = Enumerable.Range(0, arity)
@@ -115,15 +120,15 @@ namespace TaskTupleAwaiter.Tests
 				var result = adapter.GetResult();
 
 				for (var i = 0; i < arity; i++)
-				{
-					if (!i.Equals(result[i])) return false;
-				}
+					if (!i.Equals((int)result[i]))
+						return false;
 
 				return true;
 			});
 		}
 
-		[Theory, MemberData(nameof(EachArity))]
+		[Theory]
+		[MemberData(nameof(EachArity))]
 		public static void FirstExceptionIsThrown(int arity)
 		{
 			var sources = Enumerable.Range(0, arity)
@@ -131,10 +136,7 @@ namespace TaskTupleAwaiter.Tests
 
 			var adapters = AwaiterAdapter.CreateAllAdapters(sources.Select(source => source.Task).ToArray());
 
-			for (var i = sources.Length - 1; i >= 0; i--)
-			{
-				sources[i].SetException(new DummyException());
-			}
+			for (var i = sources.Length - 1; i >= 0; i--) sources[i].SetException(new DummyException());
 
 			AssertAllAdapters(adapters, adapter =>
 				ReferenceEquals(
@@ -142,33 +144,40 @@ namespace TaskTupleAwaiter.Tests
 					Assert.ThrowsAny<DummyException>(adapter.GetResult)));
 		}
 
-		[Theory, MemberData(nameof(EachArity))]
+		[Theory]
+		[MemberData(nameof(EachArity))]
 		public static Task NonConfiguredAwaitUsesSynchronizationContext(int arity) =>
-			AssertUsesSynchronizationContext(arity, configureAwait: null, shouldUseSynchronizationContext: true);
+			AssertUsesSynchronizationContext(arity, null, true);
 
-		[Theory, MemberData(nameof(EachArity))]
+		[Theory]
+		[MemberData(nameof(EachArity))]
 		public static Task ConfigureAwaitTrueUsesSynchronizationContext(int arity) =>
-			AssertUsesSynchronizationContext(arity, configureAwait: true, shouldUseSynchronizationContext: true);
+			AssertUsesSynchronizationContext(arity, true, true);
 
-		[Theory, MemberData(nameof(EachArity))]
+		[Theory]
+		[MemberData(nameof(EachArity))]
 		public static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
-			AssertUsesSynchronizationContext(arity, configureAwait: false, shouldUseSynchronizationContext: false);
+			AssertUsesSynchronizationContext(arity, false, false);
 
-		private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
+		private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait,
+			bool shouldUseSynchronizationContext)
 		{
 			var source = new TaskCompletionSource<object>();
 
-			var adapters = AwaiterAdapter.CreateAdapters(Enumerable.Repeat(source.Task, arity).ToArray(), continueOnCapturedContext: configureAwait);
+			var adapters =
+				AwaiterAdapter.CreateAdapters(Enumerable.Repeat(source.Task, arity).ToArray(), configureAwait);
 
 			var copyableContext = new CopyableSynchronizationContext();
 			using (TempSyncContext(copyableContext))
 			{
-				var resultSourcesByAdapterIndex = adapters.Select(_ => new TaskCompletionSource<SynchronizationContext>()).ToArray();
+				var resultSourcesByAdapterIndex =
+					adapters.Select(_ => new TaskCompletionSource<SynchronizationContext>()).ToArray();
 
 				for (var i = 0; i < adapters.Count; i++)
 				{
 					var adapterIndex = i;
-					adapters[i].OnCompleted(() => resultSourcesByAdapterIndex[adapterIndex].SetResult(SynchronizationContext.Current));
+					adapters[i].OnCompleted(() =>
+						resultSourcesByAdapterIndex[adapterIndex].SetResult(SynchronizationContext.Current));
 				}
 
 				source.SetResult(null);
@@ -183,7 +192,8 @@ namespace TaskTupleAwaiter.Tests
 			}
 		}
 
-		private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters, Func<AwaiterAdapter, bool> predicate)
+		private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters,
+			Func<AwaiterAdapter, bool> predicate)
 		{
 			if (adapters == null) throw new ArgumentNullException(nameof(adapters));
 			if (predicate == null) throw new ArgumentNullException(nameof(predicate));

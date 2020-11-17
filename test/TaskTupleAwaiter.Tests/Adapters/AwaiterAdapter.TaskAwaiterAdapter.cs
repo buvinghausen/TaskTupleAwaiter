@@ -9,7 +9,8 @@ namespace TaskTupleAwaiter.Tests
 		{
 			private readonly TaskAwaiter<object[]> _awaiter;
 
-			public TaskAwaiterAdapter(TaskAwaiter<object[]> awaiter, string description) : base(description) => _awaiter = awaiter;
+			public TaskAwaiterAdapter(TaskAwaiter<object[]> awaiter, string description) : base(description) =>
+				_awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
 

@@ -9,7 +9,8 @@ namespace TaskTupleAwaiter.Tests
 		{
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _awaiter;
 
-			public VoidResultConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter, string description) : base(description) => _awaiter = awaiter;
+			public VoidResultConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter,
+				string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
 
