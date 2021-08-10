@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
-using static TaskTupleAwaiter.TaskTupleExtensions;
+using System.Threading.Tasks;
 
 namespace TaskTupleAwaiter.Tests.Adapters
 {
@@ -24,9 +24,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter2Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object> _awaiter;
 
-			public TaskTupleAwaiter2Adapter(TupleTaskAwaiter<object, object> awaiter, string description) :
+			public TaskTupleAwaiter2Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object> awaiter, string description) :
 				base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -44,9 +44,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter3Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object> _awaiter;
 
-			public TaskTupleAwaiter3Adapter(TupleTaskAwaiter<object, object, object> awaiter, string description) :
+			public TaskTupleAwaiter3Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object> awaiter, string description) :
 				base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -64,9 +64,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter4Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object> _awaiter;
 
-			public TaskTupleAwaiter4Adapter(TupleTaskAwaiter<object, object, object, object> awaiter,
+			public TaskTupleAwaiter4Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object> awaiter,
 				string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -84,9 +84,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter5Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object> _awaiter;
 
-			public TaskTupleAwaiter5Adapter(TupleTaskAwaiter<object, object, object, object, object> awaiter,
+			public TaskTupleAwaiter5Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object> awaiter,
 				string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -104,9 +104,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter6Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object, object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object> _awaiter;
 
-			public TaskTupleAwaiter6Adapter(TupleTaskAwaiter<object, object, object, object, object, object> awaiter,
+			public TaskTupleAwaiter6Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object> awaiter,
 				string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -124,10 +124,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter7Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object, object, object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object> _awaiter;
 
-			public TaskTupleAwaiter7Adapter(
-				TupleTaskAwaiter<object, object, object, object, object, object, object> awaiter, string description) :
+			public TaskTupleAwaiter7Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object> awaiter, string description) :
 				base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -145,10 +144,9 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter8Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object, object, object, object, object> _awaiter;
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object, object> _awaiter;
 
-			public TaskTupleAwaiter8Adapter(
-				TupleTaskAwaiter<object, object, object, object, object, object, object, object> awaiter,
+			public TaskTupleAwaiter8Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object, object> awaiter,
 				string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -166,11 +164,10 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter9Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object, object, object, object, object, object>
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object, object, object>
 				_awaiter;
 
-			public TaskTupleAwaiter9Adapter(
-				TupleTaskAwaiter<object, object, object, object, object, object, object, object, object> awaiter,
+			public TaskTupleAwaiter9Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object, object, object> awaiter,
 				string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;
@@ -188,11 +185,10 @@ namespace TaskTupleAwaiter.Tests.Adapters
 
 		private sealed class TaskTupleAwaiter10Adapter : AwaiterAdapter
 		{
-			private readonly TupleTaskAwaiter<object, object, object, object, object, object, object, object, object,
+			private readonly TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object, object, object,
 				object> _awaiter;
 
-			public TaskTupleAwaiter10Adapter(
-				TupleTaskAwaiter<object, object, object, object, object, object, object, object, object, object>
+			public TaskTupleAwaiter10Adapter(TaskTupleExtensions.TupleTaskAwaiter<object, object, object, object, object, object, object, object, object, object>
 					awaiter, string description) : base(description) => _awaiter = awaiter;
 
 			public override bool IsCompleted => _awaiter.IsCompleted;

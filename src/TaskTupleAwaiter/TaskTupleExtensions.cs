@@ -1,9 +1,8 @@
-using System;
 using System.Runtime.CompilerServices;
 using System.Security;
-using System.Threading.Tasks;
 
-namespace TaskTupleAwaiter
+// ReSharper disable once CheckNamespace
+namespace System.Threading.Tasks
 {
 	// Hopefully this will make its way into the compiler someday...
 	// Ported from jnm2: https://gist.github.com/jnm2/3660db29457d391a34151f764bfe6ef7
