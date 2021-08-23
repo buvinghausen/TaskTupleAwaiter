@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <Authors>Joseph Musser,Brian Buvinghausen</Authors>
     <Company>Buvinghausen Solutions</Company>
     <Copyright>Copyright © 2020 Brian Buvinghausen</Copyright>
