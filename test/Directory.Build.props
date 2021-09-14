@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0;net5.0;netcoreapp3.1;net462</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

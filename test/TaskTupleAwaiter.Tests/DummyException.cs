@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 
-namespace TaskTupleAwaiter.Tests
+namespace TaskTupleAwaiter.Tests;
+
+internal sealed class DummyException : Exception
 {
-	internal sealed class DummyException : Exception
-	{
-	}
 }

@@ -1,19 +1,21 @@
 using System;
 using System.Threading;
 
-namespace TaskTupleAwaiter.Tests
+namespace TaskTupleAwaiter.Tests;
+
+internal static class On
 {
-	internal static class On
+	public static IDisposable Dispose(Action action) =>
+		new OnDisposeAction(action);
+
+	private sealed class OnDisposeAction : IDisposable
 	{
-		public static IDisposable Dispose(Action action) => new OnDisposeAction(action);
+		private Action _action;
 
-		private sealed class OnDisposeAction : IDisposable
-		{
-			private Action _action;
+		public OnDisposeAction(Action action) =>
+			_action = action;
 
-			public OnDisposeAction(Action action) => _action = action;
-
-			public void Dispose() => Interlocked.Exchange(ref _action, null)?.Invoke();
-		}
+		public void Dispose() =>
+			Interlocked.Exchange(ref _action, null)?.Invoke();
 	}
 }
