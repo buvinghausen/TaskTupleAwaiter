@@ -11,6 +11,7 @@ Based on the work of Joseph Musser https://github.com/jnm2
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
   

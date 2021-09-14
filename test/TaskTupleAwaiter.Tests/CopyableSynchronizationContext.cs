@@ -1,5 +1,3 @@
-using System.Threading;
-
 namespace TaskTupleAwaiter.Tests;
 
 internal sealed class CopyableSynchronizationContext : SynchronizationContext

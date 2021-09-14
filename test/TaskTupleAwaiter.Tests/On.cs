@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace TaskTupleAwaiter.Tests;
 
 internal static class On
