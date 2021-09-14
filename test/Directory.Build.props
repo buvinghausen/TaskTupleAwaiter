@@ -15,4 +15,12 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.*" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
+  <!--
+    This is likely an RC1 issue but System.Net.Http is not included in .net framework legacy
+    Track: https://github.com/dotnet/core/issues/6688
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
 </Project>
