@@ -8,11 +8,8 @@
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net462'">
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-
   <ItemGroup>
+    <Reference Condition="'$(TargetFramework)'=='net462'" Include="System.Net.Http" />
     <PackageReference Include="coverlet.msbuild" Version="3.*" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.*" />
     <PackageReference Include="xunit" Version="2.*" />
