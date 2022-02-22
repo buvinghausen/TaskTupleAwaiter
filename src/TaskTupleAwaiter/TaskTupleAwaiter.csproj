@@ -10,6 +10,10 @@ Based on the work of Joseph Musser https://github.com/jnm2
     </Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
