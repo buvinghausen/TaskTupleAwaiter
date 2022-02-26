@@ -42,7 +42,7 @@ public static class TaskTupleExtensions
 	/// </summary>
 	/// <typeparam name="T1"></typeparam>
 	/// <typeparam name="T2"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>) _tasks;
 		private readonly TaskAwaiter _whenAllAwaiter;
@@ -121,7 +121,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>) _tasks;
 
@@ -183,7 +183,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T1"></typeparam>
 	/// <typeparam name="T2"></typeparam>
 	/// <typeparam name="T3"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
 		private readonly TaskAwaiter _whenAllAwaiter;
@@ -264,7 +264,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
 
@@ -328,7 +328,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T2"></typeparam>
 	/// <typeparam name="T3"></typeparam>
 	/// <typeparam name="T4"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
 		private readonly TaskAwaiter _whenAllAwaiter;
@@ -410,7 +410,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
 
@@ -476,7 +476,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T3"></typeparam>
 	/// <typeparam name="T4"></typeparam>
 	/// <typeparam name="T5"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4, T5> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
 
@@ -563,7 +563,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
 
@@ -631,7 +631,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T4"></typeparam>
 	/// <typeparam name="T5"></typeparam>
 	/// <typeparam name="T6"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
 
@@ -720,7 +720,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
 
@@ -790,7 +790,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T5"></typeparam>
 	/// <typeparam name="T6"></typeparam>
 	/// <typeparam name="T7"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
 
@@ -881,7 +881,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
 
@@ -953,7 +953,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T6"></typeparam>
 	/// <typeparam name="T7"></typeparam>
 	/// <typeparam name="T8"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
 
@@ -1045,7 +1045,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
 
@@ -1119,7 +1119,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T7"></typeparam>
 	/// <typeparam name="T8"></typeparam>
 	/// <typeparam name="T9"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
 
@@ -1214,7 +1214,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
 
@@ -1290,7 +1290,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T8"></typeparam>
 	/// <typeparam name="T9"></typeparam>
 	/// <typeparam name="T10"></typeparam>
-	public struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : ICriticalNotifyCompletion
+	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
 
@@ -1387,7 +1387,7 @@ public static class TaskTupleExtensions
 
 		/// <summary>
 		/// </summary>
-		public struct Awaiter : ICriticalNotifyCompletion
+		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
 
