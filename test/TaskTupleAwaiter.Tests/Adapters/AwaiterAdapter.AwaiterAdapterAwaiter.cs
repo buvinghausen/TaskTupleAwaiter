@@ -4,7 +4,7 @@ namespace TaskTupleAwaiter.Tests.Adapters;
 
 partial class AwaiterAdapter
 {
-	public readonly struct AwaiterAdapterAwaiter : ICriticalNotifyCompletion
+	public readonly record struct AwaiterAdapterAwaiter : ICriticalNotifyCompletion
 	{
 		private readonly AwaiterAdapter _awaiterAdapter;
 
