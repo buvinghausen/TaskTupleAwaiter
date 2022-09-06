@@ -17,6 +17,9 @@ jobs:
           6.0.*
           7.0.*
         include-prerelease: true
+      env:
+        DOTNET_NOLOGO: 1
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
     - name: Restore
       run: dotnet restore
     - name: Build
