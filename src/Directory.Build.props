@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0;netcoreapp3.1;net462</TargetFrameworks>
     <Authors>Joseph Musser,Brian Buvinghausen</Authors>
     <Company>Buvinghausen Solutions</Company>
-    <Copyright>Copyright © 2021 Brian Buvinghausen</Copyright>
+    <Copyright>Copyright © 2022 Brian Buvinghausen</Copyright>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
     <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
