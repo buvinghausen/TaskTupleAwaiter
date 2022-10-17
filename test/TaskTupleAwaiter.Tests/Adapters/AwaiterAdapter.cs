@@ -4,7 +4,7 @@ namespace TaskTupleAwaiter.Tests.Adapters;
 ///     A common abstraction used to compare the behavior of awaiting <c>Task.WhenAll</c>
 ///     versus awaiting a tuple.
 /// </summary>
-public abstract partial class AwaiterAdapter
+internal abstract partial class AwaiterAdapter
 {
 	private readonly string _description;
 

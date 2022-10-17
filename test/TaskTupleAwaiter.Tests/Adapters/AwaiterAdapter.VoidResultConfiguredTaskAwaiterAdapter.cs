@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace TaskTupleAwaiter.Tests.Adapters;
 
-partial class AwaiterAdapter
+internal partial class AwaiterAdapter
 {
 	private sealed class VoidResultConfiguredTaskAwaiterAdapter : AwaiterAdapter
 	{

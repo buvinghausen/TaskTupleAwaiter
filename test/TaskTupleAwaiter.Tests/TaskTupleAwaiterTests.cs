@@ -5,7 +5,7 @@ namespace TaskTupleAwaiter.Tests;
 public class TaskTupleAwaiterTests
 {
 	[Fact]
-	public async Task CanAwaitTwoTasksWithNewSyntax()
+	private async Task CanAwaitTwoTasksWithNewSyntax()
 	{
 		var (a, b) = await (GetStringAsync(), GetGuidAsync());
 		Assert.IsType<string>(a);
@@ -13,7 +13,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitThreeTasksWithNewSyntax()
+	private async Task CanAwaitThreeTasksWithNewSyntax()
 	{
 		var (a, b, c) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync());
 		Assert.IsType<string>(a);
@@ -22,7 +22,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitFourTasksWithNewSyntax()
+	private async Task CanAwaitFourTasksWithNewSyntax()
 	{
 		var (a, b, c, d) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync());
 		Assert.IsType<string>(a);
@@ -32,7 +32,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitFiveTasksWithNewSyntax()
+	private async Task CanAwaitFiveTasksWithNewSyntax()
 	{
 		var (a, b, c, d, e) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync());
 		Assert.IsType<string>(a);
@@ -43,7 +43,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitSixTasksWithNewSyntax()
+	private async Task CanAwaitSixTasksWithNewSyntax()
 	{
 		var (a, b, c, d, e, f) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync());
 		Assert.IsType<string>(a);
@@ -55,7 +55,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitSevenTasksWithNewSyntax()
+	private async Task CanAwaitSevenTasksWithNewSyntax()
 	{
 		var (a, b, c, d, e, f, g) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync());
 		Assert.IsType<string>(a);
@@ -68,7 +68,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitEightTasksWithNewSyntax()
+	private async Task CanAwaitEightTasksWithNewSyntax()
 	{
 		var (a, b, c, d, e, f, g, h) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync());
 		Assert.IsType<string>(a);
@@ -82,7 +82,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitNineTasksWithNewSyntax()
+	private async Task CanAwaitNineTasksWithNewSyntax()
 	{
 		var (a, b, c, d, e, f, g, h, i) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync());
 		Assert.IsType<string>(a);
@@ -97,7 +97,7 @@ public class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	public async Task CanAwaitTenTasksWithNewSyntax()
+	private async Task CanAwaitTenTasksWithNewSyntax()
 	{
 		var (a, b, c, d, e, f, g, h, i, j) = await (GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync(), GetStringAsync(), GetGuidAsync());
 		Assert.IsType<string>(a);
@@ -120,7 +120,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitThreeTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitThreeTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -137,7 +137,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitFourTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitFourTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -155,7 +155,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitFiveTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitFiveTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -174,7 +174,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitSixTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitSixTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -194,7 +194,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitSevenTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitSevenTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -215,7 +215,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitEightTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitEightTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -236,7 +236,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitNineTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitNineTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();
@@ -259,7 +259,7 @@ public class TaskTupleAwaiterTests
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
-	public async Task AwaitTenTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
+	private async Task AwaitTenTasksWaitsForAllOfThemWhenConfigured(bool continueOnCapturedContext)
 	{
 		var task1 = GetStringAsync();
 		var task2 = GetStringAsync();

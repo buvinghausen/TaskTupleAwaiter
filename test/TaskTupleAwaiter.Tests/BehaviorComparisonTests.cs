@@ -24,7 +24,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
-	public static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
+	private static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
 	{
 		var source = new TaskCompletionSource<object>();
 
@@ -46,7 +46,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
-	public static async Task WaitsForAllTasksToCompleteWhenAllCancel(int arity, int whichToWaitFor)
+	private static async Task WaitsForAllTasksToCompleteWhenAllCancel(int arity, int whichToWaitFor)
 	{
 		var source = new TaskCompletionSource<object>();
 
@@ -68,7 +68,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
-	public static async Task WaitsForAllTasksToCompleteWhenAllFail(int arity, int whichToWaitFor)
+	private static async Task WaitsForAllTasksToCompleteWhenAllFail(int arity, int whichToWaitFor)
 	{
 		var source = new TaskCompletionSource<object>();
 
@@ -90,7 +90,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	public static void CompletesSynchronouslyIfAllTasksWereCompletedSynchronously(int arity)
+	private static void CompletesSynchronouslyIfAllTasksWereCompletedSynchronously(int arity)
 	{
 		var tasks = Enumerable.Repeat(CompletedTask, arity).ToArray();
 
@@ -101,7 +101,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	public static void ResultsAreInCorrectOrder(int arity)
+	private static void ResultsAreInCorrectOrder(int arity)
 	{
 		var tasks = Enumerable.Range(0, arity)
 			.Select(index => Task.FromResult<object>(index)).ToArray();
@@ -122,7 +122,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	public static void FirstExceptionIsThrown(int arity)
+	private static void FirstExceptionIsThrown(int arity)
 	{
 		var sources = Enumerable.Range(0, arity).Select(_ => new TaskCompletionSource<object>()).ToArray();
 
@@ -135,17 +135,17 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	public static Task NonConfiguredAwaitUsesSynchronizationContext(int arity) =>
+	private static Task NonConfiguredAwaitUsesSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, null, true);
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	public static Task ConfigureAwaitTrueUsesSynchronizationContext(int arity) =>
+	private static Task ConfigureAwaitTrueUsesSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, true, true);
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	public static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
+	private static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, false, false);
 
 	private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
