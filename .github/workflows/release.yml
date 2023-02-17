@@ -17,6 +17,6 @@ jobs:
         DOTNET_NOLOGO: 1
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
     - name: Create NuGet Package
-      run: dotnet pack -c Release -o . /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/buvinghausen/TaskTupleAwaiter/releases/tag/${{ github.event.release.tag_name }}"
+      run: dotnet pack -c Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/buvinghausen/TaskTupleAwaiter/releases/tag/${{ github.event.release.tag_name }}"
     - name: Publish NuGet Package
       run: dotnet nuget push *.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json  --skip-duplicate
