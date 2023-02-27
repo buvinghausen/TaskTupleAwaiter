@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <Using Remove="System.IO" />
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
   </ItemGroup>
 </Project>
