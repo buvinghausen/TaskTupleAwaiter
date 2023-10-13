@@ -6,7 +6,7 @@ internal partial class AwaiterAdapter
 {
 	private sealed class VoidResultConfiguredTaskAwaiterAdapter : AwaiterAdapter
 	{
-		private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _awaiter;
+		private ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _awaiter;
 
 		public VoidResultConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter awaiter, string description) : base(description) =>
 			_awaiter = awaiter;

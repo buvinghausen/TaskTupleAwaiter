@@ -6,7 +6,7 @@ internal partial class AwaiterAdapter
 {
 	private sealed class ConfiguredTaskTupleAwaiter1Adapter : AwaiterAdapter
 	{
-		private readonly ConfiguredTaskAwaitable<object>.ConfiguredTaskAwaiter _awaiter;
+		private ConfiguredTaskAwaitable<object>.ConfiguredTaskAwaiter _awaiter;
 
 		public ConfiguredTaskTupleAwaiter1Adapter(ConfiguredTaskAwaitable<object>.ConfiguredTaskAwaiter awaiter, string description) : base(description) =>
 			_awaiter = awaiter;

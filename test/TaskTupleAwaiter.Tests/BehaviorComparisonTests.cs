@@ -179,8 +179,13 @@ public static class BehaviorComparisonTests
 
 	private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters, Func<AwaiterAdapter, bool> predicate)
 	{
+#if NETFRAMEWORK
 		if (adapters == null) throw new ArgumentNullException(nameof(adapters));
 		if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+#else
+		ArgumentNullException.ThrowIfNull(adapters, nameof(adapters));
+		ArgumentNullException.ThrowIfNull(predicate, nameof(predicate));
+#endif
 
 		Assert.Empty(adapters.Where(adapter => !predicate.Invoke(adapter)));
 	}
