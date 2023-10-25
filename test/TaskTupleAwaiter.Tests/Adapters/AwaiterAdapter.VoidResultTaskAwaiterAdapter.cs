@@ -6,7 +6,7 @@ internal partial class AwaiterAdapter
 {
 	private sealed class VoidResultTaskAwaiterAdapter : AwaiterAdapter
 	{
-		private TaskAwaiter _awaiter;
+		private readonly TaskAwaiter _awaiter;
 
 		public VoidResultTaskAwaiterAdapter(TaskAwaiter awaiter, string description) : base(description) =>
 			_awaiter = awaiter;
