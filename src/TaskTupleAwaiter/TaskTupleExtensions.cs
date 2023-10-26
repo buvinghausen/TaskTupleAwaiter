@@ -266,7 +266,7 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3> ConfigureAwait<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks, bool continueOnCapturedContext) =>
 		new(tasks, continueOnCapturedContext
 #if NET8_0_OR_GREATER
-				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
 #endif
 		);
 
@@ -435,7 +435,7 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4> ConfigureAwait<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks, bool continueOnCapturedContext) =>
 		new(tasks, continueOnCapturedContext
 #if NET8_0_OR_GREATER
-				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
 #endif
 		);
 
@@ -711,7 +711,7 @@ public static class TaskTupleExtensions
 			}
 		}
 	}
-#endregion
+	#endregion
 
 	#region (Task<T1>..Task<T6>)
 	/// <summary>
@@ -786,7 +786,27 @@ public static class TaskTupleExtensions
 	/// <param name="continueOnCapturedContext"></param>
 	/// <returns></returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext);
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T6"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
 
 	/// <summary>
 	/// </summary>
@@ -799,9 +819,21 @@ public static class TaskTupleExtensions
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
-		private readonly bool _options;
+		private readonly
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				_options;
 
-		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, bool options)
+		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks,
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				options)
 		{
 			_tasks = tasks;
 			_options = options;
@@ -820,7 +852,13 @@ public static class TaskTupleExtensions
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, bool options)
+			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks,
+#if NET8_0_OR_GREATER
+				ConfigureAwaitOptions
+#else
+				bool
+#endif
+					options)
 			{
 				_tasks = tasks;
 				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6).ConfigureAwait(options).GetAwaiter();
@@ -932,7 +970,28 @@ public static class TaskTupleExtensions
 	/// <param name="continueOnCapturedContext"></param>
 	/// <returns></returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext);
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T6"></typeparam>
+	/// <typeparam name="T7"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
 
 	/// <summary>
 	/// </summary>
@@ -946,9 +1005,21 @@ public static class TaskTupleExtensions
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
-		private readonly bool _options;
+		private readonly
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				_options;
 
-		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, bool options)
+		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks,
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				options)
 		{
 			_tasks = tasks;
 			_options = options;
@@ -967,7 +1038,13 @@ public static class TaskTupleExtensions
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, bool options)
+			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks,
+#if NET8_0_OR_GREATER
+				ConfigureAwaitOptions
+#else
+				bool
+#endif
+					options)
 			{
 				_tasks = tasks;
 				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7).ConfigureAwait(options).GetAwaiter();
@@ -1082,7 +1159,29 @@ public static class TaskTupleExtensions
 	/// <param name="continueOnCapturedContext"></param>
 	/// <returns></returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext);
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T6"></typeparam>
+	/// <typeparam name="T7"></typeparam>
+	/// <typeparam name="T8"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
 
 	/// <summary>
 	/// </summary>
@@ -1097,9 +1196,21 @@ public static class TaskTupleExtensions
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
-		private readonly bool _options;
+		private readonly
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				_options;
 
-		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, bool options)
+		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks,
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				options)
 		{
 			_tasks = tasks;
 			_options = options;
@@ -1118,7 +1229,13 @@ public static class TaskTupleExtensions
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, bool options)
+			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks,
+#if NET8_0_OR_GREATER
+				ConfigureAwaitOptions
+#else
+				bool
+#endif
+					options)
 			{
 				_tasks = tasks;
 				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8).ConfigureAwait(options).GetAwaiter();
@@ -1236,7 +1353,30 @@ public static class TaskTupleExtensions
 	/// <param name="continueOnCapturedContext"></param>
 	/// <returns></returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext);
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T6"></typeparam>
+	/// <typeparam name="T7"></typeparam>
+	/// <typeparam name="T8"></typeparam>
+	/// <typeparam name="T9"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
 
 	/// <summary>
 	/// </summary>
@@ -1252,9 +1392,21 @@ public static class TaskTupleExtensions
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
-		private readonly bool _options;
+		private readonly
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				_options;
 
-		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, bool options)
+		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks,
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				options)
 		{
 			_tasks = tasks;
 			_options = options;
@@ -1273,7 +1425,13 @@ public static class TaskTupleExtensions
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, bool options)
+			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks,
+#if NET8_0_OR_GREATER
+				ConfigureAwaitOptions
+#else
+				bool
+#endif
+					options)
 			{
 				_tasks = tasks;
 				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9).ConfigureAwait(options).GetAwaiter();
@@ -1394,7 +1552,31 @@ public static class TaskTupleExtensions
 	/// <param name="continueOnCapturedContext"></param>
 	/// <returns></returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext);
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T6"></typeparam>
+	/// <typeparam name="T7"></typeparam>
+	/// <typeparam name="T8"></typeparam>
+	/// <typeparam name="T9"></typeparam>
+	/// <typeparam name="T10"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
 
 	/// <summary>
 	/// </summary>
@@ -1411,9 +1593,21 @@ public static class TaskTupleExtensions
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
-		private readonly bool _options;
+		private readonly
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				_options;
 
-		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, bool options)
+		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks,
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions
+#else
+			bool
+#endif
+				options)
 		{
 			_tasks = tasks;
 			_options = options;
@@ -1432,7 +1626,13 @@ public static class TaskTupleExtensions
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, bool options)
+			internal Awaiter((Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks,
+#if NET8_0_OR_GREATER
+				ConfigureAwaitOptions
+#else
+				bool
+#endif
+					options)
 			{
 				_tasks = tasks;
 				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10).ConfigureAwait(options).GetAwaiter();
@@ -1700,5 +1900,5 @@ public static class TaskTupleExtensions
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10).ConfigureAwait(options);
 #endif
-#endregion
+	#endregion
 }
