@@ -58,10 +58,7 @@ public static class TaskTupleExtensions
 		private readonly (Task<T1>, Task<T2>) _tasks;
 		private readonly TaskAwaiter _whenAllAwaiter;
 
-		/// <summary>
-		/// </summary>
-		/// <param name="tasks"></param>
-		public TupleTaskAwaiter((Task<T1>, Task<T2>) tasks)
+		internal TupleTaskAwaiter((Task<T1>, Task<T2>) tasks)
 		{
 			_tasks = tasks;
 			_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2).GetAwaiter();
@@ -103,7 +100,23 @@ public static class TaskTupleExtensions
 	/// <param name="continueOnCapturedContext"></param>
 	/// <returns></returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext);
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <typeparam name="T2"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
 
 	/// <summary>
 	/// </summary>
@@ -112,40 +125,63 @@ public static class TaskTupleExtensions
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2>
 	{
 		private readonly (Task<T1>, Task<T2>) _tasks;
-		private readonly bool _continueOnCapturedContext;
-
-		/// <summary>
-		/// </summary>
-		/// <param name="tasks"></param>
-		/// <param name="continueOnCapturedContext"></param>
-		public TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>) tasks, bool continueOnCapturedContext)
+		private readonly
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions _options;
+#else
+			bool _continueOnCapturedContext;
+#endif
+		internal TupleConfiguredTaskAwaitable((Task<T1>, Task<T2>) tasks,
+#if NET8_0_OR_GREATER
+			ConfigureAwaitOptions options
+#else
+			bool continueOnCapturedContext
+#endif
+		)
 		{
 			_tasks = tasks;
+#if NET8_0_OR_GREATER
+			_options = options;
+#else
 			_continueOnCapturedContext = continueOnCapturedContext;
+#endif
 		}
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
-		public Awaiter GetAwaiter() =>
-			new(_tasks, _continueOnCapturedContext);
+	/// <summary>
+	/// </summary>
+	/// <returns></returns>
+	public Awaiter GetAwaiter() =>
+			new(_tasks,
+#if NET8_0_OR_GREATER
+				_options
+#else
+				_continueOnCapturedContext
+#endif
+			);
 
 		/// <summary>
 		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>) _tasks;
-
 			private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
-			/// <summary>
-			/// </summary>
-			/// <param name="tasks"></param>
-			/// <param name="continueOnCapturedContext"></param>
-			public Awaiter((Task<T1>, Task<T2>) tasks, bool continueOnCapturedContext)
+			internal Awaiter((Task<T1>, Task<T2>) tasks,
+#if NET8_0_OR_GREATER
+				ConfigureAwaitOptions options
+#else
+				bool continueOnCapturedContext
+#endif
+			)
 			{
 				_tasks = tasks;
-				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2).ConfigureAwait(continueOnCapturedContext).GetAwaiter();
+				_whenAllAwaiter = Task.WhenAll(tasks.Item1, tasks.Item2).ConfigureAwait(
+#if NET8_0_OR_GREATER
+					options
+#else
+					continueOnCapturedContext
+#endif
+				).GetAwaiter();
 			}
 
 			/// <summary>
