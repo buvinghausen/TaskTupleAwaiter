@@ -26,6 +26,17 @@ public static class TaskTupleExtensions
 	/// <returns></returns>
 	public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<Task<T1>> tasks, bool continueOnCapturedContext) =>
 		tasks.Item1.ConfigureAwait(continueOnCapturedContext);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="T1"></typeparam>
+	/// <param name="tasks"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<Task<T1>> tasks, ConfigureAwaitOptions options) =>
+		tasks.Item1.ConfigureAwait(options);
+#endif
 	#endregion
 
 	#region (Task<T1>..Task<T2>)
