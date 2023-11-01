@@ -16,7 +16,7 @@ internal partial class AwaiterAdapter
 			awaiter.UnsafeOnCompleted(continuation);
 
 		public override object[] GetResult() =>
-			new[] { awaiter.GetResult() };
+			[awaiter.GetResult()];
 	}
 
 	private sealed class ConfiguredTaskTupleAwaiter2Adapter(TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object>.Awaiter awaiter, string description) : AwaiterAdapter(description)

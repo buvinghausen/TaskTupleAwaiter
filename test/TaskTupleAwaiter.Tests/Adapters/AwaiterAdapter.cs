@@ -25,8 +25,7 @@ internal abstract partial class AwaiterAdapter
 	public AwaiterAdapterAwaiter GetAwaiter() =>
 		new(this);
 
-	public static IReadOnlyList<AwaiterAdapter> CreateAllAdapters(Task<object>[] tasks) => new[]
-	{
+	public static IReadOnlyList<AwaiterAdapter> CreateAllAdapters(Task<object>[] tasks) => [
 		CreateTaskTupleAwaiter(tasks),
 		CreateTaskTupleAwaiter(tasks, true),
 		CreateTaskTupleAwaiter(tasks, false),
@@ -39,25 +38,23 @@ internal abstract partial class AwaiterAdapter
 		CreateVoidResultTaskWhenAll(tasks),
 		CreateVoidResultTaskWhenAll(tasks, true),
 		CreateVoidResultTaskWhenAll(tasks, false)
-	};
+	];
 
-	public static IReadOnlyList<AwaiterAdapter> CreateNonVoidResultAdapters(Task<object>[] tasks) => new[]
-	{
+	public static IReadOnlyList<AwaiterAdapter> CreateNonVoidResultAdapters(Task<object>[] tasks) => [
 		CreateTaskTupleAwaiter(tasks),
 		CreateTaskTupleAwaiter(tasks, true),
 		CreateTaskTupleAwaiter(tasks, false),
 		CreateTaskWhenAll(tasks),
 		CreateTaskWhenAll(tasks, true),
 		CreateTaskWhenAll(tasks, false)
-	};
+	];
 
-	public static IReadOnlyList<AwaiterAdapter>	CreateAdapters(Task<object>[] tasks, bool? continueOnCapturedContext) => new[]
-	{
+	public static IReadOnlyList<AwaiterAdapter>	CreateAdapters(Task<object>[] tasks, bool? continueOnCapturedContext) => [
 		CreateTaskTupleAwaiter(tasks, continueOnCapturedContext),
 		CreateVoidResultTaskTupleAwaiter(tasks, continueOnCapturedContext),
 		CreateTaskWhenAll(tasks, continueOnCapturedContext),
 		CreateVoidResultTaskWhenAll(tasks, continueOnCapturedContext)
-	};
+	];
 
 	public static AwaiterAdapter CreateTaskWhenAll(Task<object>[] tasks, bool? continueOnCapturedContext = null)
 	{
