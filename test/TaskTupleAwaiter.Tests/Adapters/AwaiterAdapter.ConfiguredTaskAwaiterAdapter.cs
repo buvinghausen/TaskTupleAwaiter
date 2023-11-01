@@ -4,23 +4,18 @@ namespace TaskTupleAwaiter.Tests.Adapters;
 
 internal partial class AwaiterAdapter
 {
-	private sealed class ConfiguredTaskAwaiterAdapter : AwaiterAdapter
+	private sealed class ConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable<object[]>.ConfiguredTaskAwaiter awaiter, string description) : AwaiterAdapter(description)
 	{
-		private readonly ConfiguredTaskAwaitable<object[]>.ConfiguredTaskAwaiter _awaiter;
-
-		public ConfiguredTaskAwaiterAdapter(ConfiguredTaskAwaitable<object[]>.ConfiguredTaskAwaiter awaiter, string description) : base(description) =>
-			_awaiter = awaiter;
-
 		public override bool IsCompleted =>
-			_awaiter.IsCompleted;
+			awaiter.IsCompleted;
 
 		public override void OnCompleted(Action continuation) =>
-			_awaiter.OnCompleted(continuation);
+			awaiter.OnCompleted(continuation);
 
 		public override void UnsafeOnCompleted(Action continuation) =>
-			_awaiter.UnsafeOnCompleted(continuation);
+			awaiter.UnsafeOnCompleted(continuation);
 
 		public override object[] GetResult() =>
-			_awaiter.GetResult();
+			awaiter.GetResult();
 	}
 }
