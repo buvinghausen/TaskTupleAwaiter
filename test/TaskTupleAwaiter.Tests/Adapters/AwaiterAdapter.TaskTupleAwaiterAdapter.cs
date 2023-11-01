@@ -32,8 +32,8 @@ internal partial class AwaiterAdapter
 
 		public override object[] GetResult()
 		{
-			var result = awaiter.GetResult();
-			return [result.Item1, result.Item2];
+			var (item1, item2) = awaiter.GetResult();
+			return [item1, item2];
 		}
 	}
 

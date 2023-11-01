@@ -32,8 +32,8 @@ internal partial class AwaiterAdapter
 
 		public override object[] GetResult()
 		{
-			var result = awaiter.GetResult();
-			return [result.Item1, result.Item2];
+			var (item1, item2) = awaiter.GetResult();
+			return [item1, item2];
 		}
 	}
 
@@ -122,11 +122,8 @@ internal partial class AwaiterAdapter
 
 		public override object[] GetResult()
 		{
-			var result = awaiter.GetResult();
-			return
-			[
-				result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6, result.Item7
-			];
+			var (item1, item2, item3, item4, item5, item6, item7) = awaiter.GetResult();
+			return [item1, item2, item3, item4, item5, item6, item7];
 		}
 	}
 
@@ -143,12 +140,8 @@ internal partial class AwaiterAdapter
 
 		public override object[] GetResult()
 		{
-			var result = awaiter.GetResult();
-			return
-			[
-				result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6,
-				result.Item7, result.Item8
-			];
+			var (item1, item2, item3, item4, item5, item6, item7, item8) = awaiter.GetResult();
+			return [item1, item2, item3, item4, item5, item6, item7, item8];
 		}
 	}
 
@@ -165,12 +158,8 @@ internal partial class AwaiterAdapter
 
 		public override object[] GetResult()
 		{
-			var result = awaiter.GetResult();
-			return
-			[
-				result.Item1, result.Item2, result.Item3, result.Item4, result.Item5, result.Item6,
-				result.Item7, result.Item8, result.Item9
-			];
+			var (item1, item2, item3, item4, item5, item6, item7, item8, item9) = awaiter.GetResult();
+			return [item1, item2, item3, item4, item5, item6, item7, item8, item9];
 		}
 	}
 
