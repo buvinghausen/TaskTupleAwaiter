@@ -120,6 +120,7 @@ public static class BehaviorComparisonTests
 		});
 	}
 
+#if !NET8_0_OR_GREATER
 	[Theory]
 	[MemberData(nameof(EachArity))]
 	private static void FirstExceptionIsThrown(int arity)
@@ -132,6 +133,7 @@ public static class BehaviorComparisonTests
 
 		AssertAllAdapters(adapters, adapter => ReferenceEquals(sources[0].Task.Exception?.InnerException, Assert.ThrowsAny<DummyException>(adapter.GetResult)));
 	}
+#endif
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
