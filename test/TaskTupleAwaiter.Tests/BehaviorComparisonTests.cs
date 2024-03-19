@@ -17,10 +17,10 @@ public static class BehaviorComparisonTests
 	private static Task<object> FailedTask { get; } = TaskFromException(new DummyException());
 
 	public static IEnumerable<object[]> EachArity() =>
-		Enumerable.Range(1, 10).Select(arity => new object[] { arity });
+		Enumerable.Range(1, 16).Select(arity => new object[] { arity });
 
 	public static IEnumerable<object[]> EachIndexForEachArity() =>
-		Enumerable.Range(1, 10).SelectMany(arity => Enumerable.Range(0, arity - 1), (arity, whichToWaitFor) => new object[] { arity, whichToWaitFor });
+		Enumerable.Range(1, 16).SelectMany(arity => Enumerable.Range(0, arity - 1), (arity, whichToWaitFor) => new object[] { arity, whichToWaitFor });
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
