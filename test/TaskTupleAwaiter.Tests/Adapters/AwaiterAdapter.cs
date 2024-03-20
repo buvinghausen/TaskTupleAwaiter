@@ -89,6 +89,12 @@ internal abstract partial class AwaiterAdapter
 				8 => new ConfiguredTaskTupleAwaiter8Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
 				9 => new ConfiguredTaskTupleAwaiter9Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
 				10 => new ConfiguredTaskTupleAwaiter10Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				11 => new ConfiguredTaskTupleAwaiter11Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				12 => new ConfiguredTaskTupleAwaiter12Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				13 => new ConfiguredTaskTupleAwaiter13Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				14 => new ConfiguredTaskTupleAwaiter14Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				15 => new ConfiguredTaskTupleAwaiter15Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				16 => new ConfiguredTaskTupleAwaiter16Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14], tasks[15]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
 				_ => throw new ArgumentException($"There is no awaiter for a tuple of {tasks.Length} tasks.", nameof(tasks))
 			};
 		}
@@ -108,6 +114,12 @@ internal abstract partial class AwaiterAdapter
 				8 => new TaskTupleAwaiter8Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7]).GetAwaiter(), description),
 				9 => new TaskTupleAwaiter9Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8]).GetAwaiter(), description),
 				10 => new TaskTupleAwaiter10Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9]).GetAwaiter(), description),
+				11 => new TaskTupleAwaiter11Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10]).GetAwaiter(), description),
+				12 => new TaskTupleAwaiter12Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11]).GetAwaiter(), description),
+				13 => new TaskTupleAwaiter13Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12]).GetAwaiter(), description),
+				14 => new TaskTupleAwaiter14Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13]).GetAwaiter(), description),
+				15 => new TaskTupleAwaiter15Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14]).GetAwaiter(), description),
+				16 => new TaskTupleAwaiter16Adapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14], tasks[15]).GetAwaiter(), description),
 				_ => throw new ArgumentException($"There is no awaiter for a tuple of {tasks.Length} tasks.", nameof(tasks))
 			};
 		}
@@ -130,6 +142,12 @@ internal abstract partial class AwaiterAdapter
 				8 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4],tasks[5], tasks[6], tasks[7]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
 				9 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
 				10 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				11 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				12 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				13 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				14 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				15 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
+				16 => new VoidResultConfiguredTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14], tasks[15]).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(), description),
 				_ => throw new ArgumentException($"There is no awaiter for a tuple of {tasks.Length} tasks.", nameof(tasks))
 			};
 		}
@@ -149,6 +167,12 @@ internal abstract partial class AwaiterAdapter
 				8 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7]).GetAwaiter(), description),
 				9 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8]).GetAwaiter(), description),
 				10 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9]).GetAwaiter(), description),
+				11 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10]).GetAwaiter(), description),
+				12 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11]).GetAwaiter(), description),
+				13 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12]).GetAwaiter(), description),
+				14 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13]).GetAwaiter(), description),
+				15 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14]).GetAwaiter(), description),
+				16 => new VoidResultTaskAwaiterAdapter((tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11], tasks[12], tasks[13], tasks[14], tasks[15]).GetAwaiter(), description),
 				_ => throw new ArgumentException($"There is no awaiter for a tuple of {tasks.Length} tasks.", nameof(tasks))
 			};
 		}
