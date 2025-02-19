@@ -2,7 +2,9 @@ using System.Runtime.CompilerServices;
 using System.Security;
 
 // ReSharper disable once CheckNamespace
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Threading.Tasks;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Ported from jnm2: https://gist.github.com/jnm2/3660db29457d391a34151f764bfe6ef7
@@ -11,29 +13,32 @@ public static class TaskTupleExtensions
 {
 	#region (Task<T1>)
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result of the task.</typeparam>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter<T1> GetAwaiter<T1>(this ValueTuple<Task<T1>> tasks) =>
 		tasks.Item1.GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result of the task.</typeparam>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<Task<T1>> tasks, bool continueOnCapturedContext) =>
 		tasks.Item1.ConfigureAwait(continueOnCapturedContext);
 
 #if NET8_0_OR_GREATER
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result of the task.</typeparam>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<Task<T1>> tasks, ConfigureAwaitOptions options) =>
 		tasks.Item1.ConfigureAwait(options);
 #endif
@@ -41,18 +46,48 @@ public static class TaskTupleExtensions
 
 	#region (Task<T1>..Task<T2>)
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task tuple.</returns>
 	public static TupleTaskAwaiter<T1, T2> GetAwaiter<T1, T2>(this (Task<T1>, Task<T2>) tasks) =>
 		new(tasks);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
+	/// <summary>
+	/// Represents a configurable task awaiter for a tuple of two tasks.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
 	public readonly record struct TupleTaskAwaiter<T1, T2> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>) _tasks;
@@ -65,26 +100,27 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value that indicates whether the awaiter has completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Sets the action to perform when the awaiter completes.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">The action to perform when the awaiter completes.</param>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Sets the action to perform when the awaiter completes.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">The action to perform when the awaiter completes.</param>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 		/// <summary>
+		/// Gets the result of the completed tasks.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>A tuple containing the results of the completed tasks.</returns>
 		public (T1, T2) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -93,35 +129,10 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
+	/// Represents a configured task awaitable for a tuple of two tasks.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2>
 	{
 		private readonly (Task<T1>, Task<T2>) _tasks;
@@ -146,12 +157,14 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets the awaiter for the configured task awaitable.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>The awaiter for the configured task awaitable.</returns>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
 		/// <summary>
+		/// Represents an awaiter for a configured task awaitable for a tuple of two tasks.
 		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
@@ -171,26 +184,30 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value that indicates whether the awaiter has completed.
 			/// </summary>
 			public bool IsCompleted =>
 				_whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Sets the action to perform when the awaiter completes.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">The action to perform when the awaiter completes.</param>
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Sets the action to perform when the awaiter completes.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">The action to perform when the awaiter completes.</param>
 			[SecurityCritical]
 			public void UnsafeOnCompleted(Action continuation) =>
 				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			/// <summary>
+			/// Gets the result of the completed tasks.
 			/// </summary>
-			/// <returns></returns>
+			/// <returns>A tuple containing the results of the completed tasks.</returns>
 			public (T1, T2) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -2981,371 +2998,410 @@ public static class TaskTupleExtensions
 
 	#region Task
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this ValueTuple<Task> tasks) =>
 		tasks.Item1.GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this ValueTuple<Task> tasks, bool continueOnCapturedContext) =>
 		tasks.Item1.ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3).GetAwaiter();
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task) tasks, bool continueOnCapturedContext) =>
-		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3).ConfigureAwait(continueOnCapturedContext);
-
-	/// <summary>
-	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14, tasks.Item15).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14, tasks.Item15).ConfigureAwait(continueOnCapturedContext);
 
 	/// <summary>
+	/// Gets the awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <returns>The awaiter for the task.</returns>
 	public static TaskAwaiter GetAwaiter(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14, tasks.Item15, tasks.Item16).GetAwaiter();
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="continueOnCapturedContext">A Boolean value that indicates whether to marshal the continuation back to the original context captured.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, bool continueOnCapturedContext) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14, tasks.Item15, tasks.Item16).ConfigureAwait(continueOnCapturedContext);
 
 #if NET8_0_OR_GREATER
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this ValueTuple<Task> tasks, ConfigureAwaitOptions options) =>
 		tasks.Item1.ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14, tasks.Item15).ConfigureAwait(options);
 
 	/// <summary>
+	/// Configures an awaiter for the specified task tuple with the given options.
 	/// </summary>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="tasks">The task tuple.</param>
+	/// <param name="options">The options to configure the awaiter.</param>
+	/// <returns>The configured task awaitable.</returns>
 	public static ConfiguredTaskAwaitable ConfigureAwait(this (Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task, Task) tasks, ConfigureAwaitOptions options) =>
 		Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3, tasks.Item4, tasks.Item5, tasks.Item6, tasks.Item7, tasks.Item8, tasks.Item9, tasks.Item10, tasks.Item11, tasks.Item12, tasks.Item13, tasks.Item14, tasks.Item15, tasks.Item16).ConfigureAwait(options);
 #endif
