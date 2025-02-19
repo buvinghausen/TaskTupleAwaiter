@@ -189,7 +189,7 @@ public static class BehaviorComparisonTests
 		ArgumentNullException.ThrowIfNull(predicate, nameof(predicate));
 #endif
 
-		Assert.Empty(adapters.Where(adapter => !predicate.Invoke(adapter)));
+		Assert.Empty(adapters.Where(adapter => !predicate.Invoke(adapter)).ToArray());
 	}
 
 	private static Task<object> TaskFromException(Exception exception)
