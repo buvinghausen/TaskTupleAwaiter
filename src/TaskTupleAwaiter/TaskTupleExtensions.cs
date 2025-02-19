@@ -96,7 +96,7 @@ public static class TaskTupleExtensions
 			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
 #endif
 		);
-
+	
 #if NET8_0_OR_GREATER
 	/// <summary>
 	/// Configures an awaiter for a tuple of two tasks with the specified <see cref="ConfigureAwaitOptions"/>.
@@ -109,12 +109,17 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
 	/// <summary>
-	/// Represents an awaiter for a tuple of two tasks, enabling the use of the `await` keyword on the tuple.
+	/// Provides an awaiter for a tuple of two tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
 	/// </summary>
 	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
 	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of two tasks, allowing both tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>) _tasks;
@@ -383,18 +388,17 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3> ConfigureAwait<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
 	/// <summary>
-	/// Represents an awaiter for a tuple of three tasks, enabling the use of the `await` keyword
-	/// to asynchronously wait for all tasks in the tuple to complete and retrieve their results.
+	/// Provides an awaiter for a tuple of three tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
 	/// </summary>
-	/// <typeparam name="T1">The type of the result produced by the first task in the tuple.</typeparam>
-	/// <typeparam name="T2">The type of the result produced by the second task in the tuple.</typeparam>
-	/// <typeparam name="T3">The type of the result produced by the third task in the tuple.</typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
 	/// <remarks>
-	/// This structure is used to facilitate asynchronous programming with tuples of tasks,
-	/// allowing developers to await the completion of all tasks in the tuple and retrieve their results
-	/// in a single operation.
+	/// This structure provides the ability to await a tuple of three tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
 	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3> : ICriticalNotifyCompletion
 	{
@@ -673,19 +677,18 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4> ConfigureAwait<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
 	/// <summary>
-	/// Represents an awaiter for a tuple of four tasks, allowing the caller to asynchronously wait 
-	/// for all tasks to complete and retrieve their results as a tuple.
+	/// Provides an awaiter for a tuple of four tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
 	/// </summary>
 	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
 	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
 	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
 	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
 	/// <remarks>
-	/// This awaiter is designed to work with a tuple of four tasks, enabling the caller to await 
-	/// their completion and retrieve their results in a strongly-typed manner. It implements 
-	/// <see cref="ICriticalNotifyCompletion"/> to support advanced continuation scenarios.
+	/// This structure provides the ability to await a tuple of four tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
 	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4> : ICriticalNotifyCompletion
 	{
@@ -968,7 +971,6 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5> ConfigureAwait<T1, T2, T3, T4, T5>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
 	/// <summary>
 	/// Provides an awaiter for a tuple of five tasks, enabling the use of the `await` keyword
 	/// to asynchronously wait for all tasks in the tuple to complete.
@@ -979,9 +981,9 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
 	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
 	/// <remarks>
-	/// This structure is used internally by the <see cref="TaskTupleExtensions.GetAwaiter{T1, T2, T3, T4, T5}"/> method
-	/// to facilitate awaiting a tuple of five tasks. It implements <see cref="ICriticalNotifyCompletion"/> 
-	/// to provide support for scheduling continuations.
+	/// This structure provides the ability to await a tuple of five tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
 	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5> : ICriticalNotifyCompletion
 	{
@@ -1216,7 +1218,21 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of six tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of six tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
@@ -1404,7 +1420,22 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of seven tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of seven tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
@@ -1592,7 +1623,23 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of eight tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of eight tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
@@ -1780,7 +1827,24 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of nine tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of nine tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -1968,7 +2032,25 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-	
+	/// <summary>
+	/// Provides an awaiter for a tuple of ten tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of ten tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -2156,7 +2238,26 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of eleven tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of eleven tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) _tasks;
@@ -2344,7 +2445,27 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of twelve tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of twelve tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) _tasks;
@@ -2532,7 +2653,28 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of thirteen tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of thirteen tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) _tasks;
@@ -2720,7 +2862,29 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of fourteen tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <typeparam name="T14">The type of the result of the fourteenth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of fourteen tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) _tasks;
@@ -2908,7 +3072,30 @@ public static class TaskTupleExtensions
 	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) tasks, ConfigureAwaitOptions options) =>
 		new(tasks, options);
 #endif
-
+	/// <summary>
+	/// Provides an awaiter for a tuple of fifteen tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <typeparam name="T14">The type of the result of the fourteenth task.</typeparam>
+	/// <typeparam name="T15">The type of the result of the fifteenth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of fifteen tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) _tasks;
@@ -3097,6 +3284,31 @@ public static class TaskTupleExtensions
 		new(tasks, options);
 #endif
 
+	/// <summary>
+	/// Provides an awaiter for a tuple of sixteen tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <typeparam name="T14">The type of the result of the fourteenth task.</typeparam>
+	/// <typeparam name="T15">The type of the result of the fifteenth task.</typeparam>
+	/// <typeparam name="T16">The type of the result of the sixteenth task.</typeparam>
+	/// <remarks>
+	/// This structure provides the ability to await a tuple of sixteen tasks, allowing all tasks to complete before 
+	/// retrieving their results. It implements <see cref="ICriticalNotifyCompletion"/> to support advanced 
+	/// continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) _tasks;
