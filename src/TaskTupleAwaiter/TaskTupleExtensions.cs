@@ -139,14 +139,19 @@ public static class TaskTupleExtensions
 		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
-		/// Schedules the specified continuation action to be invoked when the awaiter completes.
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
 		/// <param name="continuation">
-		/// The action to invoke when the awaiter completes.
+		/// The action to invoke when the await operation completes.
 		/// </param>
 		/// <remarks>
-		/// This method is typically used by the compiler to support the `await` keyword.
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
 		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
 		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
@@ -226,6 +231,10 @@ public static class TaskTupleExtensions
 		/// <returns>
 		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
 		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
@@ -265,8 +274,7 @@ public static class TaskTupleExtensions
 			/// This property checks the completion status of the underlying tasks in the tuple.
 			/// It is used to determine whether the await operation can proceed without blocking.
 			/// </remarks>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
 			/// Schedules the continuation action for the awaiter.
@@ -282,26 +290,25 @@ public static class TaskTupleExtensions
 			/// <exception cref="ArgumentNullException">
 			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
 			/// </exception>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
-			/// Schedules the continuation action for the awaiter without performing security checks.
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
 			/// <param name="continuation">
-			/// The action to invoke when the await operation completes.
+			/// The action to invoke when the awaiter completes.
 			/// </param>
 			/// <remarks>
 			/// This method is intended for advanced scenarios where performance is critical, 
-			/// and the caller ensures that the continuation action is safe to execute. 
-			/// It bypasses certain security checks that are performed by <see cref="OnCompleted(Action)"/>.
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
 			/// </remarks>
 			/// <exception cref="ArgumentNullException">
-			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
 			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			/// <summary>
 			/// Retrieves the results of the two tasks in the tuple after they have completed.
@@ -328,20 +335,67 @@ public static class TaskTupleExtensions
 
 	#region (Task<T1>..Task<T3>)
 	/// <summary>
+	/// Provides an awaiter for a tuple containing three tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result produced by the first task in the tuple.</typeparam>
+	/// <typeparam name="T2">The type of the result produced by the second task in the tuple.</typeparam>
+	/// <typeparam name="T3">The type of the result produced by the third task in the tuple.</typeparam>
+	/// <param name="tasks">A tuple containing three tasks to be awaited.</param>
+	/// <returns>A <see cref="TupleTaskAwaiter{T1, T2, T3}"/> that can be used to await the completion of the tasks.</returns>
 	public static TupleTaskAwaiter<T1, T2, T3> GetAwaiter<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks) =>
 		new(tasks);
 
 	/// <summary>
+	/// Configures an awaiter for a tuple of three tasks, specifying whether to continue on the captured context.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <param name="tasks">A tuple containing three tasks to be awaited.</param>
+	/// <param name="continueOnCapturedContext">
+	/// A boolean value indicating whether to attempt to marshal the continuation back to the captured context.
+	/// </param>
+	/// <returns>
+	/// A <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3}"/> instance that can be awaited to retrieve the results of the tasks.
+	/// </returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3> ConfigureAwait<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// Configures an awaiter for a tuple of three tasks, specifying how to continue on the captured context.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <param name="tasks">A tuple containing three tasks to be awaited.</param>
+	/// <param name="options">
+	/// A <see cref="ConfigureAwaitOptions"/> value that specifies how to continue on the captured context.
+	/// </param>
+	/// <returns>
+	/// A <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3}"/> instance that can be awaited.
+	/// </returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3> ConfigureAwait<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
+	/// <summary>
+	/// Represents an awaiter for a tuple of three tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete and retrieve their results.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result produced by the first task in the tuple.</typeparam>
+	/// <typeparam name="T2">The type of the result produced by the second task in the tuple.</typeparam>
+	/// <typeparam name="T3">The type of the result produced by the third task in the tuple.</typeparam>
+	/// <remarks>
+	/// This structure is used to facilitate asynchronous programming with tuples of tasks,
+	/// allowing developers to await the completion of all tasks in the tuple and retrieve their results
+	/// in a single operation.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
@@ -354,26 +408,66 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
-
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
+		
 		/// <summary>
+		/// Retrieves the results of the three tasks in the tuple after they have completed.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// A tuple containing the results of the three tasks in the order they were provided:
+		/// the result of the first task, the result of the second task, and the result of the third task.
+		/// </returns>
+		/// <exception cref="AggregateException">
+		/// Thrown if any of the tasks in the tuple faulted. The exception contains all the exceptions
+		/// thrown by the tasks.
+		/// </exception>
+		/// <remarks>
+		/// This method blocks until all tasks in the tuple have completed. If any of the tasks fail,
+		/// the exception is propagated.
+		/// </remarks>
 		public (T1, T2, T3) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -382,38 +476,15 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
+	/// Represents a configurable awaitable for a tuple of three tasks.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3> ConfigureAwait<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3> ConfigureAwait<T1, T2, T3>(this (Task<T1>, Task<T2>, Task<T3>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <remarks>
+	/// This record is used to enable awaiting a tuple of three tasks with configurable behavior, 
+	/// such as whether to marshal the continuation back to the original synchronization context.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
@@ -438,13 +509,26 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
 		/// <summary>
+		/// Provides an awaiter for a tuple of tasks, enabling the use of the `await` keyword
+		/// to asynchronously wait for the completion of all tasks in the tuple.
 		/// </summary>
+		/// <remarks>
+		/// This struct is used internally by <see cref="TaskTupleExtensions.TupleConfiguredTaskAwaitable{T1, T2, T3}"/> 
+		/// to provide the mechanism for awaiting a tuple of tasks.
+		/// </remarks>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>) _tasks;
@@ -463,26 +547,69 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
-
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
+			
 			/// <summary>
+			/// Retrieves the results of the tuple of tasks after they have completed.
 			/// </summary>
-			/// <returns></returns>
+			/// <returns>
+			/// A tuple containing the results of the three tasks: the result of the first task, 
+			/// the result of the second task, and the result of the third task.
+			/// </returns>
+			/// <remarks>
+			/// This method blocks until all tasks in the tuple have completed. If any of the tasks 
+			/// in the tuple faulted or were canceled, this method will propagate the exception or 
+			/// cancellation, respectively.
+			/// </remarks>
+			/// <exception cref="AggregateException">
+			/// Thrown if one or more tasks in the tuple faulted.
+			/// </exception>
+			/// <exception cref="TaskCanceledException">
+			/// Thrown if one or more tasks in the tuple were canceled.
+			/// </exception>
 			public (T1, T2, T3) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -494,22 +621,72 @@ public static class TaskTupleExtensions
 
 	#region (Task<T1>..Task<T4>)
 	/// <summary>
+	/// Returns an awaiter for a tuple of four tasks, allowing the tuple to be awaited using the <c>await</c> keyword.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <param name="tasks">A tuple containing four tasks to be awaited.</param>
+	/// <returns>An awaiter that can be used to await the completion of all four tasks and retrieve their results.</returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4> GetAwaiter<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks) =>
 		new(tasks);
 
 	/// <summary>
+	/// Configures an awaitable tuple of four tasks to await their completion with the specified behavior 
+	/// regarding the continuation context.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task in the tuple.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task in the tuple.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task in the tuple.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task in the tuple.</typeparam>
+	/// <param name="tasks">A tuple containing four tasks to be awaited.</param>
+	/// <param name="continueOnCapturedContext">
+	/// A boolean value indicating whether to attempt to marshal the continuation back to the original context captured.
+	/// </param>
+	/// <returns>
+	/// A <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4}"/> that can be awaited to asynchronously wait for the completion of all tasks in the tuple.
+	/// </returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4> ConfigureAwait<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// Configures an awaiter used to await the specified tuple of tasks with the specified options.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result produced by the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result produced by the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result produced by the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result produced by the fourth task.</typeparam>
+	/// <param name="tasks">A tuple containing the tasks to be awaited.</param>
+	/// <param name="options">
+	/// The <see cref="System.Threading.Tasks.ConfigureAwaitOptions"/> to use for awaiting the tasks.
+	/// </param>
+	/// <returns>
+	/// A <see cref="System.Threading.Tasks.TaskTupleExtensions.TupleConfiguredTaskAwaitable{T1, T2, T3, T4}"/> 
+	/// that can be used to await the specified tasks.
+	/// </returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4> ConfigureAwait<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
+	/// <summary>
+	/// Represents an awaiter for a tuple of four tasks, allowing the caller to asynchronously wait 
+	/// for all tasks to complete and retrieve their results as a tuple.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <remarks>
+	/// This awaiter is designed to work with a tuple of four tasks, enabling the caller to await 
+	/// their completion and retrieve their results in a strongly-typed manner. It implements 
+	/// <see cref="ICriticalNotifyCompletion"/> to support advanced continuation scenarios.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
@@ -522,26 +699,67 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 		/// <summary>
+		/// Retrieves the results of the four tasks represented by this awaiter.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// A tuple containing the results of the four tasks in the order they were provided.
+		/// </returns>
+		/// <remarks>
+		/// This method blocks until all four tasks have completed. If any of the tasks fail, 
+		/// an exception is thrown, and the results of the other tasks are not returned.
+		/// </remarks>
+		/// <exception cref="AggregateException">
+		/// Thrown if one or more of the tasks represented by this awaiter faulted.
+		/// </exception>
+		/// <exception cref="TaskCanceledException">
+		/// Thrown if one or more of the tasks represented by this awaiter were canceled.
+		/// </exception>
 		public (T1, T2, T3, T4) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -550,41 +768,17 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
+	/// Represents an awaitable structure that allows awaiting the completion of a tuple of four tasks
+	/// with a specified configuration for continuation behavior.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4> ConfigureAwait<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4> ConfigureAwait<T1, T2, T3, T4>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task in the tuple.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task in the tuple.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task in the tuple.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task in the tuple.</typeparam>
+	/// <remarks>
+	/// This structure is used to enable the `await` keyword on a tuple of four tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
@@ -609,13 +803,26 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
 		/// <summary>
+		/// Provides an awaiter for a tuple of four tasks, enabling the use of the <c>await</c> keyword
+		/// with a tuple of tasks and retrieving their results as a tuple.
 		/// </summary>
+		/// <remarks>
+		/// This awaiter is used to await the completion of four tasks and retrieve their results
+		/// as a tuple. It supports both standard and critical continuation scheduling.
+		/// </remarks>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>) _tasks;
@@ -634,26 +841,66 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			/// <summary>
+			/// Retrieves the results of the awaited tasks as a tuple.
 			/// </summary>
-			/// <returns></returns>
+			/// <returns>
+			/// A tuple containing the results of the awaited tasks in the order they were provided.
+			/// </returns>
+			/// <remarks>
+			/// This method blocks until all tasks have completed. If any of the tasks fail, 
+			/// the exception from the first faulted task is thrown. If the tasks are canceled, 
+			/// an <see cref="AggregateException"/> containing a <see cref="TaskCanceledException"/> 
+			/// is thrown.
+			/// </remarks>
+			/// <exception cref="AggregateException">
+			/// Thrown if one or more of the awaited tasks fail or are canceled.
+			/// </exception>
 			public (T1, T2, T3, T4) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -665,24 +912,77 @@ public static class TaskTupleExtensions
 
 	#region (Task<T1>..Task<T5>)
 	/// <summary>
+	/// Returns an awaiter for a tuple of five tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <param name="tasks">A tuple containing five tasks to be awaited.</param>
+	/// <returns>
+	/// A <see cref="System.Threading.Tasks.TaskTupleExtensions.TupleTaskAwaiter{T1, T2, T3, T4, T5}"/> 
+	/// that can be used to await the completion of all tasks in the tuple.
+	/// </returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5> GetAwaiter<T1, T2, T3, T4, T5>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks) =>
 		new(tasks);
 
 	/// <summary>
+	/// Configures an awaiter for a tuple of five tasks, specifying whether to marshal the continuation back to the original context.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <param name="tasks">A tuple containing the five tasks to configure.</param>
+	/// <param name="continueOnCapturedContext">
+	/// A boolean value indicating whether to marshal the continuation back to the original context.
+	/// </param>
+	/// <returns>
+	/// A <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5}"/> instance that can be awaited.
+	/// </returns>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5> ConfigureAwait<T1, T2, T3, T4, T5>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	/// <summary>
+	/// Configures an awaitable tuple of five tasks to await asynchronously with the specified <see cref="ConfigureAwaitOptions"/>.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <param name="tasks">The tuple containing the five tasks to configure.</param>
+	/// <param name="options">The <see cref="ConfigureAwaitOptions"/> to use for configuring the awaitable.</param>
+	/// <returns>A <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5}"/> that can be awaited.</returns>
+	/// <remarks>
+	/// This method allows you to configure how the continuation of the await operation is executed.
+	/// </remarks>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5> ConfigureAwait<T1, T2, T3, T4, T5>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
+	/// <summary>
+	/// Provides an awaiter for a tuple of five tasks, enabling the use of the `await` keyword
+	/// to asynchronously wait for all tasks in the tuple to complete.
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <remarks>
+	/// This structure is used internally by the <see cref="TaskTupleExtensions.GetAwaiter{T1, T2, T3, T4, T5}"/> method
+	/// to facilitate awaiting a tuple of five tasks. It implements <see cref="ICriticalNotifyCompletion"/> 
+	/// to provide support for scheduling continuations.
+	/// </remarks>
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
@@ -695,26 +995,64 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 		/// <summary>
+		/// Retrieves the results of the awaited tasks as a tuple containing the results of each task.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// A tuple containing the results of the awaited tasks in the order they were provided.
+		/// </returns>
+		/// <remarks>
+		/// This method blocks until all the tasks have completed and then returns their results.
+		/// Ensure that all tasks have been awaited properly to avoid potential deadlocks or exceptions.
+		/// </remarks>
+		/// <exception cref="AggregateException">
+		/// Thrown if any of the tasks in the tuple fail or are canceled.
+		/// </exception>
 		public (T1, T2, T3, T4, T5) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -723,44 +1061,13 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
+	/// Represents a configurable awaitable structure for a tuple of five tasks.
 	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5> ConfigureAwait<T1, T2, T3, T4, T5>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5> ConfigureAwait<T1, T2, T3, T4, T5>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
@@ -785,13 +1092,27 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
 		/// <summary>
+		/// Provides an awaiter for a tuple of five tasks, enabling the use of the `await` keyword 
+		/// to asynchronously wait for all tasks in the tuple to complete.
 		/// </summary>
+		/// <remarks>
+		/// This awaiter is used internally by the <see cref="TaskTupleExtensions.TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5}"/> 
+		/// to provide support for awaiting a tuple of tasks. It ensures that the tasks are awaited 
+		/// with the specified configuration and provides access to their results once completed.
+		/// </remarks>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
@@ -810,26 +1131,67 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
 			/// <summary>
+			/// Retrieves the results of the awaited tasks as a tuple of five values.
 			/// </summary>
-			/// <returns></returns>
+			/// <returns>
+			/// A tuple containing the results of the five tasks in the order they were provided.
+			/// </returns>
+			/// <remarks>
+			/// This method blocks until all the tasks have completed and then returns their results.
+			/// If any of the tasks faulted or were canceled, this method will propagate the exception.
+			/// </remarks>
+			/// <exception cref="AggregateException">
+			/// Thrown if one or more of the tasks faulted.
+			/// </exception>
+			/// <exception cref="TaskCanceledException">
+			/// Thrown if one or more of the tasks were canceled.
+			/// </exception>
 			public (T1, T2, T3, T4, T5) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -840,27 +1202,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T6>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> GetAwaiter<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
@@ -873,26 +1229,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -900,48 +1281,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6> ConfigureAwait<T1, T2, T3, T4, T5, T6>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
@@ -966,13 +1305,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
@@ -991,26 +1335,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -1021,29 +1390,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T7>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> GetAwaiter<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
@@ -1056,26 +1417,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
-
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
+		
 		public (T1, T2, T3, T4, T5, T6, T7) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -1083,51 +1469,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
@@ -1152,13 +1493,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
@@ -1177,26 +1523,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -1207,31 +1578,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T8>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
@@ -1244,26 +1605,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -1271,54 +1657,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
@@ -1343,13 +1681,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
@@ -1368,26 +1711,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -1398,33 +1766,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T9>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -1437,26 +1793,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -1464,57 +1845,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -1539,13 +1869,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -1564,26 +1899,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -1594,35 +1954,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T10>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+	
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -1635,26 +1981,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -1662,60 +2033,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -1740,13 +2057,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -1765,26 +2087,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -1795,37 +2142,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T11>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) _tasks;
@@ -1838,26 +2169,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -1865,63 +2221,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) _tasks;
@@ -1946,13 +2245,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) _tasks;
@@ -1971,26 +2275,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -2001,39 +2330,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T12>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) tasks) =>
 		new(tasks);
+	
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) _tasks;
@@ -2046,26 +2357,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -2073,66 +2409,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) _tasks;
@@ -2157,13 +2433,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) _tasks;
@@ -2182,26 +2463,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -2212,41 +2518,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T13>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) tasks) =>
 		new(tasks);
+	
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) _tasks;
@@ -2259,26 +2545,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -2286,69 +2597,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) _tasks;
@@ -2373,13 +2621,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) _tasks;
@@ -2398,26 +2651,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -2428,43 +2706,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T14>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) _tasks;
@@ -2477,26 +2733,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -2504,72 +2785,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) _tasks;
@@ -2594,13 +2809,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) _tasks;
@@ -2619,26 +2839,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -2649,45 +2894,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T15>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) _tasks;
@@ -2700,26 +2921,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -2727,75 +2973,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) _tasks;
@@ -2820,13 +2997,18 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) _tasks;
@@ -2845,26 +3027,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
@@ -2875,47 +3082,21 @@ public static class TaskTupleExtensions
 	#endregion
 
 	#region (Task<T1>..Task<T16>)
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <typeparam name="T16"></typeparam>
-	/// <param name="tasks"></param>
-	/// <returns></returns>
 	public static TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> GetAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) tasks) =>
 		new(tasks);
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <typeparam name="T16"></typeparam>
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) tasks, bool continueOnCapturedContext) =>
+		new(tasks, continueOnCapturedContext
+#if NET8_0_OR_GREATER
+				? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
+#endif
+		);
+
+#if NET8_0_OR_GREATER
+	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) tasks, ConfigureAwaitOptions options) =>
+		new(tasks, options);
+#endif
+
 	public readonly record struct TupleTaskAwaiter<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : ICriticalNotifyCompletion
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) _tasks;
@@ -2928,26 +3109,51 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether the tasks in the tuple have completed.
 		/// </summary>
-		public bool IsCompleted =>
-			_whenAllAwaiter.IsCompleted;
+		/// <value>
+		/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+		/// </value>
+		/// <remarks>
+		/// This property checks the completion status of the underlying tasks in the tuple.
+		/// It is used to determine whether the await operation can proceed without blocking.
+		/// </remarks>
+		public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 		/// <summary>
+		/// Schedules the continuation action for the awaiter.
 		/// </summary>
-		/// <param name="continuation"></param>
-		public void OnCompleted(Action continuation) =>
-			_whenAllAwaiter.OnCompleted(continuation);
+		/// <param name="continuation">
+		/// The action to invoke when the await operation completes.
+		/// </param>
+		/// <remarks>
+		/// This method is called to schedule the continuation action that will run 
+		/// after the awaited tasks have completed. The continuation is executed 
+		/// according to the configuration specified when the awaitable was created.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+		/// </exception>
+		public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 		/// <summary>
+		/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+		/// without enforcing security context flow.
 		/// </summary>
-		/// <param name="continuation"></param>
+		/// <param name="continuation">
+		/// The action to invoke when the awaiter completes.
+		/// </param>
+		/// <remarks>
+		/// This method is intended for advanced scenarios where performance is critical, 
+		/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+		/// certain security checks.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+		/// </exception>
 		[SecurityCritical]
-		public void UnsafeOnCompleted(Action continuation) =>
-			_whenAllAwaiter.UnsafeOnCompleted(continuation);
+		public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
 		public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16) GetResult()
 		{
 			_whenAllAwaiter.GetResult();
@@ -2955,78 +3161,6 @@ public static class TaskTupleExtensions
 		}
 	}
 
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <typeparam name="T16"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="continueOnCapturedContext"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) tasks, bool continueOnCapturedContext) =>
-		new(tasks, continueOnCapturedContext
-#if NET8_0_OR_GREATER
-			? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None
-#endif
-		);
-
-#if NET8_0_OR_GREATER
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <typeparam name="T16"></typeparam>
-	/// <param name="tasks"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ConfigureAwait<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) tasks, ConfigureAwaitOptions options) =>
-		new(tasks, options);
-#endif
-
-	/// <summary>
-	/// </summary>
-	/// <typeparam name="T1"></typeparam>
-	/// <typeparam name="T2"></typeparam>
-	/// <typeparam name="T3"></typeparam>
-	/// <typeparam name="T4"></typeparam>
-	/// <typeparam name="T5"></typeparam>
-	/// <typeparam name="T6"></typeparam>
-	/// <typeparam name="T7"></typeparam>
-	/// <typeparam name="T8"></typeparam>
-	/// <typeparam name="T9"></typeparam>
-	/// <typeparam name="T10"></typeparam>
-	/// <typeparam name="T11"></typeparam>
-	/// <typeparam name="T12"></typeparam>
-	/// <typeparam name="T13"></typeparam>
-	/// <typeparam name="T14"></typeparam>
-	/// <typeparam name="T15"></typeparam>
-	/// <typeparam name="T16"></typeparam>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) _tasks;
@@ -3051,13 +3185,19 @@ public static class TaskTupleExtensions
 		}
 
 		/// <summary>
+		/// Retrieves an awaiter for the <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16}"/> instance.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// An <see cref="Awaiter"/> that can be used to await the completion of the tuple of tasks.
+		/// </returns>
+		/// <remarks>
+		/// This method enables the use of the `await` keyword on a tuple of tasks configured with specific options.
+		/// The returned <see cref="Awaiter"/> provides the mechanism to wait for all tasks in the tuple to complete.
+		/// </remarks>
 		public Awaiter GetAwaiter() =>
 			new(_tasks, _options);
 
-		/// <summary>
-		/// </summary>
+
 		public readonly record struct Awaiter : ICriticalNotifyCompletion
 		{
 			private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) _tasks;
@@ -3076,26 +3216,51 @@ public static class TaskTupleExtensions
 			}
 
 			/// <summary>
+			/// Gets a value indicating whether the tasks in the tuple have completed.
 			/// </summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			/// <value>
+			/// <c>true</c> if the tasks in the tuple have completed; otherwise, <c>false</c>.
+			/// </value>
+			/// <remarks>
+			/// This property checks the completion status of the underlying tasks in the tuple.
+			/// It is used to determine whether the await operation can proceed without blocking.
+			/// </remarks>
+			public bool IsCompleted => _whenAllAwaiter.IsCompleted;
 
 			/// <summary>
+			/// Schedules the continuation action for the awaiter.
 			/// </summary>
-			/// <param name="continuation"></param>
-			public void OnCompleted(Action continuation) =>
-				_whenAllAwaiter.OnCompleted(continuation);
+			/// <param name="continuation">
+			/// The action to invoke when the await operation completes.
+			/// </param>
+			/// <remarks>
+			/// This method is called to schedule the continuation action that will run 
+			/// after the awaited tasks have completed. The continuation is executed 
+			/// according to the configuration specified when the awaitable was created.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> parameter is <c>null</c>.
+			/// </exception>
+			public void OnCompleted(Action continuation) => _whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>
+			/// Schedules the specified continuation action to be invoked when the awaiter completes, 
+			/// without enforcing security context flow.
 			/// </summary>
-			/// <param name="continuation"></param>
+			/// <param name="continuation">
+			/// The action to invoke when the awaiter completes.
+			/// </param>
+			/// <remarks>
+			/// This method is intended for advanced scenarios where performance is critical, 
+			/// and the security context does not need to be preserved. Use with caution, as it bypasses 
+			/// certain security checks.
+			/// </remarks>
+			/// <exception cref="ArgumentNullException">
+			/// Thrown if the <paramref name="continuation"/> argument is <c>null</c>.
+			/// </exception>
 			[SecurityCritical]
-			public void UnsafeOnCompleted(Action continuation) =>
-				_whenAllAwaiter.UnsafeOnCompleted(continuation);
+			public void UnsafeOnCompleted(Action continuation) => _whenAllAwaiter.UnsafeOnCompleted(continuation);
 
-			/// <summary>
-			/// </summary>
-			/// <returns></returns>
 			public (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16) GetResult()
 			{
 				_whenAllAwaiter.GetResult();
