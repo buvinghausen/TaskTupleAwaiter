@@ -198,14 +198,13 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
-	/// Represents a structure that provides an awaitable mechanism for a tuple of two tasks, 
-	/// allowing configuration of the await behavior.
+	/// Represents a configured awaitable for a tuple of two tasks
 	/// </summary>
-	/// <typeparam name="T1">The type of the result of the first task in the tuple.</typeparam>
-	/// <typeparam name="T2">The type of the result of the second task in the tuple.</typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
 	/// <remarks>
-	/// This record is used to enable awaiting a tuple of two tasks with configurable behavior, 
-	/// such as whether to marshal the continuation back to the original synchronization context.
+	/// This structure is used to provide an awaitable mechanism for a tuple of two tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
 	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2>
 	{
@@ -480,14 +479,14 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
-	/// Represents a configurable awaitable for a tuple of three tasks.
+	/// Represents a configured awaitable for a tuple of three tasks
 	/// </summary>
 	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
 	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
 	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
 	/// <remarks>
-	/// This record is used to enable awaiting a tuple of three tasks with configurable behavior, 
-	/// such as whether to marshal the continuation back to the original synchronization context.
+	/// This structure is used to provide an awaitable mechanism for a tuple of three tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
 	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3>
 	{
@@ -771,15 +770,14 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
-	/// Represents an awaitable structure that allows awaiting the completion of a tuple of four tasks
-	/// with a specified configuration for continuation behavior.
+	/// Represents a configured awaitable for a tuple of four tasks
 	/// </summary>
-	/// <typeparam name="T1">The type of the result of the first task in the tuple.</typeparam>
-	/// <typeparam name="T2">The type of the result of the second task in the tuple.</typeparam>
-	/// <typeparam name="T3">The type of the result of the third task in the tuple.</typeparam>
-	/// <typeparam name="T4">The type of the result of the fourth task in the tuple.</typeparam>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
 	/// <remarks>
-	/// This structure is used to enable the `await` keyword on a tuple of four tasks, ensuring that
+	/// This structure is used to provide an awaitable mechanism for a tuple of four tasks, ensuring that
 	/// all tasks are awaited according to the specified configuration options.
 	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4>
@@ -1063,13 +1061,17 @@ public static class TaskTupleExtensions
 	}
 
 	/// <summary>
-	/// Represents a configurable awaitable structure for a tuple of five tasks.
+	/// Represents a configured awaitable for a tuple of five tasks
 	/// </summary>
 	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
 	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
 	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
 	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
 	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of five tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>) _tasks;
@@ -1297,6 +1299,19 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of six tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of six tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>) _tasks;
@@ -1500,6 +1515,20 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of seven tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of seven tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>) _tasks;
@@ -1704,6 +1733,21 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of eight tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of eight tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>) _tasks;
@@ -1909,6 +1953,22 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of nine tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of nine tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>) _tasks;
@@ -2115,6 +2175,23 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of ten tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of ten tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>) _tasks;
@@ -2322,6 +2399,24 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of eleven tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of eleven tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>) _tasks;
@@ -2530,6 +2625,25 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of twelve tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of twelve tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>) _tasks;
@@ -2739,6 +2853,26 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of thirteen tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of thirteen tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>) _tasks;
@@ -2949,6 +3083,27 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of fourteen tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <typeparam name="T14">The type of the result of the fourteenth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of fourteen tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>) _tasks;
@@ -3160,6 +3315,28 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of fifteen tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <typeparam name="T14">The type of the result of the fourteenth task.</typeparam>
+	/// <typeparam name="T15">The type of the result of the fifteenth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of fifteen tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>) _tasks;
@@ -3373,6 +3550,29 @@ public static class TaskTupleExtensions
 		}
 	}
 
+	/// <summary>
+	/// Represents a configured awaitable for a tuple of sixteen tasks
+	/// </summary>
+	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
+	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
+	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
+	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
+	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
+	/// <typeparam name="T6">The type of the result of the sixth task.</typeparam>
+	/// <typeparam name="T7">The type of the result of the seventh task.</typeparam>
+	/// <typeparam name="T8">The type of the result of the eighth task.</typeparam>
+	/// <typeparam name="T9">The type of the result of the ninth task.</typeparam>
+	/// <typeparam name="T10">The type of the result of the tenth task.</typeparam>
+	/// <typeparam name="T11">The type of the result of the eleventh task.</typeparam>
+	/// <typeparam name="T12">The type of the result of the twelfth task.</typeparam>
+	/// <typeparam name="T13">The type of the result of the thirteenth task.</typeparam>
+	/// <typeparam name="T14">The type of the result of the fourteenth task.</typeparam>
+	/// <typeparam name="T15">The type of the result of the fifteenth task.</typeparam>
+	/// <typeparam name="T16">The type of the result of the sixteenth task.</typeparam>
+	/// <remarks>
+	/// This structure is used to provide an awaitable mechanism for a tuple of sixteen tasks, ensuring that
+	/// all tasks are awaited according to the specified configuration options.
+	/// </remarks>
 	public readonly record struct TupleConfiguredTaskAwaitable<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
 	{
 		private readonly (Task<T1>, Task<T2>, Task<T3>, Task<T4>, Task<T5>, Task<T6>, Task<T7>, Task<T8>, Task<T9>, Task<T10>, Task<T11>, Task<T12>, Task<T13>, Task<T14>, Task<T15>, Task<T16>) _tasks;
