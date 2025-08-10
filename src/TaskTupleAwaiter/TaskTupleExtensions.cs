@@ -33,7 +33,7 @@ public static class TaskTupleExtensions
 	/// Configures an awaiter used to await the specified task tuple.
 	/// </summary>
 	/// <typeparam name="T1">The type of the result produced by the task in the tuple.</typeparam>
-	/// <param name="tasks">A tuple containing a single task to configure.</param>
+	/// <param name="tasks">A tuple containing a single task to be awaited.</param>
 	/// <param name="continueOnCapturedContext">
 	/// A Boolean value indicating whether to attempt to marshal the continuation back to the original context captured.
 	/// </param>
@@ -79,7 +79,7 @@ public static class TaskTupleExtensions
 	/// </summary>
 	/// <typeparam name="T1">The type of the result of the first task in the tuple.</typeparam>
 	/// <typeparam name="T2">The type of the result of the second task in the tuple.</typeparam>
-	/// <param name="tasks">A tuple containing two tasks to configure.</param>
+	/// <param name="tasks">A tuple containing two tasks to be awaited.</param>
 	/// <param name="continueOnCapturedContext">
 	/// A Boolean value indicating whether to marshal the continuation back to the original context captured.
 	/// </param>
@@ -103,7 +103,7 @@ public static class TaskTupleExtensions
 	/// </summary>
 	/// <typeparam name="T1">The type of the result of the first task.</typeparam>
 	/// <typeparam name="T2">The type of the result of the second task.</typeparam>
-	/// <param name="tasks">A tuple containing two tasks to configure.</param>
+	/// <param name="tasks">A tuple containing two tasks to be awaited.</param>
 	/// <param name="options">The <see cref="ConfigureAwaitOptions"/> to use for configuring the awaiter.</param>
 	/// <returns>A <see cref="TupleConfiguredTaskAwaitable{T1, T2}"/> that can be awaited.</returns>
 	public static TupleConfiguredTaskAwaitable<T1, T2> ConfigureAwait<T1, T2>(this (Task<T1>, Task<T2>) tasks, ConfigureAwaitOptions options) =>
@@ -937,7 +937,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
 	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
 	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
-	/// <param name="tasks">A tuple containing the five tasks to configure.</param>
+	/// <param name="tasks">A tuple containing the five tasks to be awaited.</param>
 	/// <param name="continueOnCapturedContext">
 	/// A boolean value indicating whether to marshal the continuation back to the original context.
 	/// </param>
@@ -960,7 +960,7 @@ public static class TaskTupleExtensions
 	/// <typeparam name="T3">The type of the result of the third task.</typeparam>
 	/// <typeparam name="T4">The type of the result of the fourth task.</typeparam>
 	/// <typeparam name="T5">The type of the result of the fifth task.</typeparam>
-	/// <param name="tasks">The tuple containing the five tasks to configure.</param>
+	/// <param name="tasks">The tuple containing the five tasks to be awaited.</param>
 	/// <param name="options">The <see cref="ConfigureAwaitOptions"/> to use for configuring the awaitable.</param>
 	/// <returns>A <see cref="TupleConfiguredTaskAwaitable{T1, T2, T3, T4, T5}"/> that can be awaited.</returns>
 	/// <remarks>
