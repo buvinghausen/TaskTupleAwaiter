@@ -10,7 +10,7 @@
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
     <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
