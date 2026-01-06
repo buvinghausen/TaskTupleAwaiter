@@ -58,7 +58,11 @@ public static class BehaviorComparisonTests
 
 		AssertAllAdapters(adapters, adapter => !adapter.IsCompleted);
 
-		source.SetCanceled();
+		source.SetCanceled(
+#if !NETFRAMEWORK
+			TestContext.Current.CancellationToken
+#endif
+		);
 
 		foreach (var adapter in adapters)
 			await Assert.ThrowsAnyAsync<TaskCanceledException>(async () => await adapter);
