@@ -4,7 +4,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <Authors>Joseph Musser,Brian Buvinghausen</Authors>
     <Company>Buvinghausen Solutions</Company>
-    <Copyright>Copyright © 2025 Brian Buvinghausen</Copyright>
+    <Copyright>Copyright © 2026 Brian Buvinghausen</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
