@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Title>TaskTupleAwaiter</Title>
@@ -14,8 +14,4 @@ Based on the work of Joseph Musser https://github.com/jnm2
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
-  </ItemGroup>
-  
 </Project>
