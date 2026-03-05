@@ -1,6 +1,6 @@
 namespace TaskTupleAwaiter.Tests;
 
-internal sealed class SpySynchronizationContext : SynchronizationContext
+sealed class SpySynchronizationContext : SynchronizationContext
 {
 	public bool DidPost { get; private set; }
 
