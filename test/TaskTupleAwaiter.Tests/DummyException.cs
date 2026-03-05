@@ -1,5 +1,3 @@
 namespace TaskTupleAwaiter.Tests;
 
-internal sealed class DummyException : Exception
-{
-}
+internal sealed class DummyException : Exception;
