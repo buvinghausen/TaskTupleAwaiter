@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <ImplicitUsings>true</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-Recommended</AnalysisLevel>
+    <MSBuildTreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</MSBuildTreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

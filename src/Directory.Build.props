@@ -1,5 +1,7 @@
 <Project>
 
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
   <PropertyGroup>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <Authors>Joseph Musser,Brian Buvinghausen</Authors>
@@ -10,16 +12,11 @@
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
     <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <MSBuildTreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</MSBuildTreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AnalysisLevel>latest-Recommended</AnalysisLevel>
     <PackageOutputPath>..\..\</PackageOutputPath>
   </PropertyGroup>
 
