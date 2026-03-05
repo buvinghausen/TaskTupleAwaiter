@@ -1,6 +1,6 @@
 namespace TaskTupleAwaiter.Tests;
 
-internal sealed class CopyableSynchronizationContext : SynchronizationContext
+sealed class CopyableSynchronizationContext : SynchronizationContext
 {
 	public override SynchronizationContext CreateCopy() =>
 		new CopyableSynchronizationContext();

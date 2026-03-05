@@ -1,5 +1,4 @@
 using TaskTupleAwaiter.Tests.Adapters;
-using Xunit;
 
 namespace TaskTupleAwaiter.Tests;
 
@@ -65,7 +64,7 @@ public static class BehaviorComparisonTests
 		);
 
 		foreach (var adapter in adapters)
-			await Assert.ThrowsAnyAsync<TaskCanceledException>(async () => await adapter);
+			await Should.ThrowAsync<TaskCanceledException>(async () => await adapter);
 
 		AssertAllAdapters(adapters, adapter => adapter.IsCompleted);
 	}
@@ -87,7 +86,7 @@ public static class BehaviorComparisonTests
 		source.SetException(new DummyException());
 
 		foreach (var adapter in adapters)
-			await Assert.ThrowsAnyAsync<DummyException>(async () => await adapter);
+			await Should.ThrowAsync<DummyException>(async () => await adapter);
 
 		AssertAllAdapters(adapters, adapter => adapter.IsCompleted);
 	}
@@ -189,11 +188,11 @@ public static class BehaviorComparisonTests
 		if (adapters == null) throw new ArgumentNullException(nameof(adapters));
 		if (predicate == null) throw new ArgumentNullException(nameof(predicate));
 #else
-		ArgumentNullException.ThrowIfNull(adapters, nameof(adapters));
-		ArgumentNullException.ThrowIfNull(predicate, nameof(predicate));
+		ArgumentNullException.ThrowIfNull(adapters);
+		ArgumentNullException.ThrowIfNull(predicate);
 #endif
 
-		Assert.Empty(adapters.Where(adapter => !predicate.Invoke(adapter)).ToArray());
+		adapters.Where(adapter => !predicate.Invoke(adapter)).ToArray().ShouldBeEmpty();
 	}
 
 	private static Task<object> TaskFromException(Exception exception)

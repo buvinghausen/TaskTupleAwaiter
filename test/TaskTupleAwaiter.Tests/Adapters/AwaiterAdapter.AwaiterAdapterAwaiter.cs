@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace TaskTupleAwaiter.Tests.Adapters;
 
-internal partial class AwaiterAdapter
+partial class AwaiterAdapter
 {
 	public readonly record struct AwaiterAdapterAwaiter : ICriticalNotifyCompletion
 	{
