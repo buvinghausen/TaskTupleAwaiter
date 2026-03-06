@@ -14,10 +14,6 @@ Based on the work of Joseph Musser https://github.com/jnm2
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <!-- System.ValueTuple 4.6.1 introduced an empty net471 folder that causes NuGet to omit the
-       System.ValueTuple.dll reference assembly when resolving the net462 build, producing CS0012
-       errors on every await. Version 4.6.2 fixes that package authoring bug.
-       See https://github.com/dotnet/maintenance-packages/issues/243 -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="System.ValueTuple" Version="4.6.2" />
   </ItemGroup>
