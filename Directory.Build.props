@@ -1,11 +1,9 @@
 <Project>
   <PropertyGroup>
-    <!-- .NET 8 & 9 end on November 10, 2026 -->
-    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
     <ImplicitUsings>true</ImplicitUsings>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-Recommended</AnalysisLevel>
-    <MSBuildTreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</MSBuildTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
