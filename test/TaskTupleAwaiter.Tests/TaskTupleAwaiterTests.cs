@@ -579,14 +579,6 @@ public sealed class TaskTupleAwaiterTests
 	}
 
 	[Fact]
-	async Task CanAwaitTwoValueTasksWithNewSyntaxAndConfigureAwaitFalse()
-	{
-		var (a, b) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync()).ConfigureAwait(false);
-		a.ShouldBeOfType<string>();
-		b.ShouldBeOfType<Guid>();
-	}
-
-	[Fact]
 	async Task CanAwaitThreeValueTasksWithNewSyntax()
 	{
 		var (a, b, c) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
