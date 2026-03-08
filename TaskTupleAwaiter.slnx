@@ -17,6 +17,7 @@
     <File Path="test\Directory.Build.props" />
   </Folder>
   <Project Path="src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
+  <Project Path="src\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" />
   <Project Path="test\TaskTupleAwaiter.Tests\TaskTupleAwaiter.Tests.csproj">
     <Configuration Solution="Release|*" Project="*|*|NoBuild" />
   </Project>
