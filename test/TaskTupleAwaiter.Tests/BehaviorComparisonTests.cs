@@ -6,7 +6,7 @@ public static class BehaviorComparisonTests
 {
 	static BehaviorComparisonTests()
 	{
-		var canceled = new TaskCompletionSource<object>();
+		TaskCompletionSource<object> canceled = new();
 		canceled.SetCanceled();
 		CanceledTask = canceled.Task;
 	}
@@ -15,21 +15,41 @@ public static class BehaviorComparisonTests
 	private static Task<object> CanceledTask { get; }
 	private static Task<object> FailedTask { get; } = TaskFromException(new DummyException());
 
-	public static IEnumerable<object[]> EachArity() =>
-		Enumerable.Range(1, 16).Select(arity => new object[] { arity });
 
-	public static IEnumerable<object[]> EachIndexForEachArity() =>
-		Enumerable.Range(1, 16).SelectMany(arity => Enumerable.Range(0, arity - 1), (arity, whichToWaitFor) => new object[] { arity, whichToWaitFor });
+	public static TheoryData<int> EachArity()
+	{
+		TheoryData<int> data = [];
+		foreach (var arity in Enumerable.Range(1, 16))
+		{
+			data.Add(arity);
+		}
+
+		return data;
+	}
+
+	public static TheoryData<int, int> EachIndexForEachArity()
+	{
+		TheoryData<int, int> data = [];
+		foreach (var arity in Enumerable.Range(1, 16))
+		{
+			foreach (var whichToWaitFor in Enumerable.Range(0, arity - 1))
+			{
+				data.Add(arity, whichToWaitFor);
+			}
+		}
+
+		return data;
+	}
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
 	private static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
 	{
-		var source = new TaskCompletionSource<object>();
+		TaskCompletionSource<object> source = new();
 
-		var tasks = (
-			from index in Enumerable.Range(0, arity)
-			select index == whichToWaitFor ? source.Task : CompletedTask).ToArray();
+		Task<object>[] tasks = [..Enumerable.Range(0, arity)
+			.Select(index => index == whichToWaitFor ? source.Task : CompletedTask)
+		];
 
 		var adapters = AwaiterAdapter.CreateAllAdapters(tasks);
 
@@ -47,11 +67,11 @@ public static class BehaviorComparisonTests
 	[MemberData(nameof(EachIndexForEachArity))]
 	private static async Task WaitsForAllTasksToCompleteWhenAllCancel(int arity, int whichToWaitFor)
 	{
-		var source = new TaskCompletionSource<object>();
+		TaskCompletionSource<object> source = new();
 
-		var tasks = Enumerable.Range(0, arity)
+		Task<object>[] tasks = [.. Enumerable.Range(0, arity)
 			.Select(index =>
-				index == whichToWaitFor ? source.Task : CanceledTask).ToArray();
+				index == whichToWaitFor ? source.Task : CanceledTask)];
 
 		var adapters = AwaiterAdapter.CreateAllAdapters(tasks);
 
@@ -73,11 +93,11 @@ public static class BehaviorComparisonTests
 	[MemberData(nameof(EachIndexForEachArity))]
 	private static async Task WaitsForAllTasksToCompleteWhenAllFail(int arity, int whichToWaitFor)
 	{
-		var source = new TaskCompletionSource<object>();
+		TaskCompletionSource<object> source = new();
 
-		var tasks = Enumerable.Range(0, arity)
+		Task<object>[] tasks = [.. Enumerable.Range(0, arity)
 			.Select(index =>
-				index == whichToWaitFor ? source.Task : FailedTask).ToArray();
+				index == whichToWaitFor ? source.Task : FailedTask)];
 
 		var adapters = AwaiterAdapter.CreateAllAdapters(tasks);
 
@@ -95,7 +115,7 @@ public static class BehaviorComparisonTests
 	[MemberData(nameof(EachArity))]
 	private static void CompletesSynchronouslyIfAllTasksWereCompletedSynchronously(int arity)
 	{
-		var tasks = Enumerable.Repeat(CompletedTask, arity).ToArray();
+		Task<object>[] tasks = [.. Enumerable.Repeat(CompletedTask, arity)];
 
 		var adapters = AwaiterAdapter.CreateAllAdapters(tasks);
 
@@ -106,8 +126,8 @@ public static class BehaviorComparisonTests
 	[MemberData(nameof(EachArity))]
 	private static void ResultsAreInCorrectOrder(int arity)
 	{
-		var tasks = Enumerable.Range(0, arity)
-			.Select(index => Task.FromResult<object>(index)).ToArray();
+		Task<object>[] tasks = [.. Enumerable.Range(0, arity)
+			.Select(index => Task.FromResult<object>(index))];
 
 		var adapters = AwaiterAdapter.CreateNonVoidResultAdapters(tasks);
 
@@ -128,13 +148,16 @@ public static class BehaviorComparisonTests
 	[MemberData(nameof(EachArity))]
 	private static void FirstExceptionIsThrown(int arity)
 	{
-		var sources = Enumerable.Range(0, arity).Select(_ => new TaskCompletionSource<object>()).ToArray();
+		TaskCompletionSource<object>[] sources =
+			[.. Enumerable.Range(0, arity).Select(_ => new TaskCompletionSource<object>())];
 
-		var adapters = AwaiterAdapter.CreateAllAdapters(sources.Select(source => source.Task).ToArray());
+		var adapters = AwaiterAdapter.CreateAllAdapters([.. sources.Select(source => source.Task)]);
 
 		for (var i = sources.Length - 1; i >= 0; i--) sources[i].SetException(new DummyException());
 
-		AssertAllAdapters(adapters, adapter => ReferenceEquals(sources[0].Task.Exception?.InnerException, Assert.ThrowsAny<DummyException>(adapter.GetResult)));
+		AssertAllAdapters(adapters,
+			adapter => ReferenceEquals(sources[0].Task.Exception?.InnerException,
+				Assert.ThrowsAny<DummyException>(adapter.GetResult)));
 	}
 #endif
 
@@ -153,17 +176,18 @@ public static class BehaviorComparisonTests
 	private static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, false, false);
 
-	private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait, bool shouldUseSynchronizationContext)
+	private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait,
+		bool shouldUseSynchronizationContext)
 	{
-		var source = new TaskCompletionSource<object>();
+		TaskCompletionSource<object> source = new();
 
-		var adapters = AwaiterAdapter.CreateAdapters(Enumerable.Repeat(source.Task, arity).ToArray(), configureAwait);
+		var adapters = AwaiterAdapter.CreateAdapters([.. Enumerable.Repeat(source.Task, arity)], configureAwait);
 
 		var copyableContext = new CopyableSynchronizationContext();
 		using (TempSyncContext(copyableContext))
 		{
-			var resultSourcesByAdapterIndex =
-				adapters.Select(_ => new TaskCompletionSource<SynchronizationContext>()).ToArray();
+			TaskCompletionSource<SynchronizationContext>[] resultSourcesByAdapterIndex =
+				[.. adapters.Select(_ => new TaskCompletionSource<SynchronizationContext>())];
 
 			for (var i = 0; i < adapters.Count; i++)
 			{
@@ -178,11 +202,13 @@ public static class BehaviorComparisonTests
 
 			var expected = shouldUseSynchronizationContext ? copyableContext : null;
 
-			Assert.All(adapters.Zip(resultsByAdapterIndex, (adapter, result) => (Adapter: adapter, Result: result)), r => Assert.Same(expected, r.Result));
+			Assert.All(adapters.Zip(resultsByAdapterIndex, (adapter, result) => (Adapter: adapter, Result: result)),
+				r => Assert.Same(expected, r.Result));
 		}
 	}
 
-	private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters, Func<AwaiterAdapter, bool> predicate)
+	private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters,
+		Func<AwaiterAdapter, bool> predicate)
 	{
 #if NETFRAMEWORK
 		if (adapters == null) throw new ArgumentNullException(nameof(adapters));
@@ -192,12 +218,12 @@ public static class BehaviorComparisonTests
 		ArgumentNullException.ThrowIfNull(predicate);
 #endif
 
-		adapters.Where(adapter => !predicate.Invoke(adapter)).ToArray().ShouldBeEmpty();
+		adapters.Where(adapter => !predicate.Invoke(adapter)).ShouldBeEmpty();
 	}
 
 	private static Task<object> TaskFromException(Exception exception)
 	{
-		var source = new TaskCompletionSource<object>();
+		TaskCompletionSource<object> source = new();
 		source.SetException(exception);
 		return source.Task;
 	}
