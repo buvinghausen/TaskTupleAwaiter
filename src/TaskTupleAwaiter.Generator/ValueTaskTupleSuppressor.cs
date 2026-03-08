@@ -19,19 +19,22 @@ public sealed class ValueTaskTupleSuppressor : DiagnosticSuppressor
 
 	public override void ReportSuppressions(SuppressionAnalysisContext context)
 	{
-		foreach (var diagnostic in context.ReportedDiagnostics
-			         .Select(diagnostic => new { diagnostic, tree = diagnostic.Location.SourceTree })
-			         .Where(@t => @t.tree is not null)
-			         .Select(@t => new { @t, root = @t.tree.GetRoot(context.CancellationToken) })
-			         .Select(@t => new
-			         {
-				         @t,
-				         node = @t.root.FindNode(@t.@t.diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
-			         })
-			         .Where(@t => IsInsideAwaitedTuple(@t.node))
-			         .Select(@t => @t.@t.@t.diagnostic))
+		var rootCache = new Dictionary<SyntaxTree, SyntaxNode>();
+		foreach (var diagnostic in context.ReportedDiagnostics)
 		{
-			context.ReportSuppression(Suppression.Create(Rule, diagnostic));
+			var tree = diagnostic.Location.SourceTree;
+			if (tree is null)
+				continue;
+
+			if (!rootCache.TryGetValue(tree, out var root))
+			{
+				root = tree.GetRoot(context.CancellationToken);
+				rootCache[tree] = root;
+			}
+
+			var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+			if (IsInsideAwaitedTuple(node))
+				context.ReportSuppression(Suppression.Create(Rule, diagnostic));
 		}
 	}
 
@@ -55,16 +58,24 @@ public sealed class ValueTaskTupleSuppressor : DiagnosticSuppressor
 
 	private static bool IsAwaited(SyntaxNode node)
 	{
-		var parent = node.Parent;
+		// Skip over any extra parentheses around the tuple expression
+		var current = node.Parent;
+		while (current is ParenthesizedExpressionSyntax)
+		{
+			current = current.Parent;
+		}
+
 		// Direct: await (vt1, vt2)
-		return parent is AwaitExpressionSyntax ||
-			   // Via ConfigureAwait: await (vt1, vt2).ConfigureAwait(...)
-			   parent is MemberAccessExpressionSyntax
-			   {
-				   Name.Identifier.Text: "ConfigureAwait", Parent: InvocationExpressionSyntax
-				   {
-					   Parent: AwaitExpressionSyntax
-				   }
-			   };
+		if (current is AwaitExpressionSyntax)
+			return true;
+
+		// Via ConfigureAwait: await (vt1, vt2).ConfigureAwait(...)
+		return current is MemberAccessExpressionSyntax
+		{
+			Name.Identifier.Text: "ConfigureAwait", Parent: InvocationExpressionSyntax
+			{
+				Parent: AwaitExpressionSyntax
+			}
+		};
 	}
 }
