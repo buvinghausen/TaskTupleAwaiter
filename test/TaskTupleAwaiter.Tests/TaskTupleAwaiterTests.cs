@@ -1,8 +1,3 @@
-// CA2012 is intentionally suppressed here: these tests exist specifically to prove that
-// ValueTask<T> instances can be safely placed in a tuple and awaited via TaskTupleAwaiter.
-// The library calls .AsTask() on construction, satisfying the single-consumption requirement.
-#pragma warning disable CA2012
-
 namespace TaskTupleAwaiter.Tests;
 
 public sealed class TaskTupleAwaiterTests

@@ -26,4 +26,16 @@ Based on the work of Joseph Musser https://github.com/jnm2
     <ProjectReference Include="..\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- Include the generator/suppressor assembly in the NuGet package so consumers
+       automatically get the DiagnosticSuppressor for CA2012. -->
+  <Target Name="_IncludeAnalyzerInPackage" BeforeTargets="_GetPackageFiles" DependsOnTargets="ResolveProjectReferences">
+    <MSBuild Projects="..\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj"
+             Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" ItemName="_GeneratorAssembly" />
+    </MSBuild>
+    <ItemGroup>
+      <None Include="@(_GeneratorAssembly)" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+    </ItemGroup>
+  </Target>
+
 </Project>

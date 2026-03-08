@@ -9,15 +9,34 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 {
 	private const int MaxArity = 16;
 
-	public void Initialize(IncrementalGeneratorInitializationContext context) =>
-		context.RegisterSourceOutput(
-			context.ParseOptionsProvider,
-			static (ctx, parseOptions) =>
+	public void Initialize(IncrementalGeneratorInitializationContext context)
+	{
+		// Skip code generation when TaskTupleExtensions already exists in a different assembly.
+		// This allows the generator assembly to be loaded as an analyzer-only in consumer projects
+		// (for the DiagnosticSuppressor) without re-generating types already compiled into the library.
+		// The assembly identity check works in both MSBuild (metadata references) and the VS IDE
+		// (project-to-project compilation references).
+		var shouldGenerate = context.CompilationProvider
+			.Select(static (compilation, _) =>
 			{
+				var existing = compilation.GetTypeByMetadataName("System.Threading.Tasks.TaskTupleExtensions");
+				return existing is null
+					   || SymbolEqualityComparer.Default.Equals(existing.ContainingAssembly, compilation.Assembly);
+			});
+
+		context.RegisterSourceOutput(
+			shouldGenerate.Combine(context.ParseOptionsProvider),
+			static (ctx, source) =>
+			{
+				var (generate, parseOptions) = source;
+				if (!generate)
+					return;
+
 				var isNet8OrGreater = parseOptions is CSharpParseOptions csOptions &&
 									  csOptions.PreprocessorSymbolNames.Contains("NET8_0_OR_GREATER");
 				ctx.AddSource("TaskTupleExtensions.g.cs", GenerateSource(isNet8OrGreater));
 			});
+	}
 
 	private static string GenerateSource(bool isNet8OrGreater)
 	{
