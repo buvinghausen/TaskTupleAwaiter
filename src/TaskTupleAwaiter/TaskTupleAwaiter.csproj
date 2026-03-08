@@ -18,6 +18,10 @@ Based on the work of Joseph Musser https://github.com/jnm2
     <PackageReference Include="System.ValueTuple" Version="4.6.2" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net462'">
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>

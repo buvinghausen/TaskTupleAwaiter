@@ -1,3 +1,8 @@
+// CA2012 is intentionally suppressed here: these tests exist specifically to prove that
+// ValueTask<T> instances can be safely placed in a tuple and awaited via TaskTupleAwaiter.
+// The library calls .AsTask() on construction, satisfying the single-consumption requirement.
+#pragma warning disable CA2012
+
 namespace TaskTupleAwaiter.Tests;
 
 public sealed class TaskTupleAwaiterTests
@@ -562,6 +567,251 @@ public sealed class TaskTupleAwaiterTests
 		(task1.IsCompleted & task2.IsCompleted & task3.IsCompleted & task4.IsCompleted & task5.IsCompleted & task6.IsCompleted & task7.IsCompleted & task8.IsCompleted & task9.IsCompleted & task10.IsCompleted & task11.IsCompleted & task12.IsCompleted & task13.IsCompleted & task14.IsCompleted & task15.IsCompleted).ShouldBeTrue();
 	}
 
+	[Fact]
+	async Task CanAwaitTwoValueTasksWithNewSyntax()
+	{
+		var (a, b) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitThreeValueTasksWithNewSyntax()
+	{
+		var (a, b, c) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitFourValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitFiveValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitSixValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitSevenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitEightValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitNineValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitTenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitElevenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j, k) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+		k.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitTwelveValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j, k, l) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+		k.ShouldBeOfType<string>();
+		l.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitThirteenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j, k, l, m) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+		k.ShouldBeOfType<string>();
+		l.ShouldBeOfType<Guid>();
+		m.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitFourteenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j, k, l, m, n) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+		k.ShouldBeOfType<string>();
+		l.ShouldBeOfType<Guid>();
+		m.ShouldBeOfType<string>();
+		n.ShouldBeOfType<Guid>();
+	}
+
+	[Fact]
+	async Task CanAwaitFifteenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+		k.ShouldBeOfType<string>();
+		l.ShouldBeOfType<Guid>();
+		m.ShouldBeOfType<string>();
+		n.ShouldBeOfType<Guid>();
+		o.ShouldBeOfType<string>();
+	}
+
+	[Fact]
+	async Task CanAwaitSixteenValueTasksWithNewSyntax()
+	{
+		var (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) = await (GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync(), GetStringValueTaskAsync(), GetGuidValueTaskAsync());
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+		c.ShouldBeOfType<string>();
+		d.ShouldBeOfType<Guid>();
+		e.ShouldBeOfType<string>();
+		f.ShouldBeOfType<Guid>();
+		g.ShouldBeOfType<string>();
+		h.ShouldBeOfType<Guid>();
+		i.ShouldBeOfType<string>();
+		j.ShouldBeOfType<Guid>();
+		k.ShouldBeOfType<string>();
+		l.ShouldBeOfType<Guid>();
+		m.ShouldBeOfType<string>();
+		n.ShouldBeOfType<Guid>();
+		o.ShouldBeOfType<string>();
+		p.ShouldBeOfType<Guid>();
+	}
+
+	[Theory]
+	[MemberData(nameof(ContinueOnCapturedContextOptions))]
+	async Task AwaitTwoValueTasksWaitsForBothWhenConfigured(bool continueOnCapturedContext)
+	{
+		var valueTask1 = GetStringValueTaskAsync();
+		var valueTask2 = GetGuidValueTaskAsync();
+
+		var (a, b) = await (valueTask1, valueTask2).ConfigureAwait(continueOnCapturedContext);
+		a.ShouldBeOfType<string>();
+		b.ShouldBeOfType<Guid>();
+	}
+
+#if NET8_0_OR_GREATER
+	[Fact]
+	async Task CanAwaitTwoNonGenericValueTasksWithNewSyntax() => await (GetVoidValueTaskAsync(), GetVoidValueTaskAsync());
+
+	[Fact]
+	async Task CanAwaitThreeNonGenericValueTasksWithNewSyntax() => await (GetVoidValueTaskAsync(), GetVoidValueTaskAsync(), GetVoidValueTaskAsync());
+#endif
+
 	static async Task<string> GetStringAsync()
 	{
 		await Task.Yield();
@@ -573,4 +823,12 @@ public sealed class TaskTupleAwaiterTests
 		await Task.Yield();
 		return Guid.NewGuid();
 	}
+
+	static ValueTask<string> GetStringValueTaskAsync() => new(GetStringAsync());
+
+	static ValueTask<Guid> GetGuidValueTaskAsync() => new(GetGuidAsync());
+
+#if NET8_0_OR_GREATER
+	static async ValueTask GetVoidValueTaskAsync() => await Task.Yield();
+#endif
 }

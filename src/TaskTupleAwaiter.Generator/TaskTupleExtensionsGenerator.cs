@@ -48,6 +48,13 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 		AppendNonGenericSection(sb, isNet8OrGreater);
 
+		AppendValueTaskTypedArity1(sb);
+		for (var arity = 2; arity <= MaxArity; arity++)
+			AppendValueTaskTypedArity(sb, arity, isNet8OrGreater);
+
+		if (isNet8OrGreater)
+			AppendNonGenericValueTaskSection(sb);
+
 		sb.AppendLine("}");
 		return sb.ToString();
 	}
@@ -261,6 +268,99 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 		sb.AppendLine($"\t\tTask.WhenAll({Items(arity)}).ConfigureAwait(options);");
 	}
 
+	// ── Typed ValueTask<T> ───────────────────────────────────────────────
+
+	private static void AppendValueTaskTypedArity1(StringBuilder sb)
+	{
+		sb.AppendLine("	#region (ValueTask<T1>)");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine("	public static ValueTaskAwaiter<T1> GetAwaiter<T1>(this ValueTuple<ValueTask<T1>> tasks) =>");
+		sb.AppendLine("		tasks.Item1.GetAwaiter();");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine("	public static ConfiguredValueTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<ValueTask<T1>> tasks, bool continueOnCapturedContext) =>");
+		sb.AppendLine("		tasks.Item1.ConfigureAwait(continueOnCapturedContext);");
+
+		sb.AppendLine();
+		sb.AppendLine("	#endregion");
+		sb.AppendLine();
+	}
+
+	private static void AppendValueTaskTypedArity(StringBuilder sb, int arity, bool isNet8OrGreater)
+	{
+		var tp = TypeParams(arity);
+		var valueTaskTupleType = ValueTaskTypedTupleType(arity);
+		var asTaskArgs = AsTaskItems(arity);
+		var configureAwaitBoolArg = isNet8OrGreater
+			? "continueOnCapturedContext ? ConfigureAwaitOptions.ContinueOnCapturedContext : ConfigureAwaitOptions.None"
+			: "continueOnCapturedContext";
+
+		sb.AppendLine($"	#region (ValueTask<T1>..ValueTask<T{arity}>)");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine($"	public static TupleTaskAwaiter<{tp}> GetAwaiter<{tp}>(this {valueTaskTupleType} tasks) =>");
+		sb.AppendLine($"		new(({asTaskArgs}));");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine($"	public static TupleConfiguredTaskAwaitable<{tp}> ConfigureAwait<{tp}>(this {valueTaskTupleType} tasks, bool continueOnCapturedContext) =>");
+		sb.AppendLine($"		new(({asTaskArgs}), {configureAwaitBoolArg});");
+
+		if (isNet8OrGreater)
+		{
+			sb.AppendLine();
+			sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+			sb.AppendLine($"	public static TupleConfiguredTaskAwaitable<{tp}> ConfigureAwait<{tp}>(this {valueTaskTupleType} tasks, ConfigureAwaitOptions options) =>");
+			sb.AppendLine($"		new(({asTaskArgs}), options);");
+		}
+
+		sb.AppendLine();
+		sb.AppendLine("	#endregion");
+		sb.AppendLine();
+	}
+
+	// ── Non-generic ValueTask (NET8+ only) ────────────────────────────────
+
+	private static void AppendNonGenericValueTaskSection(StringBuilder sb)
+	{
+		sb.AppendLine("	#region ValueTask");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine("	public static ValueTaskAwaiter GetAwaiter(this ValueTuple<ValueTask> tasks) =>");
+		sb.AppendLine("		tasks.Item1.GetAwaiter();");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine("	public static ConfiguredValueTaskAwaitable ConfigureAwait(this ValueTuple<ValueTask> tasks, bool continueOnCapturedContext) =>");
+		sb.AppendLine("		tasks.Item1.ConfigureAwait(continueOnCapturedContext);");
+
+		for (var arity = 2; arity <= MaxArity; arity++)
+		{
+			sb.AppendLine();
+			AppendNonGenericValueTaskArity(sb, arity);
+		}
+
+		sb.AppendLine();
+		sb.AppendLine("	#endregion");
+	}
+
+	private static void AppendNonGenericValueTaskArity(StringBuilder sb, int arity)
+	{
+		var tupleType = NonGenericValueTaskTupleType(arity);
+		var asTaskArgs = AsTaskItems(arity);
+
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine($"	public static TaskAwaiter GetAwaiter(this {tupleType} tasks) =>");
+		sb.AppendLine($"		Task.WhenAll({asTaskArgs}).GetAwaiter();");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine($"	public static ConfiguredTaskAwaitable ConfigureAwait(this {tupleType} tasks, bool continueOnCapturedContext) =>");
+		sb.AppendLine($"		Task.WhenAll({asTaskArgs}).ConfigureAwait(continueOnCapturedContext);");
+		sb.AppendLine();
+		sb.AppendLine("	/// <summary>This type and its members are intended for use by the compiler.</summary>");
+		sb.AppendLine($"	public static ConfiguredTaskAwaitable ConfigureAwait(this {tupleType} tasks, ConfigureAwaitOptions options) =>");
+		sb.AppendLine($"		Task.WhenAll({asTaskArgs}).ConfigureAwait(options);");
+	}
+
 	// ── String helpers ────────────────────────────────────────────────────
 
 	private static string TypeParams(int arity) =>
@@ -277,4 +377,13 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 	private static string Results(int arity) =>
 		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"_tasks.Item{i}.Result"));
+
+	private static string ValueTaskTypedTupleType(int arity) =>
+		"(" + string.Join(", ", Enumerable.Range(1, arity).Select(i => $"ValueTask<T{i}>")) + ")";
+
+	private static string AsTaskItems(int arity) =>
+		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}.AsTask()"));
+
+	private static string NonGenericValueTaskTupleType(int arity) =>
+		"(" + string.Join(", ", Enumerable.Repeat("ValueTask", arity)) + ")";
 }
