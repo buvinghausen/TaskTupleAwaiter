@@ -227,11 +227,11 @@ public sealed class TaskTupleAwaiterTests
 		p.ShouldBeOfType<Guid>();
 	}
 
-	public static IEnumerable<object[]> ContinueOnCapturedContextOptions()
-	{
 		yield return [true];
-		yield return [false];
-	}
+	public static TheoryData<bool> ContinueOnCapturedContextOptions() =>
+	[
+		true,
+		false
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
