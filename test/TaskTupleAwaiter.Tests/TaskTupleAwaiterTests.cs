@@ -232,6 +232,7 @@ public sealed class TaskTupleAwaiterTests
 	[
 		true,
 		false
+	];
 
 	[Theory]
 	[MemberData(nameof(ContinueOnCapturedContextOptions))]
