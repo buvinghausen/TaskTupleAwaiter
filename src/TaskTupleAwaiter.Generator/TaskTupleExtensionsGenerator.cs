@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace TaskTupleAwaiter.Generator;
 
@@ -8,15 +9,34 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 {
 	private const int MaxArity = 16;
 
-	public void Initialize(IncrementalGeneratorInitializationContext context) =>
+	public void Initialize(IncrementalGeneratorInitializationContext context)
+	{
+		var hasAwaitOptionsProvider = context.ParseOptionsProvider
+			.Select(
+				static (options, _) =>
+				{
+					if (options is CSharpParseOptions csharpOptions)
+					{
+						// Assume NET8_0_OR_GREATER (or compatible) implies ConfigureAwaitOptions is available.
+						foreach (var symbol in csharpOptions.PreprocessorSymbolNames)
+						{
+							if (string.Equals(symbol, "NET8_0_OR_GREATER", System.StringComparison.Ordinal))
+							{
+								return true;
+							}
+						}
+					}
+
+					return false;
+				});
+
 		context.RegisterSourceOutput(
-			context.CompilationProvider,
-			static (ctx, compilation) =>
+			hasAwaitOptionsProvider,
+			static (ctx, hasAwaitOptions) =>
 			{
-				var hasAwaitOptions = compilation
-					.GetTypeByMetadataName("System.Threading.Tasks.ConfigureAwaitOptions") is not null;
 				ctx.AddSource("TaskTupleExtensions.g.cs", GenerateSource(hasAwaitOptions));
 			});
+	}
 
 	private static string GenerateSource(bool hasAwaitOptions)
 	{
