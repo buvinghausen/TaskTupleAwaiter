@@ -21,9 +21,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 		context.RegisterSourceOutput(
 			hasAwaitOptionsProvider,
 			static (ctx, hasAwaitOptions) =>
-			{
-				ctx.AddSource("TaskTupleExtensions.g.cs", GenerateSource(hasAwaitOptions));
-			});
+				ctx.AddSource("TaskTupleExtensions.g.cs", GenerateSource(hasAwaitOptions)));
 	}
 
 	static string GenerateSource(bool hasAwaitOptions)
