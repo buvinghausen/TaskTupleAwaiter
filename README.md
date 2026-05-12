@@ -30,7 +30,9 @@ var (user, orders) = await (GetUserAsync(id), GetOrdersAsync(id));
 - **`ConfigureAwait` support** — works with `ConfigureAwait(false)` and .NET 8+ `ConfigureAwaitOptions`
 - **Non-generic `Task` support** — await tuples of `Task` (not just `Task<T>`) when you don't need return values
 - **Zero dependencies** — a single file, no external packages (except `System.ValueTuple` on .NET Framework 4.6.2)
-- **Broad compatibility** — targets .NET Standard 2.0, .NET Framework 4.6.2, and .NET 8+
+- **Broad compatibility** — targets .NET Standard 2.0, .NET Framework 4.6.2, .NET 10, and .NET 11
+- **NativeAOT ready** — on .NET 10 and .NET 11 the package is marked `<IsAotCompatible>true</IsAotCompatible>`; a CI smoke-test publishes a downstream NativeAOT binary on every commit
+- **.NET 11 Runtime Async compatible** — verified by running the full test suite with `<Features>runtime-async=on</Features>` on the `net11.0` target
 
 ## Installation
 
@@ -61,7 +63,7 @@ var (policy, preferences) = await (
 ).ConfigureAwait(false);
 ```
 
-### ConfigureAwaitOptions (.NET 8+)
+### ConfigureAwaitOptions (.NET 8+, also works under .NET 11 Runtime Async)
 
 ```csharp
 var (user, settings) = await (
@@ -98,7 +100,9 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 |---|---|
 | .NET Standard | 2.0 |
 | .NET Framework | 4.6.2+ |
-| .NET | 8.0+ |
+| .NET | 10.0, 11.0 |
+
+> Consumers on .NET 8 or .NET 9 continue to work via the `netstandard2.0` target; the package still installs and behaves identically — just without the modern-TFM-only AOT analyzer guarantees.
 
 ## Credits
 
