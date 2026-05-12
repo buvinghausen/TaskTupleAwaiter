@@ -5,6 +5,8 @@
     <File Path=".github\workflows\ci.yml" />
     <File Path=".github\workflows\release.yml" />
     <File Path=".gitignore" />
+    <File Path="CLAUDE.md" />
+    <File Path="CODE_OF_CONDUCT.md" />
     <File Path="Directory.Build.props" />
     <File Path="global.json" />
     <File Path="LICENSE.txt" />
