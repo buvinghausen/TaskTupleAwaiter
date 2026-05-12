@@ -75,7 +75,7 @@ Must exercise every generator codepath that could leak reflection or analyzer wa
 - Non-generic `Task` tuple arity-2 — exercises the non-generic section.
 - `ConfigureAwait(false)` and `ConfigureAwait(ConfigureAwaitOptions.None)` — exercises both `bool` and `ConfigureAwaitOptions` overloads.
 
-Implementation is a handful of `await` calls and a `Console.WriteLine` of destructured results. The project's value is binary: it either publishes successfully under AOT or it doesn't.
+Implementation is a handful of `await` calls (one per coverage point above) with `Console.WriteLine` of destructured results to keep the linker from trimming them. The project's value is binary: it either publishes successfully under AOT or it doesn't.
 
 ## 5. Runtime Async verification in test suite
 
@@ -102,6 +102,8 @@ dotnet-version: |
   10.0.*
   11.0.*
 ```
+
+The `8.0.*` and `9.0.*` SDKs remain on the CI runner because the test project still targets `net8.0` and `net9.0`; only the *library package* drops the `net8.0` TFM.
 
 Add AOT publish steps after `dotnet test`:
 
