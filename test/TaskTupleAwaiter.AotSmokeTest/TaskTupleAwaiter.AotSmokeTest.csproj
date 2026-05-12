@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <PublishAot>true</PublishAot>
+    <IsPackable>false</IsPackable>
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
+    <RootNamespace>TaskTupleAwaiter.AotSmokeTest</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    test/Directory.Build.props injects Shouldly + xUnit ItemGroups for the
+    test project. The AOT smoke-test is a plain console app and must not
+    pull those in (xUnit's testing platform host is not the goal here, and
+    Shouldly is unused). Remove both inherited items and the testing
+    platform packages they implicitly bring along.
+  -->
+  <ItemGroup>
+    <Using Remove="Shouldly" />
+    <Using Remove="Xunit" />
+    <PackageReference Remove="Shouldly" />
+    <PackageReference Remove="xunit.v3.mtp-v2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
+  </ItemGroup>
+
+</Project>
