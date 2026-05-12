@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Title>TaskTupleAwaiter</Title>
@@ -16,6 +16,10 @@ Based on the work of Joseph Musser https://github.com/jnm2
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="System.ValueTuple" Version="4.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>
