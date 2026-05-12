@@ -141,8 +141,8 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
 		public readonly record struct TupleTaskAwaiter<{{tp}}> : ICriticalNotifyCompletion
 		{
-			private readonly {{tupleType}} _tasks;
-			private readonly TaskAwaiter _whenAllAwaiter;
+			readonly {{tupleType}} _tasks;
+			readonly TaskAwaiter _whenAllAwaiter;
 
 			internal TupleTaskAwaiter({{tupleType}} tasks)
 			{
@@ -179,8 +179,8 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
 		public readonly record struct TupleConfiguredTaskAwaitable<{{tp}}>
 		{
-			private readonly {{tupleType}} _tasks;
-			private readonly {{optionsType}} _options;
+			readonly {{tupleType}} _tasks;
+			readonly {{optionsType}} _options;
 
 			internal TupleConfiguredTaskAwaitable({{tupleType}} tasks, {{optionsType}} options)
 			{
@@ -195,8 +195,8 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
 			public readonly record struct Awaiter : ICriticalNotifyCompletion
 			{
-				private readonly {{tupleType}} _tasks;
-				private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
+				readonly {{tupleType}} _tasks;
+				readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
 
 				internal Awaiter({{tupleType}} tasks, {{optionsType}} options)
 				{
