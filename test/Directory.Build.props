@@ -14,9 +14,6 @@
   <ItemGroup>
     <Using Include="Shouldly" />
     <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Shouldly" Version="4.*" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="3.*" />
   </ItemGroup>

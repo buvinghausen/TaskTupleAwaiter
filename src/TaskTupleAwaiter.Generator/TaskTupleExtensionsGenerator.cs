@@ -1,34 +1,22 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace TaskTupleAwaiter.Generator;
 
 [Generator]
 public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 {
-	private const int MaxArity = 16;
+	const int MaxArity = 16;
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		var hasAwaitOptionsProvider = context.ParseOptionsProvider
-			.Select(
-				static (options, _) =>
-				{
-					if (options is CSharpParseOptions csharpOptions)
-					{
-						// Assume NET8_0_OR_GREATER (or compatible) implies ConfigureAwaitOptions is available.
-						foreach (var symbol in csharpOptions.PreprocessorSymbolNames)
-						{
-							if (string.Equals(symbol, "NET8_0_OR_GREATER", System.StringComparison.Ordinal))
-							{
-								return true;
-							}
-						}
-					}
-
-					return false;
-				});
+		// Feature-detect ConfigureAwaitOptions by checking whether the type actually
+		// exists in the compilation's referenced assemblies, rather than sniffing a
+		// preprocessor symbol. This correctly handles cases where someone compiles
+		// against .NET 8+ without the SDK-injected NET8_0_OR_GREATER define.
+		var hasAwaitOptionsProvider = context.CompilationProvider
+			.Select(static (compilation, _) =>
+				compilation.GetTypeByMetadataName("System.Threading.Tasks.ConfigureAwaitOptions") is not null);
 
 		context.RegisterSourceOutput(
 			hasAwaitOptionsProvider,
@@ -38,7 +26,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			});
 	}
 
-	private static string GenerateSource(bool hasAwaitOptions)
+	static string GenerateSource(bool hasAwaitOptions)
 	{
 		StringBuilder sb = new();
 
@@ -75,7 +63,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 	// ── Typed Task<T> ─────────────────────────────────────────────────────
 
-	private static void AppendTypedArity1(StringBuilder sb, bool hasAwaitOptions)
+	static void AppendTypedArity1(StringBuilder sb, bool hasAwaitOptions)
 	{
 		sb.AppendLine(
 			"""
@@ -107,7 +95,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			""");
 	}
 
-	private static void AppendTypedArity(StringBuilder sb, int arity, bool hasAwaitOptions)
+	static void AppendTypedArity(StringBuilder sb, int arity, bool hasAwaitOptions)
 	{
 		var tp = TypeParams(arity);
 		var tupleType = TypedTaskTupleType(arity);
@@ -150,7 +138,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			""");
 	}
 
-	private static void AppendTupleTaskAwaiterStruct(StringBuilder sb, int arity, string tp, string tupleType) => sb.AppendLine(
+	static void AppendTupleTaskAwaiterStruct(StringBuilder sb, int arity, string tp, string tupleType) => sb.AppendLine(
 		$$"""
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
 		public readonly record struct TupleTaskAwaiter<{{tp}}> : ICriticalNotifyCompletion
@@ -187,7 +175,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 		""");
 
-	private static void AppendTupleConfiguredTaskAwaitableStruct(StringBuilder sb, int arity, string tp,
+	static void AppendTupleConfiguredTaskAwaitableStruct(StringBuilder sb, int arity, string tp,
 		string tupleType, string optionsType) => sb.AppendLine(
 		$$"""
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
@@ -244,7 +232,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 	// ── Non-generic Task ──────────────────────────────────────────────────
 
-	private static void AppendNonGenericSection(StringBuilder sb, bool hasAwaitOptions)
+	static void AppendNonGenericSection(StringBuilder sb, bool hasAwaitOptions)
 	{
 		sb.AppendLine(
 			"""
@@ -281,7 +269,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			""");
 	}
 
-	private static void AppendNonGenericArity(StringBuilder sb, int arity, bool hasAwaitOptions)
+	static void AppendNonGenericArity(StringBuilder sb, int arity, bool hasAwaitOptions)
 	{
 		var tupleType = NonGenericTaskTupleType(arity);
 
@@ -310,18 +298,18 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 	// ── String helpers ────────────────────────────────────────────────────
 
-	private static string TypeParams(int arity) =>
+	static string TypeParams(int arity) =>
 		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"T{i}"));
 
-	private static string TypedTaskTupleType(int arity) =>
+	static string TypedTaskTupleType(int arity) =>
 		$"({string.Join(", ", Enumerable.Range(1, arity).Select(i => $"Task<T{i}>"))})";
 
-	private static string NonGenericTaskTupleType(int arity) =>
+	static string NonGenericTaskTupleType(int arity) =>
 		$"({string.Join(", ", Enumerable.Repeat("Task", arity))})";
 
-	private static string Items(int arity) =>
+	static string Items(int arity) =>
 		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"));
 
-	private static string Results(int arity) =>
+	static string Results(int arity) =>
 		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"_tasks.Item{i}.Result"));
 }

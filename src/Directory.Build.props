@@ -6,7 +6,7 @@
     <TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>
     <Authors>Joseph Musser,Brian Buvinghausen</Authors>
     <Company>Buvinghausen Solutions</Company>
-    <Copyright>Copyright © 2026 Brian Buvinghausen</Copyright>
+    <Copyright>Copyright © $([System.DateTime]::UtcNow.ToString("yyyy")) Brian Buvinghausen</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
@@ -21,15 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.*" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="*" PrivateAssets="All" />
     <None Include="../../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
     <None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Tests" />
   </ItemGroup>
 
