@@ -100,7 +100,7 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 |---|---|
 | .NET Standard | 2.0 |
 | .NET Framework | 4.6.2+ |
-| .NET | 8.0, 11.0 |
+| .NET | 8.0+ |
 
 ## Credits
 
