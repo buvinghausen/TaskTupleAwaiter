@@ -305,11 +305,13 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 	static string NonGenericTaskTupleType(int arity) =>
 		$"({string.Join(", ", Enumerable.Repeat("Task", arity))})";
 
-	// Emits the WhenAll argument as a C# 12+ collection expression. On net9+
-	// the compiler binds the call to Task.WhenAll(ReadOnlySpan<Task>) and
-	// stack-allocates the buffer; on netstandard2.0/net462/net8.0 it falls
-	// back to Task.WhenAll(params Task[]) and allocates an array (same IL as
-	// before this change).
+	// Emits the WhenAll argument as a collection expression. On the net10.0
+	// library build the compiler binds the call to
+	// Task.WhenAll(ReadOnlySpan<Task>) and stack-allocates the buffer; on
+	// netstandard2.0/net462/net8.0 it falls back to
+	// Task.WhenAll(params Task[]) and allocates an array (same IL as before
+	// this change). The library does not ship a net9.0 asset, so .NET 9
+	// consumers pick the net8.0 asset and are unaffected.
 	static string Items(int arity) =>
 		$"[{string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"))}]";
 

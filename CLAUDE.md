@@ -26,8 +26,7 @@ TaskTupleAwaiter/
 │   │   ├── TaskTupleAwaiter.AotSmokeTest.csproj
 │   │   └── Program.cs
 │   └── TaskTupleAwaiter.Benchmarks/        # BenchmarkDotNet harness (net8.0, net10.0)
-│       ├── TaskTupleAwaiter.Benchmarks.csproj
-│       ├── Directory.Build.props          #   Bypasses test/Directory.Build.props (no inherited xUnit/Shouldly).
+│       ├── TaskTupleAwaiter.Benchmarks.csproj  # xUnit/Shouldly inheritance from test/Directory.Build.props is bypassed via the MSBuildProjectName condition there, not via a local Directory.Build.props.
 │       ├── Program.cs                     #   BenchmarkSwitcher entry point.
 │       ├── TypedTupleAwaitBenchmarks.cs
 │       ├── NonGenericTupleAwaitBenchmarks.cs
