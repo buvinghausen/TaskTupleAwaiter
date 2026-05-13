@@ -157,3 +157,6 @@ coverage.*.info
 coverage.*.json
 coverage.*.xml
 
+
+# BenchmarkDotNet output
+BenchmarkDotNet.Artifacts/
