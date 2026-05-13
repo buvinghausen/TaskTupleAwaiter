@@ -96,7 +96,99 @@ Why: the C# 13+ compiler prefers `Task.WhenAll(ReadOnlySpan<Task>)` over `Task.W
 
 ## After generator change
 
-Filled in by Task 10 after the generator is updated to emit `Task.WhenAll([t1, ..., tN])`. Expected outcome: identical to baseline above (the generator change is intent-clarifying, not IL-changing, given the compiler's existing overload-preference behavior).
+Generator emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` (C# collection expression).
+
+### net10.0
+
+`[Host] : .NET 10.0.8 (10.0.826.23019), X64 RyuJIT AVX2`
+
+**TypedTupleAwaitBenchmarks**
+
+| Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
+|--------------------- |------------:|----------:|----------:|-------:|----------:|
+| Arity2_PreCompleted  |    39.60 ns |  0.302 ns |  0.283 ns | 0.0014 |      72 B |
+| Arity4_PreCompleted  |    61.27 ns |  1.061 ns |  0.940 ns | 0.0014 |      72 B |
+| Arity8_PreCompleted  |    92.65 ns |  1.858 ns |  2.893 ns | 0.0013 |      72 B |
+| Arity16_PreCompleted |   252.40 ns |  4.754 ns |  4.214 ns | 0.0124 |     648 B |
+| Arity2_Async         | 1,029.32 ns | 10.326 ns |  9.154 ns | 0.0076 |     428 B |
+| Arity4_Async         | 1,685.97 ns | 21.445 ns | 20.059 ns | 0.0114 |     617 B |
+| Arity8_Async         | 2,893.24 ns | 38.208 ns | 35.740 ns | 0.0153 |     987 B |
+| Arity16_Async        | 6,063.24 ns | 90.612 ns | 84.759 ns | 0.0305 |    1780 B |
+
+**NonGenericTupleAwaitBenchmarks**
+
+| Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
+|--------------------- |------------:|----------:|----------:|-------:|----------:|
+| Arity2_PreCompleted  |    38.02 ns |  0.673 ns |  0.562 ns | 0.0014 |      72 B |
+| Arity4_PreCompleted  |    55.11 ns |  0.966 ns |  1.074 ns | 0.0014 |      72 B |
+| Arity8_PreCompleted  |    78.87 ns |  1.590 ns |  2.947 ns | 0.0013 |      72 B |
+| Arity16_PreCompleted |   134.97 ns |  2.678 ns |  4.170 ns | 0.0012 |      72 B |
+| Arity2_Async         | 1,023.69 ns | 20.507 ns | 47.528 ns | 0.0057 |     352 B |
+| Arity4_Async         | 1,584.04 ns | 10.068 ns |  7.860 ns | 0.0114 |     533 B |
+| Arity8_Async         | 2,880.02 ns | 44.351 ns | 39.316 ns | 0.0153 |         - |
+| Arity16_Async        | 6,052.55 ns | 65.590 ns | 54.770 ns | 0.0305 |    1663 B |
+
+**ConfigureAwaitBenchmarks**
+
+| Method                          | Mean      | Error    | StdDev    | Median    | Gen0   | Allocated |
+|-------------------------------- |----------:|---------:|----------:|----------:|-------:|----------:|
+| Typed_Arity4_Bool_False         |  55.57 ns | 1.488 ns |  4.074 ns |  53.78 ns | 0.0014 |      72 B |
+| Typed_Arity4_Options_None       |  55.10 ns | 1.120 ns |  2.210 ns |  54.70 ns | 0.0014 |      72 B |
+| Typed_Arity16_Bool_False        | 228.81 ns | 1.930 ns |  1.805 ns | 228.69 ns | 0.0124 |     648 B |
+| Typed_Arity16_Options_None      | 246.73 ns | 4.446 ns |  3.942 ns | 245.81 ns | 0.0124 |     648 B |
+| NonGeneric_Arity4_Bool_False    |  62.23 ns | 5.127 ns | 15.118 ns |  55.41 ns | 0.0014 |      72 B |
+| NonGeneric_Arity16_Options_None | 122.96 ns | 2.387 ns |  3.267 ns | 121.49 ns | 0.0012 |      72 B |
+
+### net8.0
+
+`[Host] : .NET 8.0.27 (8.0.2726.22922), X64 RyuJIT AVX2`
+
+**TypedTupleAwaitBenchmarks**
+
+| Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
+|--------------------- |------------:|----------:|----------:|------------:|-------:|----------:|
+| Arity2_PreCompleted  |    61.47 ns |  5.056 ns | 14.908 ns |    53.28 ns | 0.0003 |     120 B |
+| Arity4_PreCompleted  |    71.47 ns |  1.460 ns |  2.557 ns |    71.53 ns | 0.0004 |     136 B |
+| Arity8_PreCompleted  |   120.07 ns |  2.417 ns |  2.586 ns |   119.89 ns | 0.0005 |     168 B |
+| Arity16_PreCompleted |   328.55 ns |  3.585 ns |  2.994 ns |   329.36 ns | 0.0024 |     808 B |
+| Arity2_Async         | 1,036.87 ns | 11.742 ns | 10.984 ns | 1,038.47 ns |      - |     472 B |
+| Arity4_Async         | 1,687.67 ns | 12.710 ns | 11.889 ns | 1,692.47 ns | 0.0019 |     663 B |
+| Arity8_Async         | 3,099.42 ns | 60.635 ns | 92.596 ns | 3,109.38 ns |      - |    1049 B |
+| Arity16_Async        | 6,060.72 ns | 68.402 ns | 63.983 ns | 6,042.75 ns |      - |    1891 B |
+
+**NonGenericTupleAwaitBenchmarks**
+
+| Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
+|--------------------- |------------:|----------:|----------:|------------:|-------:|----------:|
+| Arity2_PreCompleted  |    48.75 ns |  0.992 ns |  1.290 ns |    48.72 ns | 0.0004 |     120 B |
+| Arity4_PreCompleted  |    74.13 ns |  1.517 ns |  3.778 ns |    74.06 ns | 0.0004 |     136 B |
+| Arity8_PreCompleted  |   115.46 ns |  2.247 ns |  2.101 ns |   115.90 ns | 0.0005 |     168 B |
+| Arity16_PreCompleted |   278.46 ns | 15.376 ns | 45.338 ns |   302.75 ns | 0.0005 |     232 B |
+| Arity2_Async         | 1,267.23 ns |  6.285 ns |  5.879 ns | 1,267.13 ns |      - |     402 B |
+| Arity4_Async         | 1,775.57 ns | 13.510 ns | 11.976 ns | 1,773.46 ns |      - |     598 B |
+| Arity8_Async         | 2,939.42 ns | 32.463 ns | 30.366 ns | 2,946.38 ns |      - |    1004 B |
+| Arity16_Async        | 5,691.46 ns | 79.269 ns | 74.148 ns | 5,702.72 ns |      - |    1814 B |
+
+**ConfigureAwaitBenchmarks**
+
+| Method                          | Mean      | Error    | StdDev   | Median    | Gen0   | Allocated |
+|-------------------------------- |----------:|---------:|---------:|----------:|-------:|----------:|
+| Typed_Arity4_Bool_False         |  75.28 ns | 1.539 ns | 3.143 ns |  74.90 ns | 0.0004 |     136 B |
+| Typed_Arity4_Options_None       |  82.93 ns | 1.636 ns | 2.009 ns |  82.43 ns | 0.0004 |     136 B |
+| Typed_Arity16_Bool_False        | 329.52 ns | 6.129 ns | 6.019 ns | 327.59 ns | 0.0024 |     808 B |
+| Typed_Arity16_Options_None      | 331.92 ns | 6.560 ns | 8.757 ns | 327.80 ns | 0.0024 |     808 B |
+| NonGeneric_Arity4_Bool_False    |  69.99 ns | 1.230 ns | 1.091 ns |  69.65 ns | 0.0004 |     136 B |
+| NonGeneric_Arity16_Options_None | 206.12 ns | 4.134 ns | 7.455 ns | 202.96 ns | 0.0005 |     232 B |
+
+Confirmed: every `Allocated` value matches the net8.0 baseline (120 / 136 / 168 / 808 / 472 / 663 / 1049 / 1891 etc. across the typed pre-completed and async series). The collection-expression source lowers to `new Task[]{t1, ..., tN}` and binds to `Task.WhenAll(params Task[])` on net8.0 — identical IL to the pre-change positional form.
+
+## Delta summary: after-change vs baseline (same TFM)
+
+The generator change leaves IL semantics unchanged on net10.0 — empirically confirmed: every `Allocated` value matches baseline within run-to-run noise. The `Task.WhenAll(tasks.Item1, tasks.Item2)` positional form was already binding to `Task.WhenAll(ReadOnlySpan<Task>)` on net10.0 via the C# 13+ compiler's overload-preference rule. The bracketed `[tasks.Item1, tasks.Item2]` form is the explicit, intent-clarifying source-level expression.
+
+On net8.0 the source change continues to lower to `new Task[]{t1, t2}` (because no `ReadOnlySpan<Task>` overload exists on net8.0), so allocation is unchanged from baseline there as well.
+
+The end-state takeaway: **adding the `net10.0` TFM to the library is what delivered the per-await allocation reduction for .NET 10+ consumers**. The generator change is preserved as belt-and-suspenders insurance — making the collection-expression intent explicit at the source level keeps the IL stable across future compiler overload-resolution changes.
 
 ## Delta summary (net10.0 vs net8.0 baseline)
 
