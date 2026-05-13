@@ -63,7 +63,7 @@ var (policy, preferences) = await (
 ).ConfigureAwait(false);
 ```
 
-### ConfigureAwaitOptions (.NET 8+, also works under .NET 11 Runtime Async)
+### ConfigureAwaitOptions (.NET 8+)
 
 ```csharp
 var (user, settings) = await (
@@ -100,9 +100,7 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 |---|---|
 | .NET Standard | 2.0 |
 | .NET Framework | 4.6.2+ |
-| .NET | 10.0, 11.0 |
-
-> Consumers on .NET 8 or .NET 9 continue to work via the `netstandard2.0` target; the package still installs and behaves identically — just without the modern-TFM-only AOT analyzer guarantees.
+| .NET | 8.0+ |
 
 ## Credits
 
