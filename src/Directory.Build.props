@@ -20,7 +20,7 @@
     <PackageOutputPath>..\..\</PackageOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '7.0'))">
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
