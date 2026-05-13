@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
     <SelfContained>true</SelfContained>
-    <TargetFrameworks>net8.0;net11.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>
     <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
