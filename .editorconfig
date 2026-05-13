@@ -23,6 +23,9 @@ indent_style = tab
 # Sort using and Import directives with System.* appearing first
 dotnet_sort_system_directives_first = true
 
+# Omit accessibility modifiers when they match the language default (e.g. private on class members)
+dotnet_style_require_accessibility_modifiers = omit_if_default:error
+
 # Avoid "this." and "Me." if not necessary
 dotnet_style_qualification_for_field = false:error
 dotnet_style_qualification_for_property = false:error
@@ -42,6 +45,12 @@ dotnet_style_explicit_tuple_names = true:error
 
 # CSharp code style settings:
 [*.cs]
+# Prefer file-scoped namespace declarations (single `namespace Foo;`)
+csharp_style_namespace_declarations = file_scoped:error
+
+# Allow single-statement bodies without braces (e.g. `if (x) F();`, `for (...) F();`)
+csharp_prefer_braces = false:silent
+
 # Prefer "var" everywhere
 csharp_style_var_for_built_in_types = true:error
 csharp_style_var_when_type_is_apparent = true:error
@@ -71,3 +80,26 @@ csharp_new_line_before_catch = true
 csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
+
+# Roslyn source generator project — types are public for [Generator] discovery, not for
+# consumption (IsPackable=false). Doc generation is on so IDE0005 (unused usings) can run
+# under .NET 11+; CS1591 (missing doc comment) is noise on this internal surface.
+[src/TaskTupleAwaiter.Generator/**.cs]
+dotnet_diagnostic.CS1591.severity = none
+
+# Test project: the codebase pre-dates several latest-Recommended rules that .NET 11
+# now elevates to warnings (and TreatWarningsAsErrors makes them build errors). Keep
+# strict enforcement on the shipped library; relax on tests where the patterns are
+# either intentional (xUnit reflection-discovered methods) or low-value to chase down.
+# - IDE0040: explicit modifiers in adapter helpers matching the default
+# - IDE0044: adapter pattern fields that are effectively immutable but not declared so
+# - IDE0046: if/return preferred over ternary for clarity in test setup
+# - IDE0051: xUnit discovers private [Fact]/[Theory] methods via reflection
+# - IDE0055: legacy formatting in a few test files
+[test/**.cs]
+dotnet_diagnostic.IDE0005.severity = silent
+dotnet_diagnostic.IDE0040.severity = silent
+dotnet_diagnostic.IDE0044.severity = silent
+dotnet_diagnostic.IDE0046.severity = silent
+dotnet_diagnostic.IDE0051.severity = silent
+dotnet_diagnostic.IDE0055.severity = silent
