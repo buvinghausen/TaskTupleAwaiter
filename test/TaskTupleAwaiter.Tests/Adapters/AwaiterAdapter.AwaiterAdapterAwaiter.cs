@@ -6,7 +6,7 @@ partial class AwaiterAdapter
 {
 	public readonly record struct AwaiterAdapterAwaiter : ICriticalNotifyCompletion
 	{
-		private readonly AwaiterAdapter _awaiterAdapter;
+		readonly AwaiterAdapter _awaiterAdapter;
 
 		public AwaiterAdapterAwaiter(AwaiterAdapter awaiterAdapter) =>
 			_awaiterAdapter = awaiterAdapter;

@@ -1,30 +1,29 @@
 <Project>
 
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+	<Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>
-    <Authors>Joseph Musser,Brian Buvinghausen</Authors>
-    <Company>Buvinghausen Solutions</Company>
-    <Copyright>Copyright © $([System.DateTime]::UtcNow.ToString("yyyy")) Brian Buvinghausen</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
-    <PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
-    <PackageOutputPath>..\..\</PackageOutputPath>
-    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Authors>Joseph Musser,Brian Buvinghausen</Authors>
+		<Company>Buvinghausen Solutions</Company>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+		<Copyright>Copyright © $([System.DateTime]::UtcNow.ToString("yyyy")) Brian Buvinghausen</Copyright>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageOutputPath>..\..\</PackageOutputPath>
+		<PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="../../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
-    <None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
-    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="../../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+		<None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
+		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
+	</ItemGroup>
 
 </Project>

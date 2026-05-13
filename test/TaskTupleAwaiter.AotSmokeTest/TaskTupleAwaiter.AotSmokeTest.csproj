@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net11.0</TargetFrameworks>
     <PublishAot>true</PublishAot>
     <SelfContained>true</SelfContained>
-    <IsPackable>false</IsPackable>
-    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
+    <TargetFrameworks>net8.0;net11.0</TargetFrameworks>
     <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
-    <RootNamespace>TaskTupleAwaiter.AotSmokeTest</RootNamespace>
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <!--
@@ -23,9 +22,6 @@
     <Using Remove="Xunit" />
     <PackageReference Remove="Shouldly" />
     <PackageReference Remove="xunit.v3.mtp-v2" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
   </ItemGroup>
 

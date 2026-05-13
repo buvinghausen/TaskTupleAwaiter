@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 // --- typed arity-1: ValueTuple<Task<T1>> ---
 // The arity-1 GetAwaiter delegates directly to the inner task's TaskAwaiter<T1>.
 {

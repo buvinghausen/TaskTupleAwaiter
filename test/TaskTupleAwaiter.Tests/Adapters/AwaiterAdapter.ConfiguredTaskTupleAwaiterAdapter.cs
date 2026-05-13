@@ -4,11 +4,11 @@ namespace TaskTupleAwaiter.Tests.Adapters;
 
 partial class AwaiterAdapter
 {
-	private sealed class ConfiguredTaskTupleAwaiter1Adapter(
+	sealed class ConfiguredTaskTupleAwaiter1Adapter(
 		ConfiguredTaskAwaitable<object>.ConfiguredTaskAwaiter awaiter,
 		string description) : AwaiterAdapter(description)
 	{
-		private ConfiguredTaskAwaitable<object>.ConfiguredTaskAwaiter _awaiter = awaiter;
+		readonly ConfiguredTaskAwaitable<object>.ConfiguredTaskAwaiter _awaiter = awaiter;
 
 		public override bool IsCompleted =>
 			_awaiter.IsCompleted;
@@ -23,7 +23,7 @@ partial class AwaiterAdapter
 			[_awaiter.GetResult()];
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter2Adapter(
+	sealed class ConfiguredTaskTupleAwaiter2Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
 	{
@@ -43,7 +43,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter3Adapter(
+	sealed class ConfiguredTaskTupleAwaiter3Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
 	{
@@ -63,7 +63,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter4Adapter(
+	sealed class ConfiguredTaskTupleAwaiter4Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
 	{
@@ -83,7 +83,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter5Adapter(
+	sealed class ConfiguredTaskTupleAwaiter5Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
 	{
@@ -103,7 +103,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter6Adapter(
+	sealed class ConfiguredTaskTupleAwaiter6Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object>.Awaiter
 			awaiter,
 		string description) : AwaiterAdapter(description)
@@ -124,7 +124,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter7Adapter(
+	sealed class ConfiguredTaskTupleAwaiter7Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object>.Awaiter
 			awaiter,
 		string description) : AwaiterAdapter(description)
@@ -145,7 +145,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter8Adapter(
+	sealed class ConfiguredTaskTupleAwaiter8Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object>
 			.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -166,7 +166,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter9Adapter(
+	sealed class ConfiguredTaskTupleAwaiter9Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -187,7 +187,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter10Adapter(
+	sealed class ConfiguredTaskTupleAwaiter10Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -208,7 +208,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter11Adapter(
+	sealed class ConfiguredTaskTupleAwaiter11Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -229,7 +229,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter12Adapter(
+	sealed class ConfiguredTaskTupleAwaiter12Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -251,7 +251,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter13Adapter(
+	sealed class ConfiguredTaskTupleAwaiter13Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -273,7 +273,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter14Adapter(
+	sealed class ConfiguredTaskTupleAwaiter14Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object, object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -298,7 +298,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter15Adapter(
+	sealed class ConfiguredTaskTupleAwaiter15Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object, object, object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
@@ -324,7 +324,7 @@ partial class AwaiterAdapter
 		}
 	}
 
-	private sealed class ConfiguredTaskTupleAwaiter16Adapter(
+	sealed class ConfiguredTaskTupleAwaiter16Adapter(
 		TaskTupleExtensions.TupleConfiguredTaskAwaitable<object, object, object, object, object, object, object, object,
 			object, object, object, object, object, object, object, object>.Awaiter awaiter,
 		string description) : AwaiterAdapter(description)
