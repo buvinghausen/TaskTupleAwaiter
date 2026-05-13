@@ -30,7 +30,8 @@ var (user, orders) = await (GetUserAsync(id), GetOrdersAsync(id));
 - **`ConfigureAwait` support** — works with `ConfigureAwait(false)` and .NET 8+ `ConfigureAwaitOptions`
 - **Non-generic `Task` support** — await tuples of `Task` (not just `Task<T>`) when you don't need return values
 - **Zero dependencies** — a single file, no external packages (except `System.ValueTuple` on .NET Framework 4.6.2)
-- **Broad compatibility** — targets .NET Standard 2.0, .NET Framework 4.6.2, and .NET 8+
+- **Broad compatibility** — targets .NET Standard 2.0, .NET Framework 4.6.2, .NET 8, and .NET 10
+- **Allocation-free `WhenAll` on .NET 10+** — the generated `Task.WhenAll` call uses a C# collection expression; on .NET 10 it binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer, eliminating the per-await `Task[]` heap allocation
 - **NativeAOT ready** — the package sets `<IsAotCompatible>true</IsAotCompatible>` for .NET 8+ targets, and CI publishes downstream NativeAOT smoke tests
 
 ## Installation
@@ -100,6 +101,7 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 | .NET Standard | 2.0 |
 | .NET Framework | 4.6.2+ |
 | .NET | 8.0+ |
+| .NET (with span-based `WhenAll`) | 10.0+ |
 
 ## Credits
 
