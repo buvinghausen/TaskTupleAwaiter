@@ -3,19 +3,21 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" Condition="'' != $([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <!-- .NET 8 & 9 end on November 10, 2026 -->
-    <TargetFrameworks>net10.0;net9.0;net8.0;net472</TargetFrameworks>
-    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CS1591;IDE0051</NoWarn>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net11.0;net10.0;net9.0;net8.0;net472</TargetFrameworks>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="Shouldly" />
-    <Using Include="Xunit" />
     <PackageReference Include="Shouldly" Version="4.*" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="3.*" />
+    <Using Include="Shouldly" />
+    <Using Include="Xunit" />
+    <Using Remove="System.IO" />
+    <Using Remove="System.Net.Http" />
   </ItemGroup>
 
 </Project>

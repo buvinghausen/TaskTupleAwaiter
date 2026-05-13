@@ -4,10 +4,10 @@ namespace TaskTupleAwaiter.Tests.Adapters;
 
 partial class AwaiterAdapter
 {
-	private sealed class TaskAwaiterAdapter(TaskAwaiter<object[]> awaiter, string description)
+	sealed class TaskAwaiterAdapter(TaskAwaiter<object[]> awaiter, string description)
 		: AwaiterAdapter(description)
 	{
-		private TaskAwaiter<object[]> _awaiter = awaiter;
+		readonly TaskAwaiter<object[]> _awaiter = awaiter;
 
 		public override bool IsCompleted =>
 			_awaiter.IsCompleted;

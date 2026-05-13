@@ -244,7 +244,6 @@ public sealed class TaskTupleAwaiterTests
 		var awaitable = (task1, task2, slow.Task).ConfigureAwait(continueOnCapturedContext);
 
 		awaitable.GetAwaiter().IsCompleted.ShouldBeFalse();
-		
 		slow.SetResult(42);
 		await awaitable;
 

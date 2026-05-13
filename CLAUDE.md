@@ -2,26 +2,30 @@
 
 ## Project Overview
 
-TaskTupleAwaiter provides extension methods that allow you to `await` a `ValueTuple` of `Task<T>` (or non-generic `Task`) instances and destructure the results in a single line. The `source_generator` branch replaces the hand-authored `TaskTupleExtensions.cs` (up to arity 16) with a Roslyn incremental source generator.
+TaskTupleAwaiter provides extension methods that allow you to `await` a `ValueTuple` of `Task<T>` (or non-generic `Task`) instances and destructure the results in a single line. In this repository, a Roslyn incremental source generator (`src/TaskTupleAwaiter.Generator`) generates the extension-method source during library build under `namespace System.Threading.Tasks`, and that generated code is compiled into `TaskTupleAwaiter.dll` for each target framework. Consumers install and reference the compiled package binaries; the generator is a private build-time implementation detail.
 
 ## Repository Layout
 
 ```
 TaskTupleAwaiter/
 ├── src/
-│   ├── TaskTupleAwaiter/                  # Main library (netstandard2.0)
-│   │   └── TaskTupleExtensions.cs         # Hand-authored fallback / reference implementation
+│   ├── TaskTupleAwaiter/                  # Main library shell (netstandard2.0, net462, net8.0)
+│   │                                      #   No hand-authored .cs sources — code is generated at build and compiled into the library.
 │   └── TaskTupleAwaiter.Generator/        # Roslyn incremental source generator (netstandard2.0)
 │       └── TaskTupleExtensionsGenerator.cs
 ├── test/
-│   └── TaskTupleAwaiter.Tests/            # xUnit test project
-│       ├── TaskTupleAwaiterTests.cs
-│       ├── BehaviorComparisonTests.cs
-│       ├── Adapters/
-│       │   └── AwaiterAdapter.cs
-│       ├── DummyException.cs
-│       ├── On.cs
-│       └── SpySynchronizationContext.cs
+│   ├── TaskTupleAwaiter.Tests/            # xUnit v3 test project
+│   │   ├── TaskTupleAwaiterTests.cs
+│   │   ├── BehaviorComparisonTests.cs
+│   │   ├── Adapters/
+│   │   │   └── AwaiterAdapter.cs
+│   │   ├── DummyException.cs
+│   │   ├── On.cs
+│   │   └── SpySynchronizationContext.cs
+│   └── TaskTupleAwaiter.AotSmokeTest/     # NativeAOT downstream-consumer smoke-test (net8.0, net11.0)
+│       ├── TaskTupleAwaiter.AotSmokeTest.csproj
+│       └── Program.cs
+├── docs/superpowers/                      # Specs and implementation plans
 ├── README.md
 ├── LICENSE.txt
 └── CLAUDE.md                              # This file
@@ -32,7 +36,9 @@ TaskTupleAwaiter/
 | Concern | Choice |
 |---|---|
 | Language | C# 14.0 |
-| Library / Generator target | .NET Standard 2.0 |
+| Library TFMs | netstandard2.0, net462, net8.0 |
+| Generator target | netstandard2.0 (Roslyn analyzer requirement) |
+| AOT-compatible TFMs | net8.0+ (`<IsAotCompatible>true</IsAotCompatible>` via `IsTargetFrameworkCompatible`) |
 | Generator framework | Roslyn `IIncrementalGenerator` |
 | Test framework | xUnit v3 |
 | Assertion library | Shouldly |

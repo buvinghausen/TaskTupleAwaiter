@@ -23,4 +23,5 @@
   <Project Path="test\TaskTupleAwaiter.Tests\TaskTupleAwaiter.Tests.csproj">
     <Configuration Solution="Release|*" Project="*|*|NoBuild" />
   </Project>
+  <Project Path="test\TaskTupleAwaiter.AotSmokeTest\TaskTupleAwaiter.AotSmokeTest.csproj" />
 </Solution>

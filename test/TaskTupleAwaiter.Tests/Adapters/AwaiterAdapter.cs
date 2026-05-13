@@ -6,9 +6,9 @@ namespace TaskTupleAwaiter.Tests.Adapters;
 /// </summary>
 abstract partial class AwaiterAdapter
 {
-	private readonly string _description;
+	readonly string _description;
 
-	private AwaiterAdapter(string description) =>
+	AwaiterAdapter(string description) =>
 		_description = description;
 
 	public abstract bool IsCompleted { get; }
@@ -59,24 +59,17 @@ abstract partial class AwaiterAdapter
 		CreateVoidResultTaskWhenAll(tasks, continueOnCapturedContext)
 	];
 
-	public static AwaiterAdapter CreateTaskWhenAll(Task<object>[] tasks, bool? continueOnCapturedContext = null)
-	{
-		if (continueOnCapturedContext != null)
-			return new ConfiguredTaskAwaiterAdapter(
+	public static AwaiterAdapter CreateTaskWhenAll(Task<object>[] tasks, bool? continueOnCapturedContext = null) => continueOnCapturedContext != null
+			? new ConfiguredTaskAwaiterAdapter(
 				Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(),
-				$"await Task.WhenAll(…).ConfigureAwait({continueOnCapturedContext.Value})");
-		return new TaskAwaiterAdapter(Task.WhenAll(tasks).GetAwaiter(), "await Task.WhenAll(…)");
-	}
+				$"await Task.WhenAll(…).ConfigureAwait({continueOnCapturedContext.Value})")
+			: new TaskAwaiterAdapter(Task.WhenAll(tasks).GetAwaiter(), "await Task.WhenAll(…)");
 
-	public static AwaiterAdapter CreateVoidResultTaskWhenAll(Task[] tasks, bool? continueOnCapturedContext = null)
-	{
-		if (continueOnCapturedContext != null)
-			return new VoidResultConfiguredTaskAwaiterAdapter(
+	public static AwaiterAdapter CreateVoidResultTaskWhenAll(Task[] tasks, bool? continueOnCapturedContext = null) => continueOnCapturedContext != null
+			? new VoidResultConfiguredTaskAwaiterAdapter(
 				Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext.Value).GetAwaiter(),
-				$"await Task.WhenAll(…).ConfigureAwait({continueOnCapturedContext.Value})");
-
-		return new VoidResultTaskAwaiterAdapter(Task.WhenAll(tasks).GetAwaiter(), "await Task.WhenAll(…)");
-	}
+				$"await Task.WhenAll(…).ConfigureAwait({continueOnCapturedContext.Value})")
+			: new VoidResultTaskAwaiterAdapter(Task.WhenAll(tasks).GetAwaiter(), "await Task.WhenAll(…)");
 
 	public static AwaiterAdapter CreateTaskTupleAwaiter(Task<object>[] tasks, bool? continueOnCapturedContext = null)
 	{

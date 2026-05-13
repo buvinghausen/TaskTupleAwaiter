@@ -11,9 +11,9 @@ public static class BehaviorComparisonTests
 		CanceledTask = canceled.Task;
 	}
 
-	private static Task<object> CompletedTask { get; } = Task.FromResult<object>(null);
-	private static Task<object> CanceledTask { get; }
-	private static Task<object> FailedTask { get; } = TaskFromException(new DummyException());
+	static Task<object> CompletedTask { get; } = Task.FromResult<object>(null);
+	static Task<object> CanceledTask { get; }
+	static Task<object> FailedTask { get; } = TaskFromException(new DummyException());
 
 
 	public static TheoryData<int> EachArity()
@@ -43,7 +43,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
-	private static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
+	static async Task WaitsForAllTasksToCompleteWhenAllSucceed(int arity, int whichToWaitFor)
 	{
 		TaskCompletionSource<object> source = new();
 
@@ -65,7 +65,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
-	private static async Task WaitsForAllTasksToCompleteWhenAllCancel(int arity, int whichToWaitFor)
+	static async Task WaitsForAllTasksToCompleteWhenAllCancel(int arity, int whichToWaitFor)
 	{
 		TaskCompletionSource<object> source = new();
 
@@ -91,7 +91,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachIndexForEachArity))]
-	private static async Task WaitsForAllTasksToCompleteWhenAllFail(int arity, int whichToWaitFor)
+	static async Task WaitsForAllTasksToCompleteWhenAllFail(int arity, int whichToWaitFor)
 	{
 		TaskCompletionSource<object> source = new();
 
@@ -113,7 +113,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	private static void CompletesSynchronouslyIfAllTasksWereCompletedSynchronously(int arity)
+	static void CompletesSynchronouslyIfAllTasksWereCompletedSynchronously(int arity)
 	{
 		Task<object>[] tasks = [.. Enumerable.Repeat(CompletedTask, arity)];
 
@@ -124,7 +124,7 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	private static void ResultsAreInCorrectOrder(int arity)
+	static void ResultsAreInCorrectOrder(int arity)
 	{
 		Task<object>[] tasks = [.. Enumerable.Range(0, arity)
 			.Select(index => Task.FromResult<object>(index))];
@@ -146,7 +146,7 @@ public static class BehaviorComparisonTests
 #if !NET8_0_OR_GREATER
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	private static void FirstExceptionIsThrown(int arity)
+	static void FirstExceptionIsThrown(int arity)
 	{
 		TaskCompletionSource<object>[] sources =
 			[.. Enumerable.Range(0, arity).Select(_ => new TaskCompletionSource<object>())];
@@ -163,20 +163,20 @@ public static class BehaviorComparisonTests
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	private static Task NonConfiguredAwaitUsesSynchronizationContext(int arity) =>
+	static Task NonConfiguredAwaitUsesSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, null, true);
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	private static Task ConfigureAwaitTrueUsesSynchronizationContext(int arity) =>
+	static Task ConfigureAwaitTrueUsesSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, true, true);
 
 	[Theory]
 	[MemberData(nameof(EachArity))]
-	private static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
+	static Task ConfigureAwaitFalseDoesNotUseSynchronizationContext(int arity) =>
 		AssertUsesSynchronizationContext(arity, false, false);
 
-	private static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait,
+	static async Task AssertUsesSynchronizationContext(int arity, bool? configureAwait,
 		bool shouldUseSynchronizationContext)
 	{
 		TaskCompletionSource<object> source = new();
@@ -207,7 +207,7 @@ public static class BehaviorComparisonTests
 		}
 	}
 
-	private static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters,
+	static void AssertAllAdapters(IReadOnlyCollection<AwaiterAdapter> adapters,
 		Func<AwaiterAdapter, bool> predicate)
 	{
 #if NETFRAMEWORK
@@ -221,14 +221,14 @@ public static class BehaviorComparisonTests
 		adapters.Where(adapter => !predicate.Invoke(adapter)).ShouldBeEmpty();
 	}
 
-	private static Task<object> TaskFromException(Exception exception)
+	static Task<object> TaskFromException(Exception exception)
 	{
 		TaskCompletionSource<object> source = new();
 		source.SetException(exception);
 		return source.Task;
 	}
 
-	private static IDisposable TempSyncContext(SynchronizationContext synchronizationContext)
+	static IDisposable TempSyncContext(SynchronizationContext synchronizationContext)
 	{
 		var previous = SynchronizationContext.Current;
 		SynchronizationContext.SetSynchronizationContext(synchronizationContext);

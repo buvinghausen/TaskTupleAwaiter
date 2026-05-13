@@ -31,6 +31,7 @@ var (user, orders) = await (GetUserAsync(id), GetOrdersAsync(id));
 - **Non-generic `Task` support** — await tuples of `Task` (not just `Task<T>`) when you don't need return values
 - **Zero dependencies** — a single file, no external packages (except `System.ValueTuple` on .NET Framework 4.6.2)
 - **Broad compatibility** — targets .NET Standard 2.0, .NET Framework 4.6.2, and .NET 8+
+- **NativeAOT ready** — the package sets `<IsAotCompatible>true</IsAotCompatible>` for .NET 8+ targets, and CI publishes downstream NativeAOT smoke tests
 
 ## Installation
 
