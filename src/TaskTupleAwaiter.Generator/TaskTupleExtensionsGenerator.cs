@@ -139,7 +139,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 	static void AppendTupleTaskAwaiterStruct(StringBuilder sb, int arity, string tp, string tupleType) => sb.AppendCSharp(
 		$$"""
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
-		public readonly record struct TupleTaskAwaiter<{{tp}}> : ICriticalNotifyCompletion
+		public readonly struct TupleTaskAwaiter<{{tp}}> : ICriticalNotifyCompletion
 		{
 			readonly {{tupleType}} _tasks;
 			readonly TaskAwaiter _whenAllAwaiter;
@@ -177,7 +177,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 		string tupleType, string optionsType) => sb.AppendCSharp(
 		$$"""
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
-		public readonly record struct TupleConfiguredTaskAwaitable<{{tp}}>
+		public readonly struct TupleConfiguredTaskAwaitable<{{tp}}>
 		{
 			readonly {{tupleType}} _tasks;
 			readonly {{optionsType}} _options;
@@ -193,7 +193,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 				new(_tasks, _options);
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
-			public readonly record struct Awaiter : ICriticalNotifyCompletion
+			public readonly struct Awaiter : ICriticalNotifyCompletion
 			{
 				readonly {{tupleType}} _tasks;
 				readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
