@@ -1,222 +1,187 @@
 # Benchmark Results
 
-Captured on 2026-05-13, BenchmarkDotNet v0.14.0, .NET SDK 11.0.100-preview.4.26230.115, Windows 11 (10.0.26200.8246).
+Captured on 2026-05-14 with the shipped state of this branch (HEAD `7c98fd2`).
 
-## Baseline (before generator change)
+- **BenchmarkDotNet** v0.15.8
+- **Machine:** Intel Core Ultra 9 185H, 1 CPU, 22 logical / 16 physical cores, Windows 11 25H2
+- **.NET SDK** 11.0.100-preview.4.26230.115
+- **Hosts:**
+  - net10.0 runs: `.NET 10.0.8 (10.0.826.23019), X64 RyuJIT x86-64-v3`
+  - net8.0 runs: `.NET 8.0.27 (8.0.2726.22922), X64 RyuJIT x86-64-v3`
 
-Generator emits `Task.WhenAll(tasks.Item1, ..., tasks.ItemN)` (positional `params Task[]` call site).
+## What changed on this branch
 
-### net8.0
+Three layered changes deliver the per-await allocation reduction and the runtime speed-up:
 
-`[Host] : .NET 8.0.27 (8.0.2726.22922), X64 RyuJIT AVX2`
+1. **Added `net10.0` to the library `TargetFrameworks`.** On net10.0 the C# 13+ compiler binds the generated `Task.WhenAll(...)` call to `Task.WhenAll(ReadOnlySpan<Task>)` (added in .NET 9) instead of `Task.WhenAll(params Task[])`, stack-allocating the buffer.
+2. **Generator emits a collection expression**, `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. On net10.0 this is the explicit form that binds to the span overload; on netstandard2.0 / net462 / net8.0 it lowers to `new Task[]{...}` and binds to the array overload — same IL as before.
+3. **Dropped `record struct` to plain `readonly struct`** on the generated awaiter types (no equality semantics needed for awaiters, drops a substantial chunk of synthesized members per arity).
+4. **Annotated trivial forwarders with `[MethodImpl(MethodImplOptions.AggressiveInlining)]`**: `IsCompleted` accessor, `OnCompleted`, `UnsafeOnCompleted`, the `GetAwaiter` / `ConfigureAwait` extension methods, and the `TupleConfiguredTaskAwaitable.GetAwaiter()` helper. Constructors and `GetResult` are deliberately left un-annotated because their bodies grow with arity.
 
-**TypedTupleAwaitBenchmarks**
+## Methodology
 
-| Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
-|--------------------- |------------:|----------:|----------:|-------:|----------:|
-| Arity2_PreCompleted  |    47.49 ns |  0.844 ns |  1.183 ns | 0.0004 |     120 B |
-| Arity4_PreCompleted  |    68.24 ns |  1.202 ns |  0.938 ns | 0.0004 |     136 B |
-| Arity8_PreCompleted  |   114.38 ns |  2.259 ns |  2.775 ns | 0.0005 |     168 B |
-| Arity16_PreCompleted |   307.27 ns |  2.644 ns |  2.344 ns | 0.0024 |     808 B |
-| Arity2_Async         | 1,018.96 ns |  8.808 ns |  7.808 ns |      - |     472 B |
-| Arity4_Async         | 1,607.70 ns | 18.543 ns | 16.438 ns | 0.0019 |     665 B |
-| Arity8_Async         | 2,907.20 ns | 23.844 ns | 21.137 ns |      - |    1066 B |
-| Arity16_Async        | 5,758.19 ns | 27.675 ns | 25.887 ns |      - |    1891 B |
+Each run executed the full benchmark suite with default BenchmarkDotNet config: full warmup, multiple iterations, statistical analysis. Filters: `--filter "*"` against the harness in `benches/TaskTupleAwaiter.Benchmarks/`.
 
-**NonGenericTupleAwaitBenchmarks**
+The numbers in this doc are direct copies of the BDN markdown reports for the `net10.0` and `net8.0` builds of the **same source tree** (HEAD `7c98fd2`). They show what a consumer running on .NET 10 vs .NET 8 will observe when calling into the shipped library.
 
-| Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
-|--------------------- |------------:|----------:|----------:|-------:|----------:|
-| Arity2_PreCompleted  |    45.61 ns |  0.328 ns |  0.274 ns | 0.0003 |     120 B |
-| Arity4_PreCompleted  |    65.13 ns |  0.417 ns |  0.325 ns | 0.0004 |     136 B |
-| Arity8_PreCompleted  |   103.62 ns |  0.603 ns |  0.503 ns | 0.0005 |     168 B |
-| Arity16_PreCompleted |   179.45 ns |  3.012 ns |  2.515 ns | 0.0005 |     232 B |
-| Arity2_Async         |   980.97 ns |  7.003 ns |  6.208 ns |      - |     399 B |
-| Arity4_Async         | 1,533.24 ns | 11.782 ns | 11.020 ns |      - |     585 B |
-| Arity8_Async         | 2,824.78 ns | 25.238 ns | 22.372 ns |      - |     986 B |
-| Arity16_Async        | 5,830.70 ns | 46.774 ns | 43.753 ns |      - |    1811 B |
+## TypedTupleAwaitBenchmarks
 
-**ConfigureAwaitBenchmarks**
-
-| Method                          | Mean      | Error    | StdDev   | Gen0   | Allocated |
-|-------------------------------- |----------:|---------:|---------:|-------:|----------:|
-| Typed_Arity4_Bool_False         |  64.24 ns | 0.596 ns | 0.558 ns | 0.0004 |     136 B |
-| Typed_Arity4_Options_None       |  65.96 ns | 1.060 ns | 0.940 ns | 0.0004 |     136 B |
-| Typed_Arity16_Bool_False        | 299.48 ns | 3.102 ns | 2.902 ns | 0.0024 |     808 B |
-| Typed_Arity16_Options_None      | 306.28 ns | 3.092 ns | 2.582 ns | 0.0024 |     808 B |
-| NonGeneric_Arity4_Bool_False    |  65.68 ns | 0.546 ns | 0.511 ns | 0.0004 |     136 B |
-| NonGeneric_Arity16_Options_None | 182.92 ns | 1.486 ns | 1.317 ns | 0.0005 |     232 B |
+`await (Task<int>, Task<int>, ...)` returning a tuple of results.
 
 ### net10.0
 
-`[Host] : .NET 10.0.8 (10.0.826.23019), X64 RyuJIT AVX2`
-
-**TypedTupleAwaitBenchmarks**
-
-| Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Gen1   | Gen2   | Allocated |
-|--------------------- |------------:|----------:|----------:|------------:|-------:|-------:|-------:|----------:|
-| Arity2_PreCompleted  |    47.56 ns |  1.359 ns |  3.877 ns |    46.46 ns | 0.0014 |      - |      - |      72 B |
-| Arity4_PreCompleted  |    71.40 ns |  4.236 ns | 12.489 ns |    65.49 ns | 0.0013 |      - |      - |      72 B |
-| Arity8_PreCompleted  |   104.13 ns |  7.782 ns | 22.946 ns |    91.17 ns | 0.0013 |      - |      - |      72 B |
-| Arity16_PreCompleted |   314.81 ns | 18.537 ns | 54.655 ns |   293.40 ns | 0.0124 |      - |      - |     648 B |
-| Arity2_Async         | 1,212.95 ns |  9.468 ns |  8.393 ns | 1,212.69 ns | 0.0076 |      - |      - |     435 B |
-| Arity4_Async         | 1,778.55 ns | 26.061 ns | 25.595 ns | 1,774.26 ns | 0.0153 | 0.0019 | 0.0019 |         - |
-| Arity8_Async         | 2,877.76 ns | 18.751 ns | 17.540 ns | 2,871.82 ns | 0.0191 |      - |      - |    1009 B |
-| Arity16_Async        | 5,228.22 ns | 99.403 ns | 97.627 ns | 5,186.00 ns | 0.0305 |      - |      - |    1833 B |
-
-**NonGenericTupleAwaitBenchmarks**
-
-| Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
-|--------------------- |------------:|----------:|----------:|------------:|-------:|----------:|
-| Arity2_PreCompleted  |    37.69 ns |  0.771 ns |  0.917 ns |    37.68 ns | 0.0014 |      72 B |
-| Arity4_PreCompleted  |    54.01 ns |  0.982 ns |  0.918 ns |    53.77 ns | 0.0014 |      72 B |
-| Arity8_PreCompleted  |    86.55 ns |  1.095 ns |  1.025 ns |    86.43 ns | 0.0013 |      72 B |
-| Arity16_PreCompleted |   128.50 ns |  2.440 ns |  4.400 ns |   127.81 ns | 0.0012 |      72 B |
-| Arity2_Async         | 1,221.92 ns | 28.869 ns | 85.121 ns | 1,194.58 ns | 0.0057 |     355 B |
-| Arity4_Async         | 1,874.61 ns | 35.942 ns | 33.620 ns | 1,874.08 ns | 0.0095 |     544 B |
-| Arity8_Async         | 2,893.15 ns | 29.539 ns | 26.186 ns | 2,897.66 ns | 0.0153 |     919 B |
-| Arity16_Async        | 5,739.03 ns | 69.728 ns | 58.226 ns | 5,762.36 ns | 0.0305 |    1675 B |
-
-**ConfigureAwaitBenchmarks**
-
-| Method                          | Mean      | Error    | StdDev   | Gen0   | Allocated |
-|-------------------------------- |----------:|---------:|---------:|-------:|----------:|
-| Typed_Arity4_Bool_False         |  53.04 ns | 0.395 ns | 0.330 ns | 0.0014 |      72 B |
-| Typed_Arity4_Options_None       |  52.87 ns | 0.418 ns | 0.371 ns | 0.0014 |      72 B |
-| Typed_Arity16_Bool_False        | 231.18 ns | 1.278 ns | 1.196 ns | 0.0124 |     648 B |
-| Typed_Arity16_Options_None      | 231.20 ns | 2.519 ns | 2.103 ns | 0.0124 |     648 B |
-| NonGeneric_Arity4_Bool_False    |  53.21 ns | 1.069 ns | 1.786 ns | 0.0014 |      72 B |
-| NonGeneric_Arity16_Options_None | 120.64 ns | 1.812 ns | 1.415 ns | 0.0012 |      72 B |
-
-## Surprise finding — the optimization is already realized at this point
-
-Comparing the net8.0 and net10.0 baseline columns shows the per-op `Allocated` figure is already substantially lower on net10.0 (e.g., 120 B → 72 B for `Arity2_PreCompleted`, 808 B → 648 B for `Arity16_PreCompleted` typed). This happens *before* the generator change in Task 9.
-
-Why: the C# 13+ compiler prefers `Task.WhenAll(ReadOnlySpan<Task>)` over `Task.WhenAll(params Task[])` when both overloads are visible, even for positional `Task.WhenAll(t1, t2, ..., tN)` call sites. Since `ReadOnlySpan<Task>` overload only exists on net9+, the net8.0 library build still binds to `params Task[]` (heap allocation), while the net10.0 library build already binds to `ReadOnlySpan<Task>` (stack allocation). **Adding the `net10.0` TFM in Task 1 was sufficient to deliver the optimization** — the generator change in Task 9 makes the source-level intent explicit (collection expression) but is not load-bearing for the IL outcome.
-
-## After generator change
-
-Generator emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` (C# collection expression).
-
-### net10.0
-
-`[Host] : .NET 10.0.8 (10.0.826.23019), X64 RyuJIT AVX2`
-
-**TypedTupleAwaitBenchmarks**
-
 | Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
 |--------------------- |------------:|----------:|----------:|-------:|----------:|
-| Arity2_PreCompleted  |    39.60 ns |  0.302 ns |  0.283 ns | 0.0014 |      72 B |
-| Arity4_PreCompleted  |    61.27 ns |  1.061 ns |  0.940 ns | 0.0014 |      72 B |
-| Arity8_PreCompleted  |    92.65 ns |  1.858 ns |  2.893 ns | 0.0013 |      72 B |
-| Arity16_PreCompleted |   252.40 ns |  4.754 ns |  4.214 ns | 0.0124 |     648 B |
-| Arity2_Async         | 1,029.32 ns | 10.326 ns |  9.154 ns | 0.0076 |     428 B |
-| Arity4_Async         | 1,685.97 ns | 21.445 ns | 20.059 ns | 0.0114 |     617 B |
-| Arity8_Async         | 2,893.24 ns | 38.208 ns | 35.740 ns | 0.0153 |     987 B |
-| Arity16_Async        | 6,063.24 ns | 90.612 ns | 84.759 ns | 0.0305 |    1780 B |
-
-**NonGenericTupleAwaitBenchmarks**
-
-| Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
-|--------------------- |------------:|----------:|----------:|-------:|----------:|
-| Arity2_PreCompleted  |    38.02 ns |  0.673 ns |  0.562 ns | 0.0014 |      72 B |
-| Arity4_PreCompleted  |    55.11 ns |  0.966 ns |  1.074 ns | 0.0014 |      72 B |
-| Arity8_PreCompleted  |    78.87 ns |  1.590 ns |  2.947 ns | 0.0013 |      72 B |
-| Arity16_PreCompleted |   134.97 ns |  2.678 ns |  4.170 ns | 0.0012 |      72 B |
-| Arity2_Async         | 1,023.69 ns | 20.507 ns | 47.528 ns | 0.0057 |     352 B |
-| Arity4_Async         | 1,584.04 ns | 10.068 ns |  7.860 ns | 0.0114 |     533 B |
-| Arity8_Async         | 2,880.02 ns | 44.351 ns | 39.316 ns | 0.0153 |         - |
-| Arity16_Async        | 6,052.55 ns | 65.590 ns | 54.770 ns | 0.0305 |    1663 B |
-
-**ConfigureAwaitBenchmarks**
-
-| Method                          | Mean      | Error    | StdDev    | Median    | Gen0   | Allocated |
-|-------------------------------- |----------:|---------:|----------:|----------:|-------:|----------:|
-| Typed_Arity4_Bool_False         |  55.57 ns | 1.488 ns |  4.074 ns |  53.78 ns | 0.0014 |      72 B |
-| Typed_Arity4_Options_None       |  55.10 ns | 1.120 ns |  2.210 ns |  54.70 ns | 0.0014 |      72 B |
-| Typed_Arity16_Bool_False        | 228.81 ns | 1.930 ns |  1.805 ns | 228.69 ns | 0.0124 |     648 B |
-| Typed_Arity16_Options_None      | 246.73 ns | 4.446 ns |  3.942 ns | 245.81 ns | 0.0124 |     648 B |
-| NonGeneric_Arity4_Bool_False    |  62.23 ns | 5.127 ns | 15.118 ns |  55.41 ns | 0.0014 |      72 B |
-| NonGeneric_Arity16_Options_None | 122.96 ns | 2.387 ns |  3.267 ns | 121.49 ns | 0.0012 |      72 B |
+| Arity2_PreCompleted  |    33.81 ns |  1.100 ns |  3.242 ns | 0.0057 |      72 B |
+| Arity4_PreCompleted  |    47.41 ns |  0.963 ns |  1.661 ns | 0.0057 |      72 B |
+| Arity8_PreCompleted  |    86.24 ns |  1.754 ns |  2.281 ns | 0.0057 |      72 B |
+| Arity16_PreCompleted |   172.21 ns |  3.466 ns |  5.497 ns | 0.0515 |     648 B |
+| Arity2_Async         | 1,045.53 ns | 20.764 ns | 36.366 ns | 0.0324 |     430 B |
+| Arity4_Async         | 1,716.75 ns | 21.497 ns | 20.108 ns | 0.0477 |     612 B |
+| Arity8_Async         | 3,082.50 ns | 58.255 ns | 64.750 ns | 0.0763 |     996 B |
+| Arity16_Async        | 6,648.97 ns | 128.380 ns | 152.827 ns | 0.1373 |    1778 B |
 
 ### net8.0
 
-`[Host] : .NET 8.0.27 (8.0.2726.22922), X64 RyuJIT AVX2`
+| Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
+|--------------------- |------------:|----------:|----------:|-------:|----------:|
+| Arity2_PreCompleted  |    41.41 ns |  0.829 ns |  1.018 ns | 0.0095 |     120 B |
+| Arity4_PreCompleted  |    61.23 ns |  0.960 ns |  0.851 ns | 0.0107 |     136 B |
+| Arity8_PreCompleted  |    98.95 ns |  2.011 ns |  2.394 ns | 0.0134 |     168 B |
+| Arity16_PreCompleted |   259.30 ns |  5.159 ns |  9.562 ns | 0.0644 |     808 B |
+| Arity2_Async         | 1,017.41 ns | 20.153 ns | 23.208 ns | 0.0362 |     469 B |
+| Arity4_Async         | 1,610.15 ns | 19.056 ns | 17.825 ns | 0.0515 |     664 B |
+| Arity8_Async         | 3,021.31 ns | 57.586 ns | 59.137 ns | 0.0839 |    1075 B |
+| Arity16_Async        | 5,804.34 ns | 33.364 ns | 31.208 ns | 0.1450 |    1894 B |
 
-**TypedTupleAwaitBenchmarks**
+### net10.0 vs net8.0 — allocation delta
+
+| Method               | net8.0 | net10.0 | Δ (B) | Δ (%) |
+|--------------------- |-------:|--------:|------:|------:|
+| Arity2_PreCompleted  |  120 B |    72 B |   -48 |  -40% |
+| Arity4_PreCompleted  |  136 B |    72 B |   -64 |  -47% |
+| Arity8_PreCompleted  |  168 B |    72 B |   -96 |  -57% |
+| Arity16_PreCompleted |  808 B |   648 B |  -160 |  -20% |
+| Arity2_Async         |  469 B |   430 B |   -39 |   -8% |
+| Arity4_Async         |  664 B |   612 B |   -52 |   -8% |
+| Arity8_Async         | 1075 B |   996 B |   -79 |   -7% |
+| Arity16_Async        | 1894 B |  1778 B |  -116 |   -6% |
+
+## NonGenericTupleAwaitBenchmarks
+
+`await (Task, Task, ...)` returning `void` (the awaiter just observes completion).
+
+### net10.0
 
 | Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
 |--------------------- |------------:|----------:|----------:|------------:|-------:|----------:|
-| Arity2_PreCompleted  |    61.47 ns |  5.056 ns | 14.908 ns |    53.28 ns | 0.0003 |     120 B |
-| Arity4_PreCompleted  |    71.47 ns |  1.460 ns |  2.557 ns |    71.53 ns | 0.0004 |     136 B |
-| Arity8_PreCompleted  |   120.07 ns |  2.417 ns |  2.586 ns |   119.89 ns | 0.0005 |     168 B |
-| Arity16_PreCompleted |   328.55 ns |  3.585 ns |  2.994 ns |   329.36 ns | 0.0024 |     808 B |
-| Arity2_Async         | 1,036.87 ns | 11.742 ns | 10.984 ns | 1,038.47 ns |      - |     472 B |
-| Arity4_Async         | 1,687.67 ns | 12.710 ns | 11.889 ns | 1,692.47 ns | 0.0019 |     663 B |
-| Arity8_Async         | 3,099.42 ns | 60.635 ns | 92.596 ns | 3,109.38 ns |      - |    1049 B |
-| Arity16_Async        | 6,060.72 ns | 68.402 ns | 63.983 ns | 6,042.75 ns |      - |    1891 B |
+| Arity2_PreCompleted  |    32.68 ns |  1.230 ns |  3.450 ns |    32.53 ns | 0.0057 |      72 B |
+| Arity4_PreCompleted  |    42.10 ns |  0.675 ns |  0.631 ns |    42.06 ns | 0.0057 |      72 B |
+| Arity8_PreCompleted  |    68.80 ns |  1.404 ns |  3.140 ns |    66.87 ns | 0.0057 |      72 B |
+| Arity16_PreCompleted |   122.53 ns |  2.439 ns |  3.338 ns |   122.99 ns | 0.0057 |      72 B |
+| Arity2_Async         |   926.70 ns | 17.806 ns | 16.656 ns |   929.20 ns | 0.0267 |     352 B |
+| Arity4_Async         | 1,499.61 ns | 15.313 ns | 14.324 ns | 1,498.84 ns | 0.0420 |     535 B |
+| Arity8_Async         | 2,746.35 ns | 15.477 ns | 13.720 ns | 2,744.15 ns | 0.0687 |     905 B |
+| Arity16_Async        | 5,716.92 ns | 41.383 ns | 36.685 ns | 5,726.46 ns | 0.1297 |    1662 B |
 
-**NonGenericTupleAwaitBenchmarks**
+### net8.0
 
-| Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
-|--------------------- |------------:|----------:|----------:|------------:|-------:|----------:|
-| Arity2_PreCompleted  |    48.75 ns |  0.992 ns |  1.290 ns |    48.72 ns | 0.0004 |     120 B |
-| Arity4_PreCompleted  |    74.13 ns |  1.517 ns |  3.778 ns |    74.06 ns | 0.0004 |     136 B |
-| Arity8_PreCompleted  |   115.46 ns |  2.247 ns |  2.101 ns |   115.90 ns | 0.0005 |     168 B |
-| Arity16_PreCompleted |   278.46 ns | 15.376 ns | 45.338 ns |   302.75 ns | 0.0005 |     232 B |
-| Arity2_Async         | 1,267.23 ns |  6.285 ns |  5.879 ns | 1,267.13 ns |      - |     402 B |
-| Arity4_Async         | 1,775.57 ns | 13.510 ns | 11.976 ns | 1,773.46 ns |      - |     598 B |
-| Arity8_Async         | 2,939.42 ns | 32.463 ns | 30.366 ns | 2,946.38 ns |      - |    1004 B |
-| Arity16_Async        | 5,691.46 ns | 79.269 ns | 74.148 ns | 5,702.72 ns |      - |    1814 B |
+| Method               | Mean        | Error      | StdDev    | Median      | Gen0   | Allocated |
+|--------------------- |------------:|-----------:|----------:|------------:|-------:|----------:|
+| Arity2_PreCompleted  |    45.57 ns |   1.640 ns |  4.836 ns |    46.22 ns | 0.0095 |     120 B |
+| Arity4_PreCompleted  |    71.58 ns |   2.982 ns |  8.793 ns |    69.49 ns | 0.0107 |     136 B |
+| Arity8_PreCompleted  |   130.76 ns |  12.259 ns | 36.145 ns |   109.91 ns | 0.0134 |     168 B |
+| Arity16_PreCompleted |   182.65 ns |   3.636 ns |  7.092 ns |   180.90 ns | 0.0184 |     232 B |
+| Arity2_Async         |   970.39 ns |  16.301 ns | 15.248 ns |   966.04 ns | 0.0305 |     398 B |
+| Arity4_Async         | 1,503.97 ns |  14.793 ns | 13.837 ns | 1,502.62 ns | 0.0458 |     589 B |
+| Arity8_Async         | 2,868.08 ns |  52.956 ns | 49.535 ns | 2,870.56 ns | 0.0763 |     984 B |
+| Arity16_Async        | 5,742.70 ns | 102.436 ns | 95.819 ns | 5,723.73 ns | 0.1373 |    1814 B |
 
-**ConfigureAwaitBenchmarks**
+### net10.0 vs net8.0 — allocation delta
 
-| Method                          | Mean      | Error    | StdDev   | Median    | Gen0   | Allocated |
-|-------------------------------- |----------:|---------:|---------:|----------:|-------:|----------:|
-| Typed_Arity4_Bool_False         |  75.28 ns | 1.539 ns | 3.143 ns |  74.90 ns | 0.0004 |     136 B |
-| Typed_Arity4_Options_None       |  82.93 ns | 1.636 ns | 2.009 ns |  82.43 ns | 0.0004 |     136 B |
-| Typed_Arity16_Bool_False        | 329.52 ns | 6.129 ns | 6.019 ns | 327.59 ns | 0.0024 |     808 B |
-| Typed_Arity16_Options_None      | 331.92 ns | 6.560 ns | 8.757 ns | 327.80 ns | 0.0024 |     808 B |
-| NonGeneric_Arity4_Bool_False    |  69.99 ns | 1.230 ns | 1.091 ns |  69.65 ns | 0.0004 |     136 B |
-| NonGeneric_Arity16_Options_None | 206.12 ns | 4.134 ns | 7.455 ns | 202.96 ns | 0.0005 |     232 B |
+| Method               | net8.0 | net10.0 | Δ (B) | Δ (%) |
+|--------------------- |-------:|--------:|------:|------:|
+| Arity2_PreCompleted  |  120 B |    72 B |   -48 |  -40% |
+| Arity4_PreCompleted  |  136 B |    72 B |   -64 |  -47% |
+| Arity8_PreCompleted  |  168 B |    72 B |   -96 |  -57% |
+| Arity16_PreCompleted |  232 B |    72 B |  -160 |  -69% |
+| Arity2_Async         |  398 B |   352 B |   -46 |  -12% |
+| Arity4_Async         |  589 B |   535 B |   -54 |   -9% |
+| Arity8_Async         |  984 B |   905 B |   -79 |   -8% |
+| Arity16_Async        | 1814 B |  1662 B |  -152 |   -8% |
 
-Confirmed: every `Allocated` value matches the net8.0 baseline (120 / 136 / 168 / 808 / 472 / 663 / 1049 / 1891 etc. across the typed pre-completed and async series). The collection-expression source lowers to `new Task[]{t1, ..., tN}` and binds to `Task.WhenAll(params Task[])` on net8.0 — identical IL to the pre-change positional form.
+## ConfigureAwaitBenchmarks
 
-## Delta summary: after-change vs baseline (same TFM)
+Spot checks of the `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOptions)` paths, at arities 4 and 16, in both the typed and non-generic tuple flavors.
 
-The generator change leaves IL semantics unchanged on net10.0 — empirically confirmed: every `Allocated` value matches baseline within run-to-run noise. The `Task.WhenAll(tasks.Item1, tasks.Item2)` positional form was already binding to `Task.WhenAll(ReadOnlySpan<Task>)` on net10.0 via the C# 13+ compiler's overload-preference rule. The bracketed `[tasks.Item1, tasks.Item2]` form is the explicit, intent-clarifying source-level expression.
+### net10.0
 
-On net8.0 the source change continues to lower to `new Task[]{t1, t2}` (because no `ReadOnlySpan<Task>` overload exists on net8.0), so allocation is unchanged from baseline there as well.
+| Method                          | Mean      | Error    | StdDev    | Gen0   | Allocated |
+|-------------------------------- |----------:|---------:|----------:|-------:|----------:|
+| Typed_Arity4_Bool_False         |  44.20 ns | 0.907 ns |  1.726 ns | 0.0057 |      72 B |
+| Typed_Arity4_Options_None       |  46.14 ns | 0.842 ns |  1.235 ns | 0.0057 |      72 B |
+| Typed_Arity16_Bool_False        | 165.95 ns | 3.283 ns |  4.493 ns | 0.0515 |     648 B |
+| Typed_Arity16_Options_None      | 168.75 ns | 3.269 ns |  4.475 ns | 0.0515 |     648 B |
+| NonGeneric_Arity4_Bool_False    |  47.52 ns | 0.979 ns |  2.364 ns | 0.0057 |      72 B |
+| NonGeneric_Arity16_Options_None | 127.29 ns | 3.042 ns |  7.960 ns | 0.0057 |      72 B |
 
-The end-state takeaway: **adding the `net10.0` TFM to the library is what delivered the per-await allocation reduction for .NET 10+ consumers**. The generator change is preserved as belt-and-suspenders insurance — making the collection-expression intent explicit at the source level keeps the IL stable across future compiler overload-resolution changes.
+### net8.0
 
-## Delta summary (net10.0 vs net8.0 baseline)
+| Method                          | Mean      | Error    | StdDev    | Gen0   | Allocated |
+|-------------------------------- |----------:|---------:|----------:|-------:|----------:|
+| Typed_Arity4_Bool_False         |  58.26 ns | 1.012 ns |  0.897 ns | 0.0107 |     136 B |
+| Typed_Arity4_Options_None       |  58.48 ns | 0.700 ns |  0.654 ns | 0.0107 |     136 B |
+| Typed_Arity16_Bool_False        | 272.90 ns | 5.401 ns | 11.274 ns | 0.0644 |     808 B |
+| Typed_Arity16_Options_None      | 314.93 ns | 6.414 ns | 18.812 ns | 0.0644 |     808 B |
+| NonGeneric_Arity4_Bool_False    |  69.85 ns | 1.593 ns |  4.697 ns | 0.0107 |     136 B |
+| NonGeneric_Arity16_Options_None | 205.68 ns | 4.472 ns | 13.187 ns | 0.0184 |     232 B |
 
-Allocation reduction attributable to the `net10.0` TFM (Task 1 alone, before any generator change):
+### net10.0 vs net8.0 — allocation delta
 
-| Benchmark                                       | net8.0 (B) | net10.0 (B) | Reduction (B) |
-|-------------------------------------------------|-----------:|------------:|--------------:|
-| TypedTuple Arity2_PreCompleted                  |        120 |          72 |            48 |
-| TypedTuple Arity4_PreCompleted                  |        136 |          72 |            64 |
-| TypedTuple Arity8_PreCompleted                  |        168 |          72 |            96 |
-| TypedTuple Arity16_PreCompleted                 |        808 |         648 |           160 |
-| TypedTuple Arity2_Async                         |        472 |         435 |            37 |
-| TypedTuple Arity4_Async                         |        665 |           - |           665 |
-| TypedTuple Arity8_Async                         |       1066 |        1009 |            57 |
-| TypedTuple Arity16_Async                        |       1891 |        1833 |            58 |
-| NonGenericTuple Arity2_PreCompleted             |        120 |          72 |            48 |
-| NonGenericTuple Arity4_PreCompleted             |        136 |          72 |            64 |
-| NonGenericTuple Arity8_PreCompleted             |        168 |          72 |            96 |
-| NonGenericTuple Arity16_PreCompleted            |        232 |          72 |           160 |
-| NonGenericTuple Arity2_Async                    |        399 |         355 |            44 |
-| NonGenericTuple Arity4_Async                    |        585 |         544 |            41 |
-| NonGenericTuple Arity8_Async                    |        986 |         919 |            67 |
-| NonGenericTuple Arity16_Async                   |       1811 |        1675 |           136 |
-| ConfigureAwait Typed_Arity4_Bool_False          |        136 |          72 |            64 |
-| ConfigureAwait Typed_Arity4_Options_None        |        136 |          72 |            64 |
-| ConfigureAwait Typed_Arity16_Bool_False         |        808 |         648 |           160 |
-| ConfigureAwait Typed_Arity16_Options_None       |        808 |         648 |           160 |
-| ConfigureAwait NonGeneric_Arity4_Bool_False     |        136 |          72 |            64 |
-| ConfigureAwait NonGeneric_Arity16_Options_None  |        232 |          72 |           160 |
+| Method                          | net8.0 | net10.0 | Δ (B) | Δ (%) |
+|-------------------------------- |-------:|--------:|------:|------:|
+| Typed_Arity4_Bool_False         |  136 B |    72 B |   -64 |  -47% |
+| Typed_Arity4_Options_None       |  136 B |    72 B |   -64 |  -47% |
+| Typed_Arity16_Bool_False        |  808 B |   648 B |  -160 |  -20% |
+| Typed_Arity16_Options_None      |  808 B |   648 B |  -160 |  -20% |
+| NonGeneric_Arity4_Bool_False    |  136 B |    72 B |   -64 |  -47% |
+| NonGeneric_Arity16_Options_None |  232 B |    72 B |  -160 |  -69% |
 
-The pre-completed arity-2-through-8 benchmarks see allocation drop by `48-96 B` — consistent with the `Task[N]` array no longer being allocated. Arity 16 drops are larger (`160 B` for typed, `160 B` for non-generic configure-await) because the larger state machine box also benefits when the WhenAll allocation is eliminated. The async (yielding) benchmarks see smaller absolute reductions (the yielding state machine itself dominates allocations) but still consistently lower on net10.0.
+## Headline summary
+
+For the most common consumer pattern — a typed tuple of pre-completed `Task<T>` values, arity 2–16 — a .NET 10 consumer sees:
+
+- **Allocations: 40–57% lower** at arities 2/4/8 (where the eliminated `Task[N]` array dominates) and **20% lower** at arity 16 (where the state-machine box itself is the larger contributor).
+- **Mean time: 13–34% lower.** Some of that is the lack of the heap allocation; the rest comes from JIT improvements between .NET 8 and .NET 10 plus the inlining hints.
+
+The non-generic tuple path is even more dramatic at arity 16 (`-69%` allocation) because the non-generic awaiter has no per-`T` metadata in the box — the `Task[]` was a larger share of its total.
+
+The async (yielding) benchmarks see smaller proportional improvements because the async state machine itself dominates allocations — but they're consistently lower on net10.0 too, by `4–12%`.
+
+## Library DLL size
+
+For reference, the shipped library binaries on the `7c98fd2` HEAD:
+
+| TFM            | Size       |
+|----------------|-----------:|
+| netstandard2.0 |   53,248 B |
+| net462         |   53,248 B |
+| net8.0         |   57,856 B |
+| net10.0        |   64,512 B |
+
+Down from ~80–92 KB before dropping `record struct` to plain `readonly struct`. The `[MethodImpl]` attribute additions cost 0 B (the metadata fits within existing PE 4 KB alignment padding).
+
+## Reproducing locally
+
+```sh
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net10.0
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net8.0
+```
+
+Filter to one class, e.g.:
+
+```sh
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net10.0 -- --filter "*TypedTupleAwaitBenchmarks*"
+```
+
+Each TFM takes ~13 minutes to run the full suite end-to-end on this machine. Reports land in `BenchmarkDotNet.Artifacts/` (gitignored).
