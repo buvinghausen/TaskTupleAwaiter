@@ -72,7 +72,7 @@ Resulting NuGet asset selection:
 
 Overload-resolution note: in the typed awaiter, the generic parameters `T1..TN` are distinct type parameters, so `Task.WhenAll<TResult>(params Task<TResult>[])` and its span sibling do not bind. Only the non-generic overloads (`params Task[]` and `ReadOnlySpan<Task>`) match — exactly what we want.
 
-`src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` — only the `Items(int arity)` helper changes (or its call sites), so that every `Task.WhenAll(tasks.Item1, ..., tasks.ItemN)` becomes `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. This is a purely stylistic change which has no effect on the goal of this document.
+The existing `hasAwaitOptionsProvider` feature-detection path stays as-is; it controls API surface (`ConfigureAwaitOptions` overload availability) and is unrelated to this TFM/overload-binding change.
 
 ### Benchmark project
 
