@@ -325,7 +325,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 	static string NonGenericTaskTupleType(int arity) =>
 		$"({string.Join(", ", Enumerable.Repeat("Task", arity))})";
 
-	// Returns the generated WhenAll argument list in bracket form.
+	// Returns the generated WhenAll argument list in bracket form (stylistic).
 	// Overload binding is determined by library target framework:
 	// net10.0 binds Task.WhenAll(ReadOnlySpan<Task>) (stack-allocated buffer),
 	// while netstandard2.0/net462/net8.0 bind Task.WhenAll(params Task[])

@@ -17,7 +17,7 @@ Task.WhenAll(tasks.Item1, tasks.Item2, ..., tasks.ItemN)
 
 That call binds to `Task.WhenAll(params Task[])`, which heap-allocates a `Task[N]` on every await. For a tuple of arity 16, that is 16 references plus array header per await.
 
-.NET 9 added `Task.WhenAll(scoped ReadOnlySpan<Task>)` (and its `Task<TResult>` flavor). When a C# 13+ collection expression targets a method call that has both `params Task[]` and `ReadOnlySpan<Task>` overloads, the compiler prefers the span overload and stack-allocates the buffer — zero heap allocation.
+.NET 9 added `Task.WhenAll(scoped ReadOnlySpan<Task>)` (and its `Task<TResult>` flavor). For this library, compiling the generated awaiter calls in the `net10.0` target is what enables binding to the span overload and stack-allocating the buffer — zero heap allocation.
 
 .NET 11 / C# 15's headline feature for async perf is *runtime async*. It is a **caller-side compile feature**: the consumer's async method codegen changes. The library's awaiter structs already implement the standard `ICriticalNotifyCompletion` / `IsCompleted` / `GetResult` pattern, so consumers compiling with `runtime-async=on` benefit automatically. **No library changes are required for runtime async**, and the tests already opt in for `net11.0`.
 
@@ -25,7 +25,7 @@ That call binds to `Task.WhenAll(params Task[])`, which heap-allocates a `Task[N
 
 In scope:
 1. Add `net10.0` to the library's `TargetFrameworks`.
-2. Change the generator to emit `Task.WhenAll([t1, ..., tN])` (collection-expression form) in place of `Task.WhenAll(t1, ..., tN)`.
+2. Keep the generator emitting `Task.WhenAll([t1, ..., tN])` (bracket-form syntax) as a stylistic choice.
 3. Add a `test/TaskTupleAwaiter.Benchmarks` project using BenchmarkDotNet.
 4. Add `net10.0` to the AOT smoke-test TFMs so the new generated code path is verified under NativeAOT.
 
@@ -59,7 +59,7 @@ Resulting NuGet asset selection:
 
 ### Generator change
 
-`src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` — only the `Items(int arity)` helper changes (or its call sites), so that every `Task.WhenAll(tasks.Item1, ..., tasks.ItemN)` becomes `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. This affects:
+`src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` — only the `Items(int arity)` helper changes (or its call sites), so every call remains in `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` bracket form. This affects:
 
 - `AppendTupleTaskAwaiterStruct` — typed awaiter constructor
 - `AppendTupleConfiguredTaskAwaitableStruct` — typed configured awaiter inner constructor
@@ -67,8 +67,8 @@ Resulting NuGet asset selection:
 
 **No feature detection is needed.** The C# compiler picks the overload per target framework:
 
-- `netstandard2.0` / `net462` / `net8.0`: collection expression targets `params Task[]` — compiles to `new Task[]{...}`, identical IL to today.
-- `net10.0`: collection expression targets `ReadOnlySpan<Task>` — compiles to a stack-allocated buffer via the inline-array pattern the compiler generates for collection expressions. Zero heap allocation for the task list.
+- `netstandard2.0` / `net462` / `net8.0`: calls bind to `params Task[]` — compiles to `new Task[]{...}`, identical IL to today.
+- `net10.0`: calls bind to `ReadOnlySpan<Task>` — compiles to a stack-allocated buffer. Zero heap allocation for the task list.
 
 Overload-resolution note: in the typed awaiter, the generic parameters `T1..TN` are distinct type parameters, so `Task.WhenAll<TResult>(params Task<TResult>[])` and its span sibling do not bind. Only the non-generic overloads (`params Task[]` and `ReadOnlySpan<Task>`) match — exactly what we want.
 
@@ -112,7 +112,7 @@ CI: benchmarks are not run in CI (BenchmarkDotNet runs are slow and non-determin
 
 ### AOT smoke-test update
 
-`test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj` currently has `<TargetFrameworks>net8.0;net11.0</TargetFrameworks>`. Add `net10.0` so the new generator output (collection expression binding to `ReadOnlySpan<Task>` overload) is exercised under NativeAOT.
+`test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj` currently has `<TargetFrameworks>net8.0;net11.0</TargetFrameworks>`. Add `net10.0` so the net10.0-generated code path (binding to `ReadOnlySpan<Task>` overload) is exercised under NativeAOT.
 
 Result: `<TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>`.
 
@@ -132,7 +132,7 @@ Result: `<TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>`.
 
 ## Documentation
 
-- `CLAUDE.md`: update the Technology Stack table to include `net10.0` as a library TFM, and add a short note under "Key Design Decisions" that the generator emits collection-expression `WhenAll` calls so the compiler can pick the span overload on net9+.
+- `CLAUDE.md`: update the Technology Stack table to include `net10.0` as a library TFM, and add a short note under "Key Design Decisions" that overload selection is driven by target framework (with bracket-form call syntax retained for style).
 - `README.md`: a short bullet under a "Performance" or "Targets" section noting net10.0 consumers get span-based `WhenAll`.
 - Benchmark project gets a brief `README.md` describing how to run it locally.
 

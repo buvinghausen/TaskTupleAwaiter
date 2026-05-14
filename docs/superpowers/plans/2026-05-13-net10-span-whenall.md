@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM and updating generated `WhenAll` call syntax; add a BenchmarkDotNet project to measure the win.
+**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM; keep the generated bracket-form `WhenAll` syntax as a stylistic choice; add a BenchmarkDotNet project to measure the win.
 
 **Architecture:** Add `net10.0` as a fourth library TFM. Keep generated calls in the `Task.WhenAll([t1, ..., tN])` syntax form. Overload selection is driven by the targeted library TFM: `netstandard2.0`/`net462`/`net8.0` bind to `params Task[]` (unchanged IL), while `net10.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
 
@@ -583,7 +583,7 @@ git commit -m "Capture baseline benchmark numbers"
 
 ---
 
-## Task 9: Update generator to emit collection expression
+## Task 9: Update generator to emit bracket-form syntax (stylistic)
 
 **Files:**
 - Modify: `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` — line ~308, the `Items` helper
