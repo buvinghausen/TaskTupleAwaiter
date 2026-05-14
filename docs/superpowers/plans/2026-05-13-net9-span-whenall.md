@@ -1,14 +1,14 @@
-# net10.0 Span-Based WhenAll + BenchmarkDotNet Implementation Plan
+# net9.0 Span-Based WhenAll + BenchmarkDotNet Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM and changing the source generator to emit collection-expression `WhenAll` calls; add a BenchmarkDotNet project to measure the win.
+**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 9+ consumers by adding a `net9.0` TFM so that the span-based `Task.WhenAll` overload is used; add a BenchmarkDotNet project to measure the win.
 
-**Architecture:** Add `net10.0` as a fourth library TFM. Change the generator's `Items` helper so every generated `Task.WhenAll(t1, ..., tN)` becomes `Task.WhenAll([t1, ..., tN])`. The C# 14 compiler picks `params Task[]` on `netstandard2.0`/`net462`/`net8.0` (unchanged IL) and `ReadOnlySpan<Task>` on `net10.0` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
+**Architecture:** Add `net9.0` as a fourth library TFM. Overload selection for `Task.WhenAll` is driven by the targeted library TFM: `netstandard2.0`/`net462`/`net8.0` bind to `params Task[]` (unchanged IL), while `net9.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
 
 **Tech Stack:** Roslyn `IIncrementalGenerator`, BenchmarkDotNet, xUnit v3, NativeAOT publish for smoke testing, MSBuild multi-TFM, C# 14 collection expressions.
 
-**Spec:** `docs/superpowers/specs/2026-05-13-net10-span-whenall-design.md`
+**Spec:** `docs/superpowers/specs/2026-05-13-net9-span-whenall-design.md`
 
 ---
 
@@ -18,55 +18,55 @@
 
 | Path | Purpose |
 |---|---|
-| `test/TaskTupleAwaiter.Benchmarks/TaskTupleAwaiter.Benchmarks.csproj` | Exe project, net8.0;net10.0, BenchmarkDotNet, refs library |
+| `test/TaskTupleAwaiter.Benchmarks/TaskTupleAwaiter.Benchmarks.csproj` | Exe project, net8.0;net9.0, BenchmarkDotNet, refs library |
 | `test/TaskTupleAwaiter.Benchmarks/Program.cs` | `BenchmarkSwitcher` entry point |
 | `test/TaskTupleAwaiter.Benchmarks/TypedTupleAwaitBenchmarks.cs` | `(Task<int>, Task<int>, ...)` tuple awaits, arities 2/4/8/16, pre-completed + async |
 | `test/TaskTupleAwaiter.Benchmarks/NonGenericTupleAwaitBenchmarks.cs` | `(Task, Task, ...)` tuple awaits, same shape |
 | `test/TaskTupleAwaiter.Benchmarks/ConfigureAwaitBenchmarks.cs` | `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOptions)` variants |
 | `test/TaskTupleAwaiter.Benchmarks/README.md` | How to run, what to expect |
-| `docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md` | Captured baseline + post-change numbers |
+| `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md` | Captured baseline + post-change numbers |
 
 **Files modified:**
 
 | Path | Change |
 |---|---|
-| `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj` | Add `net10.0` to `TargetFrameworks` |
-| `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` | Change `Items` helper so output is wrapped `[...]` (collection expression) |
-| `test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj` | Add `net10.0` to `TargetFrameworks` |
-| `CLAUDE.md` | Note `net10.0` TFM and collection-expression emission in design decisions |
-| `README.md` | Short perf note for net10+ consumers |
+| `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj` | Add `net9.0` to `TargetFrameworks` |
+| `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` | Change `Items` helper so output is wrapped `[...]` |
+| `test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj` | Add `net9.0` to `TargetFrameworks` |
+| `CLAUDE.md` | Note `net9.0` TFM behavior in design decisions |
+| `README.md` | Short perf note for net9+ consumers |
 
 **Files unchanged but referenced for context:**
 
-- `test/Directory.Build.props` — already targets `net11.0;net10.0;net9.0;net8.0;net472` for test projects; the benchmark project will need to opt out of the inherited xUnit/Shouldly bits like the AOT smoke test does.
+- `test/Directory.Build.props` — already targets `net11.0;net9.0;net8.0;net472` for test projects; the benchmark project will need to opt out of the inherited xUnit/Shouldly bits like the AOT smoke test does.
 - `Directory.Build.props` (root) — sets `LangVersion=latest`, no change needed.
 
 ---
 
-## Task 1: Add `net10.0` TFM to the library
+## Task 1: Add `net9.0` TFM to the library
 
 **Files:**
 - Modify: `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj`
 
-- [ ] **Step 1: Confirm net10 SDK is installed**
+- [ ] **Step 1: Confirm net9 SDK is installed**
 
 Run: `dotnet --list-sdks`
-Expected: a line starting with `10.` is present. If not present, install via `winget install Microsoft.DotNet.SDK.10` (or download the .NET 10 SDK) and rerun.
+Expected: a line starting with `10.` is present. If not present, install via `winget install Microsoft.DotNet.SDK.9` (or download the .NET 9 SDK) and rerun.
 
 - [ ] **Step 2: Verify baseline build is clean before touching anything**
 
 Run: `dotnet build -c Release`
 Expected: build succeeds for all current TFMs (`netstandard2.0`, `net462`, `net8.0`). No warnings escalated to errors.
 
-- [ ] **Step 3: Add `net10.0` to library `TargetFrameworks`**
+- [ ] **Step 3: Add `net9.0` to library `TargetFrameworks`**
 
-In `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj`, replace the existing `PropertyGroup` block to declare the TFMs explicitly. Current file has no `<TargetFrameworks>` element because it inherits `<TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>` from a default — open the file and confirm where TFMs are declared, then add or extend that list to `netstandard2.0;net462;net8.0;net10.0`.
+In `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj`, replace the existing `PropertyGroup` block to declare the TFMs explicitly. Current file has no `<TargetFrameworks>` element because it inherits `<TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>` from a default — open the file and confirm where TFMs are declared, then add or extend that list to `netstandard2.0;net462;net8.0;net9.0`.
 
 Concretely, the csproj should contain:
 
 ```xml
 <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net462;net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net462;net8.0;net9.0</TargetFrameworks>
     <Title>TaskTupleAwaiter</Title>
     <Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 
@@ -82,18 +82,18 @@ If a `TargetFrameworks` element already exists elsewhere (`Directory.Build.props
 - [ ] **Step 4: Build all TFMs**
 
 Run: `dotnet build -c Release`
-Expected: build succeeds for all four TFMs. Inspect `src/TaskTupleAwaiter/bin/Release/` and confirm four subfolders exist: `netstandard2.0`, `net462`, `net8.0`, `net10.0`, each containing `TaskTupleAwaiter.dll`.
+Expected: build succeeds for all four TFMs. Inspect `src/TaskTupleAwaiter/bin/Release/` and confirm four subfolders exist: `netstandard2.0`, `net462`, `net8.0`, `net9.0`, each containing `TaskTupleAwaiter.dll`.
 
 - [ ] **Step 5: Run tests on every test TFM**
 
 Run: `dotnet test -c Release`
-Expected: all tests pass on `net472`, `net8.0`, `net9.0`, `net10.0`, `net11.0` (the test project already targets these via `test/Directory.Build.props`).
+Expected: all tests pass on `net472`, `net8.0`, `net9.0`, `net9.0`, `net11.0` (the test project already targets these via `test/Directory.Build.props`).
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add src/TaskTupleAwaiter/TaskTupleAwaiter.csproj
-git commit -m "Add net10.0 TFM to library"
+git commit -m "Add net9.0 TFM to library"
 ```
 
 ---
@@ -118,7 +118,7 @@ Create `test/TaskTupleAwaiter.Benchmarks/TaskTupleAwaiter.Benchmarks.csproj` wit
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -183,11 +183,11 @@ This top-level statement form makes `Program` an implicit class so `typeof(Progr
 - [ ] **Step 2: Build benchmarks project (smoke)**
 
 Run: `dotnet build test/TaskTupleAwaiter.Benchmarks -c Release`
-Expected: build succeeds for `net8.0` and `net10.0`. No warnings.
+Expected: build succeeds for `net8.0` and `net9.0`. No warnings.
 
 - [ ] **Step 3: Run the benchmarks runner with `--help`**
 
-Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- --help`
+Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 -- --help`
 Expected: BenchmarkDotNet help text printed. No exception. (No benchmark classes yet so `--list` would show zero items — `--help` is enough to confirm the entry point compiles and BDN initializes.)
 
 - [ ] **Step 4: Commit**
@@ -273,12 +273,12 @@ Note: tabs for indentation per repo convention.
 - [ ] **Step 2: Build to verify all four library TFMs of generated extensions resolve**
 
 Run: `dotnet build test/TaskTupleAwaiter.Benchmarks -c Release`
-Expected: build succeeds for `net8.0` and `net10.0`. The benchmark uses `await (Task<int>, Task<int>, ...)` syntax which exercises the library's generated `GetAwaiter` extension methods.
+Expected: build succeeds for `net8.0` and `net9.0`. The benchmark uses `await (Task<int>, Task<int>, ...)` syntax which exercises the library's generated `GetAwaiter` extension methods.
 
 - [ ] **Step 3: Smoke-run a single benchmark**
 
-Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- --filter "*Arity2_PreCompleted*"`
-Expected: BenchmarkDotNet runs and reports `Mean`, `Allocated`, etc. for `Arity2_PreCompleted` on net10. Takes 30-60 seconds. No crashes.
+Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 -- --filter "*Arity2_PreCompleted*"`
+Expected: BenchmarkDotNet runs and reports `Mean`, `Allocated`, etc. for `Arity2_PreCompleted` on net9. Takes 30-60 seconds. No crashes.
 
 - [ ] **Step 4: Commit**
 
@@ -365,8 +365,8 @@ Expected: build succeeds.
 
 - [ ] **Step 3: Smoke-run a single benchmark**
 
-Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- --filter "*NonGenericTupleAwaitBenchmarks.Arity2_PreCompleted*"`
-Expected: BDN reports results for `Arity2_PreCompleted` on net10. No crashes.
+Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 -- --filter "*NonGenericTupleAwaitBenchmarks.Arity2_PreCompleted*"`
+Expected: BDN reports results for `Arity2_PreCompleted` on net9. No crashes.
 
 - [ ] **Step 4: Commit**
 
@@ -450,7 +450,7 @@ Expected: build succeeds.
 
 - [ ] **Step 3: Smoke-run a single benchmark**
 
-Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- --filter "*ConfigureAwaitBenchmarks.Typed_Arity4_Bool_False*"`
+Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 -- --filter "*ConfigureAwaitBenchmarks.Typed_Arity4_Bool_False*"`
 Expected: BDN reports results. No crashes.
 
 - [ ] **Step 4: Commit**
@@ -481,14 +481,14 @@ BenchmarkDotNet harness measuring the allocation and time profile of awaiting `V
 - Pre-completed (`Task.FromResult`) and async (`Task.Yield`) completion modes
 - `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOptions)` paths
 
-The point of these benchmarks is to compare allocation profiles between `net8.0` (where the generated `Task.WhenAll(...)` call binds to `params Task[]` and heap-allocates the array) and `net10.0` (where it binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates).
+The point of these benchmarks is to compare allocation profiles between `net8.0` (where the generated `Task.WhenAll(...)` call binds to `params Task[]` and heap-allocates the array) and `net9.0` (where it binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates).
 
 ## Running
 
-Run all benchmarks on net10.0:
+Run all benchmarks on net9.0:
 
 ```sh
-dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0
+dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0
 ```
 
 Run all benchmarks on net8.0:
@@ -500,15 +500,15 @@ dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net8.0
 Filter to one class:
 
 ```sh
-dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- --filter "*TypedTupleAwaitBenchmarks*"
+dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 -- --filter "*TypedTupleAwaitBenchmarks*"
 ```
 
 ## Expected outcome
 
-After the generator change to emit collection-expression `Task.WhenAll([...])`:
+With the `net9.0` library target in place:
 
 - **net8.0:** allocations and timing unchanged from baseline. Same IL as today.
-- **net10.0:** `Allocated` per op drops by approximately `24 + 8·N` bytes (the `Task[N]` array we no longer allocate). Mean time per op is flat or slightly improved due to reduced GC pressure.
+- **net9.0:** `Allocated` per op drops by approximately `24 + 8·N` bytes (the `Task[N]` array we no longer allocate). Mean time per op is flat or slightly improved due to reduced GC pressure.
 
 ## Not run in CI
 
@@ -527,7 +527,7 @@ git commit -m "Document how to run the benchmarks"
 ## Task 8: Capture baseline benchmark numbers
 
 **Files:**
-- Create: `docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md`
+- Create: `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md`
 
 - [ ] **Step 1: Run full benchmark suite on net8.0**
 
@@ -535,16 +535,16 @@ Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net8.0
 (Run `dotnet build -c Release` first if you skipped the smoke runs above.)
 Expected: full suite completes. Takes several minutes. Per-method `Mean` and `Allocated` columns appear in the summary table.
 
-- [ ] **Step 2: Run full benchmark suite on net10.0**
+- [ ] **Step 2: Run full benchmark suite on net9.0**
 
-Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 --no-build`
+Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 --no-build`
 Expected: full suite completes. Per-method `Mean` and `Allocated` columns appear.
 
 - [ ] **Step 3: Capture summary tables**
 
 BenchmarkDotNet writes Markdown reports to `BenchmarkDotNet.Artifacts/results/*.md` in the project directory. Locate the most recent `*-report-github.md` files (one per benchmark class per TFM).
 
-Create `docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md` with this structure:
+Create `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md` with this structure:
 
 ```markdown
 # Benchmark Results
@@ -563,9 +563,9 @@ Generator emits `Task.WhenAll(tasks.Item1, ..., tasks.ItemN)`.
 
 [paste ConfigureAwaitBenchmarks-report-github.md table here]
 
-### net10.0
+### net9.0
 
-[paste the same three tables for net10.0 here]
+[paste the same three tables for net9.0 here]
 
 ## After generator change
 
@@ -577,13 +577,13 @@ Fill in the bracketed placeholders with the actual report contents. Keep the per
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md
+git add docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md
 git commit -m "Capture baseline benchmark numbers"
 ```
 
 ---
 
-## Task 9: Update generator to emit collection expression
+## Task 9: Update generator to emit bracket-form syntax (stylistic)
 
 **Files:**
 - Modify: `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` — line ~308, the `Items` helper
@@ -609,7 +609,7 @@ static string Items(int arity) =>
 	$"[{string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"))}]";
 ```
 
-Effect: every generated `Task.WhenAll({Items(arity)})` call site (5 locations in this file, all already inspecting `Task.WhenAll(...)`) now emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` — a C# 14 collection expression that the compiler binds to `params Task[]` on TFMs without the span overload (identical IL to today) and to `ReadOnlySpan<Task>` on net9+ (stack-allocated buffer).
+Effect: every generated `Task.WhenAll({Items(arity)})` call site (5 locations in this file, all already inspecting `Task.WhenAll(...)`) emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload selection comes from target framework availability and compiler preference: TFMs without the span overload bind to `params Task[]` (identical IL to today), while `net9.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer).
 
 - [ ] **Step 3: Build the library**
 
@@ -618,7 +618,7 @@ Expected: build succeeds for all four TFMs. No warnings.
 
 - [ ] **Step 4: Inspect generated source**
 
-Open `src/TaskTupleAwaiter/obj/Release/net10.0/generated/TaskTupleAwaiter.Generator/TaskTupleAwaiter.Generator.TaskTupleExtensionsGenerator/TaskTupleExtensions.g.cs` and confirm at least one `WhenAll` call uses brackets, e.g.:
+Open `src/TaskTupleAwaiter/obj/Release/net9.0/generated/TaskTupleAwaiter.Generator/TaskTupleAwaiter.Generator.TaskTupleExtensionsGenerator/TaskTupleExtensions.g.cs` and confirm at least one `WhenAll` call uses brackets, e.g.:
 
 ```csharp
 _whenAllAwaiter = Task.WhenAll([tasks.Item1, tasks.Item2]).GetAwaiter();
@@ -635,7 +635,7 @@ Expected: all tests pass on every test TFM. Semantics are unchanged — only the
 
 ```bash
 git add src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs
-git commit -m "Emit collection-expression WhenAll calls for span overload on net10+"
+git commit -m "Emit bracket-form WhenAll calls in generated extensions"
 ```
 
 ---
@@ -643,26 +643,26 @@ git commit -m "Emit collection-expression WhenAll calls for span overload on net
 ## Task 10: Re-run benchmarks and record post-change numbers
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md`
+- Modify: `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md`
 
 - [ ] **Step 1: Re-run net8.0 suite**
 
 Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net8.0`
 Expected: completes. `Allocated` columns should be **identical** to baseline (within run-to-run noise). If they differ materially, the source change has affected the older TFM and Task 9's change needs revisiting.
 
-- [ ] **Step 2: Re-run net10.0 suite**
+- [ ] **Step 2: Re-run net9.0 suite**
 
-Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0`
-Expected: completes. `Allocated` columns should be **lower** than baseline net10.0 for every benchmark, by approximately `24 + 8·N` bytes (typical `Task[N]` array overhead on 64-bit) per op for arity-N benchmarks.
+Run: `dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0`
+Expected: completes. `Allocated` columns should be **lower** than baseline net9.0 for every benchmark, by approximately `24 + 8·N` bytes (typical `Task[N]` array overhead on 64-bit) per op for arity-N benchmarks.
 
 - [ ] **Step 3: Update the results doc**
 
-Open `docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md` and fill in the "After generator change" section with the new tables, mirroring the baseline structure.
+Open `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md` and fill in the "After generator change" section with the new tables, mirroring the baseline structure.
 
-Add a "Delta summary" subsection at the bottom showing per-arity allocation reduction on net10, e.g.:
+Add a "Delta summary" subsection at the bottom showing per-arity allocation reduction on net9, e.g.:
 
 ```markdown
-## Delta summary (net10.0 only)
+## Delta summary (net9.0 only)
 
 | Benchmark | Baseline allocated | After allocated | Reduction |
 |---|---|---|---|
@@ -675,13 +675,13 @@ Fill the cells with actual numbers from the reports.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md
+git add docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md
 git commit -m "Record post-change benchmark numbers"
 ```
 
 ---
 
-## Task 11: Add `net10.0` to AOT smoke test
+## Task 11: Add `net9.0` to AOT smoke test
 
 **Files:**
 - Modify: `test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj`
@@ -697,19 +697,19 @@ In `test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj`, ch
 to:
 
 ```xml
-<TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>
+<TargetFrameworks>net8.0;net9.0;net11.0</TargetFrameworks>
 ```
 
-- [ ] **Step 2: Publish for net10.0**
+- [ ] **Step 2: Publish for net9.0**
 
-Run: `dotnet publish test/TaskTupleAwaiter.AotSmokeTest -c Release -f net10.0`
-Expected: publish succeeds. The published exe is in `test/TaskTupleAwaiter.AotSmokeTest/bin/Release/net10.0/<rid>/publish/`. AOT analyzer emits no errors or warnings.
+Run: `dotnet publish test/TaskTupleAwaiter.AotSmokeTest -c Release -f net9.0`
+Expected: publish succeeds. The published exe is in `test/TaskTupleAwaiter.AotSmokeTest/bin/Release/net9.0/<rid>/publish/`. AOT analyzer emits no errors or warnings.
 
 - [ ] **Step 3: Run the published exe**
 
 Run: locate the published exe (the project's `<rid>` is host-specific; on Windows x64 it'd be `win-x64`) and run it.
 
-For Windows x64: `test\TaskTupleAwaiter.AotSmokeTest\bin\Release\net10.0\win-x64\publish\TaskTupleAwaiter.AotSmokeTest.exe`
+For Windows x64: `test\TaskTupleAwaiter.AotSmokeTest\bin\Release\net9.0\win-x64\publish\TaskTupleAwaiter.AotSmokeTest.exe`
 
 Expected: program prints the expected smoke output (matches the existing net8.0 / net11.0 runs) and exits 0.
 
@@ -722,7 +722,7 @@ Expected: publishes for all three TFMs without error.
 
 ```bash
 git add test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj
-git commit -m "Add net10.0 to AOT smoke test TFMs"
+git commit -m "Add net9.0 to AOT smoke test TFMs"
 ```
 
 ---
@@ -744,7 +744,7 @@ In `CLAUDE.md`, find the Technology Stack table. Change the "Library TFMs" row f
 to:
 
 ```
-| Library TFMs | netstandard2.0, net462, net8.0, net10.0 |
+| Library TFMs | netstandard2.0, net462, net8.0, net9.0 |
 ```
 
 - [ ] **Step 2: Update `CLAUDE.md` Key Design Decisions section**
@@ -752,7 +752,7 @@ to:
 Under the "Source Generator (`TaskTupleExtensionsGenerator`)" subsection, add a new bullet after the existing `Feature-detects ConfigureAwaitOptions...` bullet:
 
 ```markdown
-- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` as a **collection expression** so the C# compiler picks `params Task[]` on `netstandard2.0`/`net462`/`net8.0` (same IL as before) and `Task.WhenAll(ReadOnlySpan<Task>)` on `net10.0`+, eliminating the per-await `Task[]` heap allocation. No runtime feature detection needed.
+- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload selection comes from the targeted TFM: `params Task[]` on `netstandard2.0`/`net462`/`net8.0` (same IL as before) and `Task.WhenAll(ReadOnlySpan<Task>)` on `net9.0`+, eliminating the per-await `Task[]` heap allocation. No runtime feature detection needed.
 ```
 
 - [ ] **Step 3: Update `README.md`**
@@ -767,10 +767,10 @@ Add:
 - `netstandard2.0` — broadest compatibility
 - `net462` — .NET Framework consumers
 - `net8.0` — LTS
-- `net10.0` — current LTS; uses `Task.WhenAll(ReadOnlySpan<Task>)` to eliminate the per-await `Task[]` heap allocation
+- `net9.0` — STS; uses `Task.WhenAll(ReadOnlySpan<Task>)` to eliminate the per-await `Task[]` heap allocation
 ```
 
-(Adjust the wording to fit the existing README tone — keep the bullet about net10's allocation win.)
+(Adjust the wording to fit the existing README tone — keep the bullet about net9's allocation win.)
 
 - [ ] **Step 4: Verify both docs render correctly**
 
@@ -781,7 +781,7 @@ Open `CLAUDE.md` and `README.md` and confirm formatting looks right.
 
 ```bash
 git add CLAUDE.md README.md
-git commit -m "Document net10.0 TFM and span WhenAll emission"
+git commit -m "Document net9.0 TFM and span WhenAll emission"
 ```
 
 ---
@@ -801,20 +801,20 @@ Expected: all tests pass on every test TFM.
 - [ ] **Step 3: AOT publish for every smoke-test TFM**
 
 Run: `dotnet publish test/TaskTupleAwaiter.AotSmokeTest -c Release`
-Expected: publishes for `net8.0`, `net10.0`, `net11.0`. No AOT warnings.
+Expected: publishes for `net8.0`, `net9.0`, `net11.0`. No AOT warnings.
 
 - [ ] **Step 4: Confirm package layout**
 
 Run: `dotnet pack src/TaskTupleAwaiter -c Release`
-Expected: produces `TaskTupleAwaiter.<version>.nupkg` containing `lib/netstandard2.0/`, `lib/net462/`, `lib/net8.0/`, `lib/net10.0/`. Inspect with `dotnet tool run dotnet-pack-check` or open the `.nupkg` as a zip and verify the four lib folders.
+Expected: produces `TaskTupleAwaiter.<version>.nupkg` containing `lib/netstandard2.0/`, `lib/net462/`, `lib/net8.0/`, `lib/net9.0/`. Inspect with `dotnet tool run dotnet-pack-check` or open the `.nupkg` as a zip and verify the four lib folders.
 
 - [ ] **Step 5: Confirm benchmark results doc is complete**
 
-Open `docs/superpowers/specs/2026-05-13-net10-span-whenall-benchmark-results.md` and verify:
+Open `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md` and verify:
 - Both "Baseline" and "After generator change" sections are populated.
 - "Delta summary" table exists with non-empty rows.
 - net8.0 delta values are ≈ 0 (within noise).
-- net10.0 delta values show consistent allocation reduction.
+- net9.0 delta values show consistent allocation reduction.
 
 If any of those is missing, return to Task 8 or Task 10 to capture the missing data.
 
@@ -836,5 +836,5 @@ No automatic push. Hand back to the user with the commit list and offer to open 
 - **Don't `--no-verify` past failing hooks.** If a pre-commit hook fails, diagnose and fix rather than bypass.
 - **Generator output location** depends on the project's `obj/` structure and the analyzer's namespace. If you can't find `TaskTupleExtensions.g.cs` in the path given, run `dotnet build` with `-bl` to produce a binlog and inspect, or `find obj -name TaskTupleExtensions.g.cs`.
 - **BenchmarkDotNet artifacts** land in `BenchmarkDotNet.Artifacts/` adjacent to the project directory. Don't commit them — add to `.gitignore` if not already excluded (the repo's existing `.gitignore` likely covers `bin/` and `obj/` but not `BenchmarkDotNet.Artifacts/`; add an entry if missing).
-- **If a `dotnet --list-sdks` doesn't show .NET 10** at Task 1, install it via your platform's installer or `winget install Microsoft.DotNet.SDK.10` before continuing. Don't try to suppress the missing-TFM error.
+- **If a `dotnet --list-sdks` doesn't show .NET 9** at Task 1, install it via your platform's installer or `winget install Microsoft.DotNet.SDK.9` before continuing. Don't try to suppress the missing-TFM error.
 - **If the collection expression fails to compile** on netstandard2.0/net462 at Task 9 (e.g., because of a `LangVersion` quirk), check `Directory.Build.props` — it sets `LangVersion=latest` which should handle C# 14 collection expressions on all TFMs. If not, the fallback is to feature-detect at the generator level (the spec's "Risks" section calls this out as the contingency path).

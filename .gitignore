@@ -157,3 +157,13 @@ coverage.*.info
 coverage.*.json
 coverage.*.xml
 
+
+# BenchmarkDotNet output
+BenchmarkDotNet.Artifacts/
+
+# Local `dotnet pack` artifacts (we publish from CI, not from working copies)
+*.nupkg
+*.snupkg
+
+# Claude worktree fiesta
+.claude/

@@ -68,10 +68,12 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			#region (Task<T1>)
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static TaskAwaiter<T1> GetAwaiter<T1>(this ValueTuple<Task<T1>> tasks) =>
 				tasks.Item1.GetAwaiter();
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<Task<T1>> tasks, bool continueOnCapturedContext) =>
 				tasks.Item1.ConfigureAwait(continueOnCapturedContext);
 
@@ -81,9 +83,10 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			sb.AppendCSharp(
 				"""
 				/// <summary>This type and its members are intended for use by the compiler.</summary>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static ConfiguredTaskAwaitable<T1> ConfigureAwait<T1>(this ValueTuple<Task<T1>> tasks, ConfigureAwaitOptions options) =>
 					tasks.Item1.ConfigureAwait(options);
-					
+
 				""");
 
 		sb.AppendCSharp(
@@ -107,10 +110,12 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			#region (Task<T1>..Task<T{arity}>)
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static TupleTaskAwaiter<{tp}> GetAwaiter<{tp}>(this {tupleType} tasks) =>
 				new(tasks);
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static TupleConfiguredTaskAwaitable<{tp}> ConfigureAwait<{tp}>(this {tupleType} tasks, bool continueOnCapturedContext) =>
 				new(tasks, {configureAwaitBoolArg});
 
@@ -120,6 +125,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			sb.AppendCSharp(
 				$"""
 				/// <summary>This type and its members are intended for use by the compiler.</summary>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static TupleConfiguredTaskAwaitable<{tp}> ConfigureAwait<{tp}>(this {tupleType} tasks, ConfigureAwaitOptions options) =>
 					new(tasks, options);
 
@@ -139,7 +145,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 	static void AppendTupleTaskAwaiterStruct(StringBuilder sb, int arity, string tp, string tupleType) => sb.AppendCSharp(
 		$$"""
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
-		public readonly record struct TupleTaskAwaiter<{{tp}}> : ICriticalNotifyCompletion
+		public readonly struct TupleTaskAwaiter<{{tp}}> : ICriticalNotifyCompletion
 		{
 			readonly {{tupleType}} _tasks;
 			readonly TaskAwaiter _whenAllAwaiter;
@@ -151,15 +157,20 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			}
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
-			public bool IsCompleted =>
-				_whenAllAwaiter.IsCompleted;
+			public bool IsCompleted
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => _whenAllAwaiter.IsCompleted;
+			}
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void OnCompleted(Action continuation) =>
 				_whenAllAwaiter.OnCompleted(continuation);
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
 			[SecurityCritical]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void UnsafeOnCompleted(Action continuation) =>
 				_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
@@ -177,7 +188,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 		string tupleType, string optionsType) => sb.AppendCSharp(
 		$$"""
 		/// <summary>This type and its members are intended for use by the compiler.</summary>
-		public readonly record struct TupleConfiguredTaskAwaitable<{{tp}}>
+		public readonly struct TupleConfiguredTaskAwaitable<{{tp}}>
 		{
 			readonly {{tupleType}} _tasks;
 			readonly {{optionsType}} _options;
@@ -189,11 +200,12 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			}
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Awaiter GetAwaiter() =>
 				new(_tasks, _options);
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
-			public readonly record struct Awaiter : ICriticalNotifyCompletion
+			public readonly struct Awaiter : ICriticalNotifyCompletion
 			{
 				readonly {{tupleType}} _tasks;
 				readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _whenAllAwaiter;
@@ -205,15 +217,20 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 				}
 
 				/// <summary>This type and its members are intended for use by the compiler.</summary>
-				public bool IsCompleted => 
-					_whenAllAwaiter.IsCompleted;
+				public bool IsCompleted
+				{
+					[MethodImpl(MethodImplOptions.AggressiveInlining)]
+					get => _whenAllAwaiter.IsCompleted;
+				}
 
 				/// <summary>This type and its members are intended for use by the compiler.</summary>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public void OnCompleted(Action continuation) =>
 					_whenAllAwaiter.OnCompleted(continuation);
 
 				/// <summary>This type and its members are intended for use by the compiler.</summary>
 				[SecurityCritical]
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public void UnsafeOnCompleted(Action continuation) =>
 					_whenAllAwaiter.UnsafeOnCompleted(continuation);
 
@@ -237,10 +254,12 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			#region Task
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static TaskAwaiter GetAwaiter(this ValueTuple<Task> tasks) =>
 				tasks.Item1.GetAwaiter();
 
 			/// <summary>This type and its members are intended for use by the compiler.</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static ConfiguredTaskAwaitable ConfigureAwait(this ValueTuple<Task> tasks, bool continueOnCapturedContext) =>
 				tasks.Item1.ConfigureAwait(continueOnCapturedContext);
 
@@ -250,6 +269,7 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 			sb.AppendCSharp(
 				"""
 				/// <summary>This type and its members are intended for use by the compiler.</summary>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static ConfiguredTaskAwaitable ConfigureAwait(this ValueTuple<Task> tasks, ConfigureAwaitOptions options) =>
 					tasks.Item1.ConfigureAwait(options);
 
@@ -305,8 +325,13 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 	static string NonGenericTaskTupleType(int arity) =>
 		$"({string.Join(", ", Enumerable.Repeat("Task", arity))})";
 
+	// Returns the generated WhenAll argument list in bracket form (stylistic).
+	// Overload binding is determined by library target framework:
+	// net9.0 binds Task.WhenAll(ReadOnlySpan<Task>) (stack-allocated buffer),
+	// while netstandard2.0/net462/net8.0 bind Task.WhenAll(params Task[])
+	// (array allocation, same IL shape as before this change).
 	static string Items(int arity) =>
-		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"));
+		$"[{string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"))}]";
 
 	static string Results(int arity) =>
 		string.Join(", ", Enumerable.Range(1, arity).Select(i => $"_tasks.Item{i}.Result"));
