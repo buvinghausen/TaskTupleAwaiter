@@ -25,7 +25,7 @@ That call binds to `Task.WhenAll(params Task[])`, which heap-allocates a `Task[N
 
 In scope:
 1. Add `net10.0` to the library's `TargetFrameworks`.
-2. Keep the generator emitting `Task.WhenAll([t1, ..., tN])` (bracket-form syntax) as a stylistic choice.
+2. Change the generator to emit `Task.WhenAll([t1, ..., tN])` (bracket-form syntax) as a stylistic choice.
 3. Add a `test/TaskTupleAwaiter.Benchmarks` project using BenchmarkDotNet.
 4. Add `net10.0` to the AOT smoke-test TFMs so the new generated code path is verified under NativeAOT.
 
