@@ -9,7 +9,7 @@ TaskTupleAwaiter provides extension methods that allow you to `await` a `ValueTu
 ```
 TaskTupleAwaiter/
 ├── src/
-│   ├── TaskTupleAwaiter/                  # Main library shell (netstandard2.0, net462, net8.0, net10.0)
+│   ├── TaskTupleAwaiter/                  # Main library shell (netstandard2.0, net462, net8.0, net9.0)
 │   │                                      #   No hand-authored .cs sources — code is generated at build and compiled into the library.
 │   └── TaskTupleAwaiter.Generator/        # Roslyn incremental source generator (netstandard2.0)
 │       └── TaskTupleExtensionsGenerator.cs
@@ -22,10 +22,10 @@ TaskTupleAwaiter/
 │   │   ├── DummyException.cs
 │   │   ├── On.cs
 │   │   └── SpySynchronizationContext.cs
-│   ├── TaskTupleAwaiter.AotSmokeTest/     # NativeAOT downstream-consumer smoke-test (net8.0, net10.0, net11.0)
+│   ├── TaskTupleAwaiter.AotSmokeTest/     # NativeAOT downstream-consumer smoke-test (net8.0, net9.0, net11.0)
 │   │   ├── TaskTupleAwaiter.AotSmokeTest.csproj
 │   │   └── Program.cs
-│   └── TaskTupleAwaiter.Benchmarks/        # BenchmarkDotNet harness (net8.0, net10.0)
+│   └── TaskTupleAwaiter.Benchmarks/        # BenchmarkDotNet harness (net8.0, net9.0)
 │       ├── TaskTupleAwaiter.Benchmarks.csproj  # xUnit/Shouldly inheritance from test/Directory.Build.props is bypassed via the MSBuildProjectName condition there, not via a local Directory.Build.props.
 │       ├── Program.cs                     #   BenchmarkSwitcher entry point.
 │       ├── TypedTupleAwaitBenchmarks.cs
@@ -43,7 +43,7 @@ TaskTupleAwaiter/
 | Concern | Choice |
 |---|---|
 | Language | C# 14.0 |
-| Library TFMs | netstandard2.0, net462, net8.0, net10.0 |
+| Library TFMs | netstandard2.0, net462, net8.0, net9.0 |
 | Generator target | netstandard2.0 (Roslyn analyzer requirement) |
 | AOT-compatible TFMs | net8.0+ (`<IsAotCompatible>true</IsAotCompatible>` via `IsTargetFrameworkCompatible`) |
 | Generator framework | Roslyn `IIncrementalGenerator` |
@@ -56,7 +56,7 @@ TaskTupleAwaiter/
 ### Source Generator (`TaskTupleExtensionsGenerator`)
 - Implements `IIncrementalGenerator` (not the older `ISourceGenerator`).
 - **Feature-detects** `ConfigureAwaitOptions` at compile time by resolving the type `System.Threading.Tasks.ConfigureAwaitOptions` from the target compilation — **do not use** `#if NET8_0_OR_GREATER` or preprocessor symbols.
-- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` / `net8.0` bind to `Task.WhenAll(params Task[])` (heap-allocated array — same IL as before), while `net10.0`+ binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
+- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` / `net8.0` bind to `Task.WhenAll(params Task[])` (heap-allocated array — same IL as before), while `net9.0`+ binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
 - Emits a single file `TaskTupleExtensions.g.cs` into the `System.Threading.Tasks` namespace (suppressing `IDE0130`).
 - Arity-1 typed tuples (`ValueTuple<Task<T1>>`) delegate directly to the inner task's awaiter — no custom awaiter struct is generated.
 - Arities 2–16 emit `TupleTaskAwaiter<T1,...,TN>` and `TupleConfiguredTaskAwaitable<T1,...,TN>` `readonly record struct` types per arity.

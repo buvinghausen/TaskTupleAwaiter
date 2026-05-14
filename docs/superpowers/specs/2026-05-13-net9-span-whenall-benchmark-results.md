@@ -6,14 +6,14 @@ Captured on 2026-05-14 with the shipped state of this branch (HEAD `7c98fd2`).
 - **Machine:** Intel Core Ultra 9 185H, 1 CPU, 22 logical / 16 physical cores, Windows 11 25H2
 - **.NET SDK** 11.0.100-preview.4.26230.115
 - **Hosts:**
-  - net10.0 runs: `.NET 10.0.8 (10.0.826.23019), X64 RyuJIT x86-64-v3`
+  - net9.0 runs: `.NET 9.0.8, X64 RyuJIT x86-64-v3`
   - net8.0 runs: `.NET 8.0.27 (8.0.2726.22922), X64 RyuJIT x86-64-v3`
 
 ## What changed on this branch
 
 Three layered changes deliver the per-await allocation reduction and the runtime speed-up:
 
-1. **Added `net10.0` to the library `TargetFrameworks`.** On net10.0 the C# 13+ compiler binds the generated `Task.WhenAll(...)` call to `Task.WhenAll(ReadOnlySpan<Task>)` (added in .NET 9) instead of `Task.WhenAll(params Task[])`, stack-allocating the buffer.
+1. **Added `net9.0` to the library `TargetFrameworks`.** On net9.0 the C# 13+ compiler binds the generated `Task.WhenAll(...)` call to `Task.WhenAll(ReadOnlySpan<Task>)` (added in .NET 9) instead of `Task.WhenAll(params Task[])`, stack-allocating the buffer.
 2. **Dropped `record struct` to plain `readonly struct`** on the generated awaiter types (no equality semantics needed for awaiters, drops a substantial chunk of synthesized members per arity).
 3. **Annotated trivial forwarders with `[MethodImpl(MethodImplOptions.AggressiveInlining)]`**: `IsCompleted` accessor, `OnCompleted`, `UnsafeOnCompleted`, the `GetAwaiter` / `ConfigureAwait` extension methods, and the `TupleConfiguredTaskAwaitable.GetAwaiter()` helper. Constructors and `GetResult` are deliberately left un-annotated because their bodies grow with arity.
 
@@ -21,13 +21,13 @@ Three layered changes deliver the per-await allocation reduction and the runtime
 
 Each run executed the full benchmark suite with default BenchmarkDotNet config: full warmup, multiple iterations, statistical analysis. Filters: `--filter "*"` against the harness in `benches/TaskTupleAwaiter.Benchmarks/`.
 
-The numbers in this doc are direct copies of the BDN markdown reports for the `net10.0` and `net8.0` builds of the **same source tree** (HEAD `7c98fd2`). They show what a consumer running on .NET 10 vs .NET 8 will observe when calling into the shipped library.
+The numbers in this doc are direct copies of the BDN markdown reports for the `net9.0` and `net8.0` builds of the **same source tree** (HEAD `7c98fd2`). They show what a consumer running on .NET 9 vs .NET 8 will observe when calling into the shipped library.
 
 ## TypedTupleAwaitBenchmarks
 
 `await (Task<int>, Task<int>, ...)` returning a tuple of results.
 
-### net10.0
+### net9.0
 
 | Method               | Mean        | Error     | StdDev    | Gen0   | Allocated |
 |--------------------- |------------:|----------:|----------:|-------:|----------:|
@@ -53,9 +53,9 @@ The numbers in this doc are direct copies of the BDN markdown reports for the `n
 | Arity8_Async         | 3,021.31 ns | 57.586 ns | 59.137 ns | 0.0839 |    1075 B |
 | Arity16_Async        | 5,804.34 ns | 33.364 ns | 31.208 ns | 0.1450 |    1894 B |
 
-### net10.0 vs net8.0 — allocation delta
+### net9.0 vs net8.0 — allocation delta
 
-| Method               | net8.0 | net10.0 | Δ (B) | Δ (%) |
+| Method               | net8.0 | net9.0 | Δ (B) | Δ (%) |
 |--------------------- |-------:|--------:|------:|------:|
 | Arity2_PreCompleted  |  120 B |    72 B |   -48 |  -40% |
 | Arity4_PreCompleted  |  136 B |    72 B |   -64 |  -47% |
@@ -70,7 +70,7 @@ The numbers in this doc are direct copies of the BDN markdown reports for the `n
 
 `await (Task, Task, ...)` returning `void` (the awaiter just observes completion).
 
-### net10.0
+### net9.0
 
 | Method               | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
 |--------------------- |------------:|----------:|----------:|------------:|-------:|----------:|
@@ -96,9 +96,9 @@ The numbers in this doc are direct copies of the BDN markdown reports for the `n
 | Arity8_Async         | 2,868.08 ns |  52.956 ns | 49.535 ns | 2,870.56 ns | 0.0763 |     984 B |
 | Arity16_Async        | 5,742.70 ns | 102.436 ns | 95.819 ns | 5,723.73 ns | 0.1373 |    1814 B |
 
-### net10.0 vs net8.0 — allocation delta
+### net9.0 vs net8.0 — allocation delta
 
-| Method               | net8.0 | net10.0 | Δ (B) | Δ (%) |
+| Method               | net8.0 | net9.0 | Δ (B) | Δ (%) |
 |--------------------- |-------:|--------:|------:|------:|
 | Arity2_PreCompleted  |  120 B |    72 B |   -48 |  -40% |
 | Arity4_PreCompleted  |  136 B |    72 B |   -64 |  -47% |
@@ -113,7 +113,7 @@ The numbers in this doc are direct copies of the BDN markdown reports for the `n
 
 Spot checks of the `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOptions)` paths, at arities 4 and 16, in both the typed and non-generic tuple flavors.
 
-### net10.0
+### net9.0
 
 | Method                          | Mean      | Error    | StdDev    | Gen0   | Allocated |
 |-------------------------------- |----------:|---------:|----------:|-------:|----------:|
@@ -135,9 +135,9 @@ Spot checks of the `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOpti
 | NonGeneric_Arity4_Bool_False    |  69.85 ns | 1.593 ns |  4.697 ns | 0.0107 |     136 B |
 | NonGeneric_Arity16_Options_None | 205.68 ns | 4.472 ns | 13.187 ns | 0.0184 |     232 B |
 
-### net10.0 vs net8.0 — allocation delta
+### net9.0 vs net8.0 — allocation delta
 
-| Method                          | net8.0 | net10.0 | Δ (B) | Δ (%) |
+| Method                          | net8.0 | net9.0 | Δ (B) | Δ (%) |
 |-------------------------------- |-------:|--------:|------:|------:|
 | Typed_Arity4_Bool_False         |  136 B |    72 B |   -64 |  -47% |
 | Typed_Arity4_Options_None       |  136 B |    72 B |   -64 |  -47% |
@@ -148,14 +148,14 @@ Spot checks of the `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOpti
 
 ## Headline summary
 
-For the most common consumer pattern — a typed tuple of pre-completed `Task<T>` values, arity 2–16 — a .NET 10 consumer sees:
+For the most common consumer pattern — a typed tuple of pre-completed `Task<T>` values, arity 2–16 — a .NET 9 consumer sees:
 
 - **Allocations: 40–57% lower** at arities 2/4/8 (where the eliminated `Task[N]` array dominates) and **20% lower** at arity 16 (where the state-machine box itself is the larger contributor).
-- **Mean time: 13–34% lower.** Some of that is the lack of the heap allocation; the rest comes from JIT improvements between .NET 8 and .NET 10 plus the inlining hints.
+- **Mean time: 13–34% lower.** Some of that is the lack of the heap allocation; the rest comes from JIT improvements between .NET 8 and .NET 9 plus the inlining hints.
 
 The non-generic tuple path is even more dramatic at arity 16 (`-69%` allocation) because the non-generic awaiter has no per-`T` metadata in the box — the `Task[]` was a larger share of its total.
 
-The async (yielding) benchmarks see smaller proportional improvements because the async state machine itself dominates allocations — but they're consistently lower on net10.0 too, by `4–12%`.
+The async (yielding) benchmarks see smaller proportional improvements because the async state machine itself dominates allocations — but they're consistently lower on net9.0 too, by `4–12%`.
 
 ## Library DLL size
 
@@ -166,21 +166,21 @@ For reference, the shipped library binaries on the `7c98fd2` HEAD:
 | netstandard2.0 |   53,248 B |
 | net462         |   53,248 B |
 | net8.0         |   57,856 B |
-| net10.0        |   64,512 B |
+| net9.0        |   64,512 B |
 
 Down from ~80–92 KB before dropping `record struct` to plain `readonly struct`. The `[MethodImpl]` attribute additions cost 0 B (the metadata fits within existing PE 4 KB alignment padding).
 
 ## Reproducing locally
 
 ```sh
-dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net10.0
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net9.0
 dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net8.0
 ```
 
 Filter to one class, e.g.:
 
 ```sh
-dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net10.0 -- --filter "*TypedTupleAwaitBenchmarks*"
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -f net9.0 -- --filter "*TypedTupleAwaitBenchmarks*"
 ```
 
 Each TFM takes ~13 minutes to run the full suite end-to-end on this machine. Reports land in `BenchmarkDotNet.Artifacts/` (gitignored).

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <!-- BDN convention requires underscore-separated benchmark method names and instance methods. -->
     <NoWarn>$(NoWarn);CA1707;CA1822;CS1591</NoWarn>
   </PropertyGroup>

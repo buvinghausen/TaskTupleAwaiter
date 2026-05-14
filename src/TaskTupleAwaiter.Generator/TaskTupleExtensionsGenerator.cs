@@ -327,10 +327,9 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 
 	// Returns the generated WhenAll argument list in bracket form (stylistic).
 	// Overload binding is determined by library target framework:
-	// net10.0 binds Task.WhenAll(ReadOnlySpan<Task>) (stack-allocated buffer),
+	// net9.0 binds Task.WhenAll(ReadOnlySpan<Task>) (stack-allocated buffer),
 	// while netstandard2.0/net462/net8.0 bind Task.WhenAll(params Task[])
-	// (array allocation, same IL shape as before this change). The library does
-	// not ship a net9.0 asset, so .NET 9 consumers pick the net8.0 asset.
+	// (array allocation, same IL shape as before this change).
 	static string Items(int arity) =>
 		$"[{string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"))}]";
 
