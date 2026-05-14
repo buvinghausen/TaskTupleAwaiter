@@ -7,7 +7,7 @@ BenchmarkDotNet harness measuring the allocation and time profile of awaiting `V
 - Pre-completed (`Task.FromResult`) and async (`Task.Yield`) completion modes
 - `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOptions)` paths
 
-The point of these benchmarks is to compare allocation profiles between `net8.0` (where the generated `Task.WhenAll(...)` call binds to `params Task[]` and heap-allocates the array) and `net10.0` (where it binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates).
+The point of these benchmarks is to compare allocation profiles between `net8.0` (where the generated `Task.WhenAll(...)` call binds to `params Task[]` and heap-allocates the array) and `net10.0` (where compiling the library for `net10.0` binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates).
 
 ## Running
 
@@ -31,7 +31,7 @@ dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- -
 
 ## Expected outcome
 
-After the generator change to emit collection-expression `Task.WhenAll([...])`:
+With the `net10.0` library target in place:
 
 - **net8.0:** allocations and timing unchanged from baseline. Same IL as today.
 - **net10.0:** `Allocated` per op drops by approximately `24 + 8·N` bytes (the `Task[N]` array we no longer allocate). Mean time per op is flat or slightly improved due to reduced GC pressure.

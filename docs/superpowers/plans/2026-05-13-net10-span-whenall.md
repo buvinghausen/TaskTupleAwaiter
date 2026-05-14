@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM and changing the source generator to emit collection-expression `WhenAll` calls; add a BenchmarkDotNet project to measure the win.
+**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM and updating generated `WhenAll` call syntax; add a BenchmarkDotNet project to measure the win.
 
-**Architecture:** Add `net10.0` as a fourth library TFM. Change the generator's `Items` helper so every generated `Task.WhenAll(t1, ..., tN)` becomes `Task.WhenAll([t1, ..., tN])`. The C# 14 compiler picks `params Task[]` on `netstandard2.0`/`net462`/`net8.0` (unchanged IL) and `ReadOnlySpan<Task>` on `net10.0` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
+**Architecture:** Add `net10.0` as a fourth library TFM. Keep generated calls in the `Task.WhenAll([t1, ..., tN])` syntax form. Overload selection is driven by the targeted library TFM: `netstandard2.0`/`net462`/`net8.0` bind to `params Task[]` (unchanged IL), while `net10.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
 
 **Tech Stack:** Roslyn `IIncrementalGenerator`, BenchmarkDotNet, xUnit v3, NativeAOT publish for smoke testing, MSBuild multi-TFM, C# 14 collection expressions.
 
@@ -31,9 +31,9 @@
 | Path | Change |
 |---|---|
 | `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj` | Add `net10.0` to `TargetFrameworks` |
-| `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` | Change `Items` helper so output is wrapped `[...]` (collection expression) |
+| `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` | Change `Items` helper so output is wrapped `[...]` |
 | `test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj` | Add `net10.0` to `TargetFrameworks` |
-| `CLAUDE.md` | Note `net10.0` TFM and collection-expression emission in design decisions |
+| `CLAUDE.md` | Note `net10.0` TFM behavior and generated `WhenAll` shape in design decisions |
 | `README.md` | Short perf note for net10+ consumers |
 
 **Files unchanged but referenced for context:**
@@ -505,7 +505,7 @@ dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net10.0 -- -
 
 ## Expected outcome
 
-After the generator change to emit collection-expression `Task.WhenAll([...])`:
+With the `net10.0` library target in place:
 
 - **net8.0:** allocations and timing unchanged from baseline. Same IL as today.
 - **net10.0:** `Allocated` per op drops by approximately `24 + 8·N` bytes (the `Task[N]` array we no longer allocate). Mean time per op is flat or slightly improved due to reduced GC pressure.
@@ -609,7 +609,7 @@ static string Items(int arity) =>
 	$"[{string.Join(", ", Enumerable.Range(1, arity).Select(i => $"tasks.Item{i}"))}]";
 ```
 
-Effect: every generated `Task.WhenAll({Items(arity)})` call site (5 locations in this file, all already inspecting `Task.WhenAll(...)`) now emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` — a C# 14 collection expression that the compiler binds to `params Task[]` on TFMs without the span overload (identical IL to today) and to `ReadOnlySpan<Task>` on net9+ (stack-allocated buffer).
+Effect: every generated `Task.WhenAll({Items(arity)})` call site (5 locations in this file, all already inspecting `Task.WhenAll(...)`) emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload selection comes from target framework availability and compiler preference: TFMs without the span overload bind to `params Task[]` (identical IL to today), while `net10.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer).
 
 - [ ] **Step 3: Build the library**
 
@@ -635,7 +635,7 @@ Expected: all tests pass on every test TFM. Semantics are unchanged — only the
 
 ```bash
 git add src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs
-git commit -m "Emit collection-expression WhenAll calls for span overload on net10+"
+git commit -m "Emit bracket-form WhenAll calls in generated extensions"
 ```
 
 ---
@@ -752,7 +752,7 @@ to:
 Under the "Source Generator (`TaskTupleExtensionsGenerator`)" subsection, add a new bullet after the existing `Feature-detects ConfigureAwaitOptions...` bullet:
 
 ```markdown
-- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` as a **collection expression** so the C# compiler picks `params Task[]` on `netstandard2.0`/`net462`/`net8.0` (same IL as before) and `Task.WhenAll(ReadOnlySpan<Task>)` on `net10.0`+, eliminating the per-await `Task[]` heap allocation. No runtime feature detection needed.
+- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload selection comes from the targeted TFM: `params Task[]` on `netstandard2.0`/`net462`/`net8.0` (same IL as before) and `Task.WhenAll(ReadOnlySpan<Task>)` on `net10.0`+, eliminating the per-await `Task[]` heap allocation. No runtime feature detection needed.
 ```
 
 - [ ] **Step 3: Update `README.md`**

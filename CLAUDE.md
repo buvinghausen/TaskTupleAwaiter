@@ -56,7 +56,7 @@ TaskTupleAwaiter/
 ### Source Generator (`TaskTupleExtensionsGenerator`)
 - Implements `IIncrementalGenerator` (not the older `ISourceGenerator`).
 - **Feature-detects** `ConfigureAwaitOptions` at compile time by resolving the type `System.Threading.Tasks.ConfigureAwaitOptions` from the target compilation — **do not use** `#if NET8_0_OR_GREATER` or preprocessor symbols.
-- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` as a **collection expression**. On `netstandard2.0` / `net462` / `net8.0` the compiler binds to `Task.WhenAll(params Task[])` (heap-allocated array — same IL as before this approach). On `net10.0`+ the compiler prefers `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer, eliminating the per-await `Task[]` heap allocation. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
+- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` / `net8.0` bind to `Task.WhenAll(params Task[])` (heap-allocated array — same IL as before), while `net10.0`+ binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
 - Emits a single file `TaskTupleExtensions.g.cs` into the `System.Threading.Tasks` namespace (suppressing `IDE0130`).
 - Arity-1 typed tuples (`ValueTuple<Task<T1>>`) delegate directly to the inner task's awaiter — no custom awaiter struct is generated.
 - Arities 2–16 emit `TupleTaskAwaiter<T1,...,TN>` and `TupleConfiguredTaskAwaitable<T1,...,TN>` `readonly record struct` types per arity.

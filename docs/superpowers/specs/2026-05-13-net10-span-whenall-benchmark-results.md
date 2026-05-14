@@ -14,7 +14,7 @@ Captured on 2026-05-14 with the shipped state of this branch (HEAD `7c98fd2`).
 Three layered changes deliver the per-await allocation reduction and the runtime speed-up:
 
 1. **Added `net10.0` to the library `TargetFrameworks`.** On net10.0 the C# 13+ compiler binds the generated `Task.WhenAll(...)` call to `Task.WhenAll(ReadOnlySpan<Task>)` (added in .NET 9) instead of `Task.WhenAll(params Task[])`, stack-allocating the buffer.
-2. **Generator emits a collection expression**, `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. On net10.0 this is the explicit form that binds to the span overload; on netstandard2.0 / net462 / net8.0 it lowers to `new Task[]{...}` and binds to the array overload — same IL as before.
+2. **Generator emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])` syntax.** This syntax shape is not what selects the overload; selecting `Task.WhenAll(ReadOnlySpan<Task>)` comes from compiling the library for `net10.0`. On netstandard2.0 / net462 / net8.0, calls bind to the array overload — same IL shape as before.
 3. **Dropped `record struct` to plain `readonly struct`** on the generated awaiter types (no equality semantics needed for awaiters, drops a substantial chunk of synthesized members per arity).
 4. **Annotated trivial forwarders with `[MethodImpl(MethodImplOptions.AggressiveInlining)]`**: `IsCompleted` accessor, `OnCompleted`, `UnsafeOnCompleted`, the `GetAwaiter` / `ConfigureAwait` extension methods, and the `TupleConfiguredTaskAwaitable.GetAwaiter()` helper. Constructors and `GetResult` are deliberately left un-annotated because their bodies grow with arity.
 
