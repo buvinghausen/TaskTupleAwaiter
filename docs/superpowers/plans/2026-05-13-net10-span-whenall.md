@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM; keep the generated bracket-form `WhenAll` syntax as a stylistic choice; add a BenchmarkDotNet project to measure the win.
+**Goal:** Cut one `Task[]` heap allocation per `await` of a task tuple for .NET 10+ consumers by adding a `net10.0` TFM so that the span-based `Task.WhenAll` overload is used; add a BenchmarkDotNet project to measure the win.
 
-**Architecture:** Add `net10.0` as a fourth library TFM. Keep generated calls in the `Task.WhenAll([t1, ..., tN])` syntax form. Overload selection is driven by the targeted library TFM: `netstandard2.0`/`net462`/`net8.0` bind to `params Task[]` (unchanged IL), while `net10.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
+**Architecture:** Add `net10.0` as a fourth library TFM. Overload selection for `Task.WhenAll` is driven by the targeted library TFM: `netstandard2.0`/`net462`/`net8.0` bind to `params Task[]` (unchanged IL), while `net10.0` binds to `ReadOnlySpan<Task>` (stack-allocated buffer, zero heap allocation). New `test/TaskTupleAwaiter.Benchmarks` project measures the delta with `[MemoryDiagnoser]` across arities 2/4/8/16, both pre-completed and async completion modes.
 
 **Tech Stack:** Roslyn `IIncrementalGenerator`, BenchmarkDotNet, xUnit v3, NativeAOT publish for smoke testing, MSBuild multi-TFM, C# 14 collection expressions.
 
@@ -33,7 +33,7 @@
 | `src/TaskTupleAwaiter/TaskTupleAwaiter.csproj` | Add `net10.0` to `TargetFrameworks` |
 | `src/TaskTupleAwaiter.Generator/TaskTupleExtensionsGenerator.cs` | Change `Items` helper so output is wrapped `[...]` |
 | `test/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj` | Add `net10.0` to `TargetFrameworks` |
-| `CLAUDE.md` | Note `net10.0` TFM behavior and generated `WhenAll` shape in design decisions |
+| `CLAUDE.md` | Note `net10.0` TFM behavior in design decisions |
 | `README.md` | Short perf note for net10+ consumers |
 
 **Files unchanged but referenced for context:**
