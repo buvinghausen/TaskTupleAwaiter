@@ -19,14 +19,8 @@
     <File Path="test\Directory.Build.props" />
   </Folder>
   <Project Path="src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
-  <Folder Name="/src/" />
-  <Folder Name="/test/">
-    <Project Path="test/TaskTupleAwaiter.Benchmarks/TaskTupleAwaiter.Benchmarks.csproj" />
-  </Folder>
   <Project Path="src\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" />
-  <Project Path="test\TaskTupleAwaiter.Tests\TaskTupleAwaiter.Tests.csproj">
-    <Configuration Solution="Release|*" Project="*|*|NoBuild" />
-  </Project>
   <Project Path="test\TaskTupleAwaiter.AotSmokeTest\TaskTupleAwaiter.AotSmokeTest.csproj" />
   <Project Path="test\TaskTupleAwaiter.Benchmarks\TaskTupleAwaiter.Benchmarks.csproj" />
+  <Project Path="test\TaskTupleAwaiter.Tests\TaskTupleAwaiter.Tests.csproj" />
 </Solution>
