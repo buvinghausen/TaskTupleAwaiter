@@ -3,6 +3,6 @@
     <Features>runtime-async=on</Features>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
+    <ProjectReference Include="..\..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
   </ItemGroup>
 </Project>

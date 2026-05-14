@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
+  </ItemGroup>
+</Project>
