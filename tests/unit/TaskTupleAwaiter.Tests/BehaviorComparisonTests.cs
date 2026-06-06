@@ -153,7 +153,8 @@ public static class BehaviorComparisonTests
 
 		var adapters = AwaiterAdapter.CreateAllAdapters([.. sources.Select(source => source.Task)]);
 
-		for (var i = sources.Length - 1; i >= 0; i--) sources[i].SetException(new DummyException());
+		for (var i = sources.Length - 1; i >= 0; i--)
+			sources[i].SetException(new DummyException());
 
 		AssertAllAdapters(adapters,
 			adapter => ReferenceEquals(sources[0].Task.Exception?.InnerException,
@@ -211,8 +212,10 @@ public static class BehaviorComparisonTests
 		Func<AwaiterAdapter, bool> predicate)
 	{
 #if NETFRAMEWORK
-		if (adapters == null) throw new ArgumentNullException(nameof(adapters));
-		if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+		if (adapters == null)
+			throw new ArgumentNullException(nameof(adapters));
+		if (predicate == null)
+			throw new ArgumentNullException(nameof(predicate));
 #else
 		ArgumentNullException.ThrowIfNull(adapters);
 		ArgumentNullException.ThrowIfNull(predicate);

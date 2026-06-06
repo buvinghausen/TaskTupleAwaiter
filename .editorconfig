@@ -1,82 +1,352 @@
-# http://editorconfig.org
+# Root style law — Phase 2 of build enforcement.
+# Tier convention: error tier is unmarked; silent and suggestion tiers carry a reason comment.
+# Frozen-at-stock: options with no session ruling are declared at Roslyn's stock value to freeze them.
 root = true
 
-#Global settings
+###############################################################################
+# 1. Universal defaults — mirrors .gitattributes (eol=lf law, 2026-06-05)
+###############################################################################
 [*]
 charset = utf-8
-indent_size = 2
-indent_style = space
+end_of_line = lf
 insert_final_newline = true
-max_line_length = 120
 trim_trailing_whitespace = true
+indent_style = tab
+tab_width = 4
+indent_size = 4
 
+###############################################################################
+# 2. Declared exceptions — don't fight the ecosystem (codified law)
+###############################################################################
+[*.{yml,yaml}]
+# whitespace-aware language; ecosystem norm is 2
+indent_style = space
+indent_size = 2
 
-#Markdown
 [*.md]
-max_line_length = 0
+# trailing double-space is a hard line break
+indent_style = space
+indent_size = 2
 trim_trailing_whitespace = false
 
-# Dotnet code style settings
-[*.{cs,vb}]
+[*.json]
+# .NET tooling rewrites JSON 2-space; fighting it churns diffs
+indent_style = space
+indent_size = 2
+
+[*.py]
+# PEP 8; Black is hardcoded to 4
+indent_style = space
 indent_size = 4
-indent_style = tab
-# Sort using and Import directives with System.* appearing first
-dotnet_sort_system_directives_first = true
 
-# Omit accessibility modifiers when they match the language default (e.g. private on class members)
-dotnet_style_require_accessibility_modifiers = omit_if_default:error
+[*.{fs,fsx,fsi}]
+# F# compiler rejects tabs; style guide / Fantomas is 4
+indent_style = space
+indent_size = 4
 
-# Avoid "this." and "Me." if not necessary
-dotnet_style_qualification_for_field = false:error
-dotnet_style_qualification_for_property = false:error
-dotnet_style_qualification_for_method = false:error
-dotnet_style_qualification_for_event = false:error
+[*.{bat,cmd}]
+# cmd.exe requires CRLF; matches .gitattributes
+end_of_line = crlf
 
-# Use language keywords instead of framework type names for type references
-dotnet_style_predefined_type_for_locals_parameters_members = true:error
-dotnet_style_predefined_type_for_member_access = true:error
+[*.{razor,cshtml}]
+# don't fight the ecosystem (ruled 2026-06-06): the VS Razor formatter reads
+# Tools→Options, not editorconfig — upstream-blocked since 2021 (dotnet/razor #4406) —
+# and its default is spaces-4. Aligning the law with the only tool that formats
+# these files makes stock VS produce lawful output on every machine, zero config.
+# This section still binds every consumer that CAN read it (Rider, future VS).
+indent_style = space
+indent_size = 4
 
-# Suggest more modern language features when available
-dotnet_style_object_initializer = true:error
-dotnet_style_collection_initializer = true:error
-dotnet_style_coalesce_expression = true:error
-dotnet_style_null_propagation = true:error
-dotnet_style_explicit_tuple_names = true:error
-
-# CSharp code style settings:
+###############################################################################
+# 3. C# style law
+###############################################################################
 [*.cs]
-# Prefer file-scoped namespace declarations (single `namespace Foo;`)
-csharp_style_namespace_declarations = file_scoped:error
 
-# Allow single-statement bodies without braces (e.g. `if (x) F();`, `for (...) F();`)
-csharp_prefer_braces = false:silent
+## ── Usings ──────────────────────────────────────────────────────────────
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace
+dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.IDE0065.severity = error
 
-# Prefer "var" everywhere
-csharp_style_var_for_built_in_types = true:error
-csharp_style_var_when_type_is_apparent = true:error
-csharp_style_var_elsewhere = true:error
+## ── Namespaces ──────────────────────────────────────────────────────────
+csharp_style_namespace_declarations = file_scoped
+dotnet_style_namespace_match_folder = true
+dotnet_diagnostic.IDE0161.severity = error
+dotnet_diagnostic.IDE0130.severity = error
 
-# Prefer method-like constructs to have a block body
-csharp_style_expression_bodied_methods = true:suggestion
-csharp_style_expression_bodied_constructors = true:suggestion
-csharp_style_expression_bodied_operators = true:suggestion
+## ── Accessibility — omission is the default (CLAUDE.md §2.3) ───────────
+dotnet_style_require_accessibility_modifiers = omit_if_default
+dotnet_diagnostic.IDE0040.severity = error
 
-# Prefer property-like constructs to have an expression-body
-csharp_style_expression_bodied_properties = true:suggestion
-csharp_style_expression_bodied_indexers = true:suggestion
-csharp_style_expression_bodied_accessors = true:suggestion
+## ── The var law: var everywhere, except construction — type left, new() right
+# apparent = true (re-ruled 2026-06-06): Roslyn's "apparent" bucket fuses factory
+# invocations (CultureInfo.GetCultureInfo(...)) with object creation — false made
+# factories demand explicit types, fighting var-on-returns. With all three buckets
+# var, IDE0008 is unreachable (severity kept, frozen). IDE0090 still enforces new()
+# wherever the target type is explicit; banning `var x = new T();` outright needs
+# syntax awareness the option surface lacks — YGG analyzer bench (spec §9).
+csharp_style_var_for_built_in_types = true
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = true
+csharp_style_implicit_object_creation_when_type_is_apparent = true
+dotnet_diagnostic.IDE0007.severity = error
+dotnet_diagnostic.IDE0008.severity = error
+dotnet_diagnostic.IDE0090.severity = error
 
-# Suggest more modern language features when available
-csharp_style_pattern_matching_over_is_with_cast_check = true:error
-csharp_style_pattern_matching_over_as_with_null_check = true:error
-csharp_style_inlined_variable_declaration = true:error
-csharp_style_throw_expression = true:error
-csharp_style_conditional_delegate_call = true:error
+## ── Collection expressions — modern idiom enforced ─────────────────────
+dotnet_style_prefer_collection_expression = when_types_loosely_match
+dotnet_diagnostic.IDE0300.severity = error
+dotnet_diagnostic.IDE0301.severity = error
+dotnet_diagnostic.IDE0302.severity = error
+dotnet_diagnostic.IDE0303.severity = error
+dotnet_diagnostic.IDE0304.severity = error
+dotnet_diagnostic.IDE0305.severity = error
+dotnet_diagnostic.IDE0306.severity = error
 
-# Newline settings
+## ── Bodies and braces ───────────────────────────────────────────────────
+# judgment: single-line control statements may omit braces (ruled 2026-06-06);
+# when_multiline makes "remove braces" the suggested direction on single lines
+# while multiline bodies still get the safety nudge — taste, not law
+csharp_prefer_braces = when_multiline
+dotnet_diagnostic.IDE0011.severity = silent
+csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async
+dotnet_diagnostic.IDE0036.severity = error
+dotnet_style_readonly_field = true
+dotnet_diagnostic.IDE0044.severity = error
+# expression bodies enforced on everything EXCEPT functions (ruled 2026-06-06):
+# properties/indexers/accessors and single-line constructors/operators are
+# mechanical shapes — error. Function bodies are where logic lives — author's call.
+csharp_style_expression_bodied_properties = true
+csharp_style_expression_bodied_indexers = true
+csharp_style_expression_bodied_accessors = true
+dotnet_diagnostic.IDE0025.severity = error
+dotnet_diagnostic.IDE0026.severity = error
+dotnet_diagnostic.IDE0027.severity = error
+csharp_style_expression_bodied_constructors = when_on_single_line
+csharp_style_expression_bodied_operators = when_on_single_line
+dotnet_diagnostic.IDE0021.severity = error
+dotnet_diagnostic.IDE0023.severity = error
+dotnet_diagnostic.IDE0024.severity = error
+# suggestion: methods/local functions get a visible IDE nudge, no build impact
+# (suggestion is info-level — the TreatWarningsAsErrors ratchet ignores it)
+csharp_style_expression_bodied_methods = when_on_single_line
+csharp_style_expression_bodied_local_functions = when_on_single_line
+csharp_style_expression_bodied_lambdas = true
+dotnet_diagnostic.IDE0022.severity = suggestion
+dotnet_diagnostic.IDE0061.severity = suggestion
+
+## ── Null handling ───────────────────────────────────────────────────────
+dotnet_style_coalesce_expression = true
+dotnet_style_null_propagation = true
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true
+csharp_style_throw_expression = true
+csharp_style_conditional_delegate_call = true
+csharp_style_prefer_null_check_over_type_check = true
+dotnet_diagnostic.IDE0029.severity = error
+dotnet_diagnostic.IDE0030.severity = error
+dotnet_diagnostic.IDE0031.severity = error
+dotnet_diagnostic.IDE0041.severity = error
+dotnet_diagnostic.IDE0016.severity = error
+
+## ── Keywords and simplification ─────────────────────────────────────────
+dotnet_style_predefined_type_for_locals_parameters_members = true
+dotnet_style_predefined_type_for_member_access = true
+dotnet_diagnostic.IDE0049.severity = error
+csharp_prefer_simple_default_expression = true
+dotnet_diagnostic.IDE0034.severity = error
+dotnet_style_prefer_inferred_tuple_names = true
+dotnet_style_prefer_inferred_anonymous_type_member_names = true
+dotnet_diagnostic.IDE0037.severity = error
+csharp_style_prefer_method_group_conversion = true
+
+## ── Hygiene ─────────────────────────────────────────────────────────────
+dotnet_code_quality_unused_parameters = all
+dotnet_diagnostic.IDE0060.severity = error
+csharp_style_unused_value_assignment_preference = discard_variable
+dotnet_diagnostic.IDE0059.severity = error
+# judgment: fluent APIs make unconsumed expression values routine; policing this fights the platform's own idioms
+csharp_style_unused_value_expression_statement_preference = discard_variable
+dotnet_diagnostic.IDE0058.severity = silent
+dotnet_style_qualification_for_field = false
+dotnet_style_qualification_for_property = false
+dotnet_style_qualification_for_method = false
+dotnet_style_qualification_for_event = false
+dotnet_diagnostic.IDE0003.severity = error
+
+## ── Frozen-at-stock declarations (no session ruling; declared to freeze) ─
+dotnet_style_object_initializer = true
+dotnet_style_collection_initializer = true
+dotnet_style_explicit_tuple_names = true
+dotnet_style_prefer_auto_properties = true
+dotnet_style_prefer_compound_assignment = true
+dotnet_style_prefer_simplified_boolean_expressions = true
+dotnet_style_prefer_simplified_interpolation = true
+csharp_style_prefer_not_pattern = true
+csharp_style_inlined_variable_declaration = true
+csharp_style_deconstructed_variable_declaration = true
+csharp_prefer_simple_using_statement = true
+csharp_style_prefer_utf8_string_literals = true
+csharp_style_prefer_readonly_struct = true
+csharp_style_prefer_readonly_struct_member = true
+
+## ── Silent tier — judgment rules, declared values, IDE nudge only ──────
+# judgment: the famous readability degrader — right often, wrong badly in nontrivial cases
+dotnet_style_prefer_conditional_expression_over_assignment = true
+dotnet_style_prefer_conditional_expression_over_return = true
+dotnet_diagnostic.IDE0045.severity = silent
+dotnet_diagnostic.IDE0046.severity = silent
+# judgment: complex bodies read worse as switch expressions
+csharp_style_prefer_switch_expression = true
+dotnet_diagnostic.IDE0066.severity = silent
+# judgment: capture semantics make primary constructors genuinely situational
+csharp_style_prefer_primary_constructors = true
+dotnet_diagnostic.IDE0290.severity = silent
+# judgment: preferred idiom, not a correctness issue
+csharp_style_pattern_matching_over_as_with_null_check = true
+csharp_style_pattern_matching_over_is_with_cast_check = true
+csharp_style_prefer_pattern_matching = true
+dotnet_diagnostic.IDE0019.severity = silent
+dotnet_diagnostic.IDE0020.severity = silent
+dotnet_diagnostic.IDE0038.severity = silent
+dotnet_diagnostic.IDE0078.severity = silent
+# judgment: clarity is the point; enforcement would litigate taste
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary
+dotnet_diagnostic.IDE0047.severity = silent
+dotnet_diagnostic.IDE0048.severity = silent
+# judgment: situational
+csharp_style_prefer_local_over_anonymous_function = true
+dotnet_diagnostic.IDE0039.severity = silent
+csharp_style_prefer_index_operator = true
+csharp_style_prefer_range_operator = true
+dotnet_diagnostic.IDE0056.severity = silent
+dotnet_diagnostic.IDE0057.severity = silent
+# judgment: hosts use them; libraries have no entry points to care
+csharp_style_prefer_top_level_statements = true
+dotnet_diagnostic.IDE0210.severity = silent
+
+## ── Targeted CA severities — rules unreachable by the props category knobs
+# CA1727 is Naming category (not escalated, disabled by default): PascalCase log placeholders
+dotnet_diagnostic.CA1727.severity = error
+# CA1852 (seal internal types) honors InternalsVisibleTo by default: it self-disables in any
+# assembly that grants IVT, because a friend could derive from the internal type. Every src/
+# assembly grants the sanctioned $(AssemblyName).Tests IVT (src/Directory.Build.props, §2.3),
+# which would otherwise blind this rule platform-wide. Tests consume internals; they do not
+# derive from them — so override the default and run the rule despite IVT.
+dotnet_code_quality.CA1852.ignore_internalsvisibleto = true
+
+###############################################################################
+# 4. C# formatting law — stock VS conventions, declared explicitly, on tabs
+###############################################################################
+dotnet_diagnostic.IDE0055.severity = error
+
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
 csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents_when_block = false
+
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_parentheses = false
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_after_colon_in_inheritance_clause = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_after_comma = true
+csharp_space_before_comma = false
+csharp_space_after_dot = false
+csharp_space_before_dot = false
+csharp_space_after_semicolon_in_for_statement = true
+csharp_space_before_semicolon_in_for_statement = false
+csharp_space_around_declaration_statements = false
+csharp_space_before_open_square_brackets = false
+csharp_space_between_empty_square_brackets = false
+csharp_space_between_square_brackets = false
+
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+
+###############################################################################
+# 5. Naming law — classic C#, nothing custom, all error.
+# Rule order matters: first match wins — constants precede the field rules.
+# Async suffix deliberately omitted: interface-driven surfaces (NSB Handle,
+# mediator Handle) own their names; a hard suffix rule fights the ecosystem.
+###############################################################################
+
+## Styles
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.interface_prefixed.required_prefix = I
+dotnet_naming_style.interface_prefixed.capitalization = pascal_case
+dotnet_naming_style.type_parameter_prefixed.required_prefix = T
+dotnet_naming_style.type_parameter_prefixed.capitalization = pascal_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+
+## Symbols
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+dotnet_naming_symbols.type_parameters.applicable_accessibilities = *
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+dotnet_naming_symbols.members.applicable_kinds = property, method, event, local_function
+dotnet_naming_symbols.members.applicable_accessibilities = *
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.applicable_accessibilities = *
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, private_protected
+dotnet_naming_symbols.visible_fields.applicable_kinds = field
+dotnet_naming_symbols.visible_fields.applicable_accessibilities = public, internal, protected, protected_internal
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_symbols.locals.applicable_accessibilities = *
+
+## Rules (ordered — first match wins)
+dotnet_naming_rule.interfaces_are_prefixed.symbols = interfaces
+dotnet_naming_rule.interfaces_are_prefixed.style = interface_prefixed
+dotnet_naming_rule.interfaces_are_prefixed.severity = error
+dotnet_naming_rule.type_parameters_are_prefixed.symbols = type_parameters
+dotnet_naming_rule.type_parameters_are_prefixed.style = type_parameter_prefixed
+dotnet_naming_rule.type_parameters_are_prefixed.severity = error
+dotnet_naming_rule.types_are_pascal_case.symbols = types
+dotnet_naming_rule.types_are_pascal_case.style = pascal_case
+dotnet_naming_rule.types_are_pascal_case.severity = error
+dotnet_naming_rule.members_are_pascal_case.symbols = members
+dotnet_naming_rule.members_are_pascal_case.style = pascal_case
+dotnet_naming_rule.members_are_pascal_case.severity = error
+dotnet_naming_rule.constants_are_pascal_case.symbols = constants
+dotnet_naming_rule.constants_are_pascal_case.style = pascal_case
+dotnet_naming_rule.constants_are_pascal_case.severity = error
+dotnet_naming_rule.private_fields_are_underscore_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_are_underscore_camel_case.style = underscore_camel_case
+dotnet_naming_rule.private_fields_are_underscore_camel_case.severity = error
+dotnet_naming_rule.visible_fields_are_pascal_case.symbols = visible_fields
+dotnet_naming_rule.visible_fields_are_pascal_case.style = pascal_case
+dotnet_naming_rule.visible_fields_are_pascal_case.severity = error
+dotnet_naming_rule.parameters_are_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_are_camel_case.style = camel_case
+dotnet_naming_rule.parameters_are_camel_case.severity = error
+dotnet_naming_rule.locals_are_camel_case.symbols = locals
+dotnet_naming_rule.locals_are_camel_case.style = camel_case
+dotnet_naming_rule.locals_are_camel_case.severity = error

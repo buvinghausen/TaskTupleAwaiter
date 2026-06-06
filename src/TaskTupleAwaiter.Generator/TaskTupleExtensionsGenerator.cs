@@ -303,7 +303,8 @@ public sealed class TaskTupleExtensionsGenerator : IIncrementalGenerator
 				
 			""");
 
-		if (!hasAwaitOptions) return;
+		if (!hasAwaitOptions)
+			return;
 
 		sb.AppendCSharp(
 			$"""
