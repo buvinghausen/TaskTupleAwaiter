@@ -1,10 +1,21 @@
-# Root style law — Phase 2 of build enforcement.
-# Tier convention: error tier is unmarked; silent and suggestion tiers carry a reason comment.
-# Frozen-at-stock: options with no session ruling are declared at Roslyn's stock value to freeze them.
+# .editorconfig — opinionated, modern C# style baseline.
+#
+# Severity tiers used below:
+#   error      — enforced at build (with EnforceCodeStyleInBuild + TreatWarningsAsErrors).
+#   suggestion — visible IDE hint, never blocks the build.
+#   silent     — available as an IDE refactor, but never surfaced or enforced.
+#
+# Most style options are declared explicitly even where they match the current
+# Roslyn default — so an SDK update can never silently change the house style.
+#
+# Build enforcement note: the error severities above only fail the build when the
+# project sets <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild> and
+# <TreatWarningsAsErrors>true</TreatWarningsAsErrors>. Without those, every rule
+# below degrades to an IDE-only hint.
 root = true
 
 ###############################################################################
-# 1. Universal defaults — mirrors .gitattributes (eol=lf law, 2026-06-05)
+# 1. Universal defaults
 ###############################################################################
 [*]
 charset = utf-8
@@ -16,49 +27,50 @@ tab_width = 4
 indent_size = 4
 
 ###############################################################################
-# 2. Declared exceptions — don't fight the ecosystem (codified law)
+# 2. Per-language exceptions — match each ecosystem's standard tooling rather
+#    than fight it (fighting a formatter's fixed convention only churns diffs).
 ###############################################################################
 [*.{yml,yaml}]
-# whitespace-aware language; ecosystem norm is 2
+# whitespace-significant; ecosystem norm is 2 spaces
 indent_style = space
 indent_size = 2
 
 [*.md]
-# trailing double-space is a hard line break
+# trailing double-space is a hard line break — preserve it
 indent_style = space
 indent_size = 2
 trim_trailing_whitespace = false
 
 [*.json]
-# .NET tooling rewrites JSON 2-space; fighting it churns diffs
+# most .NET tooling rewrites JSON with 2-space indentation
 indent_style = space
 indent_size = 2
 
 [*.py]
-# PEP 8; Black is hardcoded to 4
+# PEP 8; Black is hardcoded to 4 spaces
 indent_style = space
 indent_size = 4
 
 [*.{fs,fsx,fsi}]
-# F# compiler rejects tabs; style guide / Fantomas is 4
+# F# rejects tabs; the F# style guide and Fantomas use 4 spaces
 indent_style = space
 indent_size = 4
 
 [*.{bat,cmd}]
-# cmd.exe requires CRLF; matches .gitattributes
+# cmd.exe requires CRLF
 end_of_line = crlf
 
 [*.{razor,cshtml}]
-# don't fight the ecosystem (ruled 2026-06-06): the VS Razor formatter reads
-# Tools→Options, not editorconfig — upstream-blocked since 2021 (dotnet/razor #4406) —
-# and its default is spaces-4. Aligning the law with the only tool that formats
-# these files makes stock VS produce lawful output on every machine, zero config.
-# This section still binds every consumer that CAN read it (Rider, future VS).
+# Spaces, because the Visual Studio Razor formatter reads Tools -> Options, not
+# .editorconfig, for indentation — a long-standing platform limitation
+# (https://github.com/dotnet/razor/issues/4406) — and its default is 4 spaces.
+# Matching that default keeps stock VS output consistent with no per-machine
+# config. This section still applies in editors that DO honor it (e.g. Rider).
 indent_style = space
 indent_size = 4
 
 ###############################################################################
-# 3. C# style law
+# 3. C# style
 ###############################################################################
 [*.cs]
 
@@ -66,6 +78,7 @@ indent_size = 4
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 csharp_using_directive_placement = outside_namespace
+# unnecessary usings are a build error — keeps drive-by/unused imports out
 dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.IDE0065.severity = error
 
@@ -75,17 +88,15 @@ dotnet_style_namespace_match_folder = true
 dotnet_diagnostic.IDE0161.severity = error
 dotnet_diagnostic.IDE0130.severity = error
 
-## ── Accessibility — omission is the default (CLAUDE.md §2.3) ───────────
+## ── Accessibility — omit modifiers that match the default ─────────────────
 dotnet_style_require_accessibility_modifiers = omit_if_default
 dotnet_diagnostic.IDE0040.severity = error
 
-## ── The var law: var everywhere, except construction — type left, new() right
-# apparent = true (re-ruled 2026-06-06): Roslyn's "apparent" bucket fuses factory
-# invocations (CultureInfo.GetCultureInfo(...)) with object creation — false made
-# factories demand explicit types, fighting var-on-returns. With all three buckets
-# var, IDE0008 is unreachable (severity kept, frozen). IDE0090 still enforces new()
-# wherever the target type is explicit; banning `var x = new T();` outright needs
-# syntax awareness the option surface lacks — YGG analyzer bench (spec §9).
+## ── var: prefer var everywhere; construction uses `Type x = new();` ───────
+# Roslyn's "type is apparent" heuristic groups factory invocations
+# (e.g. CultureInfo.GetCultureInfo(...)) together with object creation, so
+# preferring var for "apparent" types keeps var on factory/return assignments.
+# IDE0090 still requires target-typed new() wherever the type is written out.
 csharp_style_var_for_built_in_types = true
 csharp_style_var_when_type_is_apparent = true
 csharp_style_var_elsewhere = true
@@ -94,7 +105,7 @@ dotnet_diagnostic.IDE0007.severity = error
 dotnet_diagnostic.IDE0008.severity = error
 dotnet_diagnostic.IDE0090.severity = error
 
-## ── Collection expressions — modern idiom enforced ─────────────────────
+## ── Collection expressions — prefer [] and [.. spread] ────────────────────
 dotnet_style_prefer_collection_expression = when_types_loosely_match
 dotnet_diagnostic.IDE0300.severity = error
 dotnet_diagnostic.IDE0301.severity = error
@@ -104,19 +115,18 @@ dotnet_diagnostic.IDE0304.severity = error
 dotnet_diagnostic.IDE0305.severity = error
 dotnet_diagnostic.IDE0306.severity = error
 
-## ── Bodies and braces ───────────────────────────────────────────────────
-# judgment: single-line control statements may omit braces (ruled 2026-06-06);
-# when_multiline makes "remove braces" the suggested direction on single lines
-# while multiline bodies still get the safety nudge — taste, not law
+## ── Braces and expression bodies ──────────────────────────────────────────
+# Single-line control statements may omit braces; "remove braces" is suggested
+# on single lines while multiline bodies still get a brace hint.
 csharp_prefer_braces = when_multiline
 dotnet_diagnostic.IDE0011.severity = silent
 csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async
 dotnet_diagnostic.IDE0036.severity = error
 dotnet_style_readonly_field = true
 dotnet_diagnostic.IDE0044.severity = error
-# expression bodies enforced on everything EXCEPT functions (ruled 2026-06-06):
-# properties/indexers/accessors and single-line constructors/operators are
-# mechanical shapes — error. Function bodies are where logic lives — author's call.
+# Expression bodies enforced on everything except functions: properties,
+# indexers, accessors, and single-line constructors/operators are mechanical
+# shapes (error). Method/local-function bodies are the author's call (suggestion).
 csharp_style_expression_bodied_properties = true
 csharp_style_expression_bodied_indexers = true
 csharp_style_expression_bodied_accessors = true
@@ -128,8 +138,6 @@ csharp_style_expression_bodied_operators = when_on_single_line
 dotnet_diagnostic.IDE0021.severity = error
 dotnet_diagnostic.IDE0023.severity = error
 dotnet_diagnostic.IDE0024.severity = error
-# suggestion: methods/local functions get a visible IDE nudge, no build impact
-# (suggestion is info-level — the TreatWarningsAsErrors ratchet ignores it)
 csharp_style_expression_bodied_methods = when_on_single_line
 csharp_style_expression_bodied_local_functions = when_on_single_line
 csharp_style_expression_bodied_lambdas = true
@@ -165,7 +173,7 @@ dotnet_code_quality_unused_parameters = all
 dotnet_diagnostic.IDE0060.severity = error
 csharp_style_unused_value_assignment_preference = discard_variable
 dotnet_diagnostic.IDE0059.severity = error
-# judgment: fluent APIs make unconsumed expression values routine; policing this fights the platform's own idioms
+# unconsumed expression-statement values are common with fluent APIs — not enforced
 csharp_style_unused_value_expression_statement_preference = discard_variable
 dotnet_diagnostic.IDE0058.severity = silent
 dotnet_style_qualification_for_field = false
@@ -174,7 +182,7 @@ dotnet_style_qualification_for_method = false
 dotnet_style_qualification_for_event = false
 dotnet_diagnostic.IDE0003.severity = error
 
-## ── Frozen-at-stock declarations (no session ruling; declared to freeze) ─
+## ── Declared at default, to pin them against SDK drift ────────────────────
 dotnet_style_object_initializer = true
 dotnet_style_collection_initializer = true
 dotnet_style_explicit_tuple_names = true
@@ -190,19 +198,19 @@ csharp_style_prefer_utf8_string_literals = true
 csharp_style_prefer_readonly_struct = true
 csharp_style_prefer_readonly_struct_member = true
 
-## ── Silent tier — judgment rules, declared values, IDE nudge only ──────
-# judgment: the famous readability degrader — right often, wrong badly in nontrivial cases
+## ── Preferred but not enforced — declared values, IDE hint only ───────────
+# conditional expressions degrade readability in nontrivial cases
 dotnet_style_prefer_conditional_expression_over_assignment = true
 dotnet_style_prefer_conditional_expression_over_return = true
 dotnet_diagnostic.IDE0045.severity = silent
 dotnet_diagnostic.IDE0046.severity = silent
-# judgment: complex bodies read worse as switch expressions
+# switch expressions can read worse for complex bodies
 csharp_style_prefer_switch_expression = true
 dotnet_diagnostic.IDE0066.severity = silent
-# judgment: capture semantics make primary constructors genuinely situational
+# primary constructors are situational (capture semantics)
 csharp_style_prefer_primary_constructors = true
 dotnet_diagnostic.IDE0290.severity = silent
-# judgment: preferred idiom, not a correctness issue
+# pattern matching — preferred idiom, not a correctness issue
 csharp_style_pattern_matching_over_as_with_null_check = true
 csharp_style_pattern_matching_over_is_with_cast_check = true
 csharp_style_prefer_pattern_matching = true
@@ -210,36 +218,35 @@ dotnet_diagnostic.IDE0019.severity = silent
 dotnet_diagnostic.IDE0020.severity = silent
 dotnet_diagnostic.IDE0038.severity = silent
 dotnet_diagnostic.IDE0078.severity = silent
-# judgment: clarity is the point; enforcement would litigate taste
+# parentheses for clarity — a preference, not worth enforcing
 dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity
 dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary
 dotnet_diagnostic.IDE0047.severity = silent
 dotnet_diagnostic.IDE0048.severity = silent
-# judgment: situational
+# local functions over anonymous functions — situational
 csharp_style_prefer_local_over_anonymous_function = true
 dotnet_diagnostic.IDE0039.severity = silent
 csharp_style_prefer_index_operator = true
 csharp_style_prefer_range_operator = true
 dotnet_diagnostic.IDE0056.severity = silent
 dotnet_diagnostic.IDE0057.severity = silent
-# judgment: hosts use them; libraries have no entry points to care
+# top-level statements — only meaningful for entry-point projects
 csharp_style_prefer_top_level_statements = true
 dotnet_diagnostic.IDE0210.severity = silent
 
-## ── Targeted CA severities — rules unreachable by the props category knobs
-# CA1727 is Naming category (not escalated, disabled by default): PascalCase log placeholders
+## ── Selected analyzer (CA) severities ─────────────────────────────────────
+# PascalCase logging message template placeholders
 dotnet_diagnostic.CA1727.severity = error
-# CA1852 (seal internal types) honors InternalsVisibleTo by default: it self-disables in any
-# assembly that grants IVT, because a friend could derive from the internal type. Every src/
-# assembly grants the sanctioned $(AssemblyName).Tests IVT (src/Directory.Build.props, §2.3),
-# which would otherwise blind this rule platform-wide. Tests consume internals; they do not
-# derive from them — so override the default and run the rule despite IVT.
+# CA1852 (seal internal types with no subtypes) self-disables in any assembly
+# that grants InternalsVisibleTo, since a friend assembly could derive from the
+# type. Test projects consume internals but don't derive from them, so override
+# that default and keep the rule running.
 dotnet_code_quality.CA1852.ignore_internalsvisibleto = true
 
 ###############################################################################
-# 4. C# formatting law — stock VS conventions, declared explicitly, on tabs
+# 4. C# formatting — stock conventions, declared explicitly
 ###############################################################################
 dotnet_diagnostic.IDE0055.severity = error
 
@@ -285,11 +292,15 @@ csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = true
 
 ###############################################################################
-# 5. Naming law — classic C#, nothing custom, all error.
-# Rule order matters: first match wins — constants precede the field rules.
-# Async suffix deliberately omitted: interface-driven surfaces (NSB Handle,
-# mediator Handle) own their names; a hard suffix rule fights the ecosystem.
+# 5. Naming — classic C# conventions, all enforced.
+# Rule order matters: first match wins, so constants precede the field rules.
 ###############################################################################
+
+# Naming is enforced at build via the diagnostic-ID severity below. The per-rule
+# severities further down reach the build on current Roslyn but only the IDE on
+# older SDKs (https://github.com/dotnet/roslyn/issues/49439) — this line is the
+# path the build reads reliably across SDK versions.
+dotnet_diagnostic.IDE1006.severity = error
 
 ## Styles
 dotnet_naming_style.pascal_case.capitalization = pascal_case
