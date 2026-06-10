@@ -7,24 +7,24 @@ public class NonGenericTupleAwaitBenchmarks
 {
 	[Benchmark]
 	public async Task Arity2_PreCompleted() =>
-		await ((Task)Task.CompletedTask, Task.CompletedTask);
+		await (Task.CompletedTask, Task.CompletedTask);
 
 	[Benchmark]
 	public async Task Arity4_PreCompleted() =>
 		await (
-			(Task)Task.CompletedTask, Task.CompletedTask,
+			Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask);
 
 	[Benchmark]
 	public async Task Arity8_PreCompleted() =>
 		await (
-			(Task)Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
+			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask);
 
 	[Benchmark]
 	public async Task Arity16_PreCompleted() =>
 		await (
-			(Task)Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
+			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask);

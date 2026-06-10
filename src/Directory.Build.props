@@ -14,10 +14,9 @@
 		<PackageOutputPath>..\..\</PackageOutputPath>
 		<PackageProjectUrl>https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/README.md</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>C# 7.0;Value Tuple;Async Await Elegant Code</PackageTags>
+		<PackageTags>async;await;task;tuple;valuetuple;whenall</PackageTags>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>
 	</PropertyGroup>
 
 	<ItemGroup>

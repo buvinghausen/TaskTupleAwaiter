@@ -38,13 +38,13 @@ public class ConfigureAwaitBenchmarks
 	[Benchmark]
 	public async Task NonGeneric_Arity4_Bool_False() =>
 		await (
-			(Task)Task.CompletedTask, Task.CompletedTask,
+			Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask).ConfigureAwait(false);
 
 	[Benchmark]
 	public async Task NonGeneric_Arity16_Options_None() =>
 		await (
-			(Task)Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
+			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask,
 			Task.CompletedTask, Task.CompletedTask, Task.CompletedTask, Task.CompletedTask

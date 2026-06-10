@@ -13,20 +13,23 @@ TaskTupleAwaiter/
 │   │                                      #   No hand-authored .cs sources — code is generated at build and compiled into the library.
 │   └── TaskTupleAwaiter.Generator/        # Roslyn incremental source generator (netstandard2.0)
 │       └── TaskTupleExtensionsGenerator.cs
-├── test/
-│   ├── TaskTupleAwaiter.Tests/            # xUnit v3 test project
-│   │   ├── TaskTupleAwaiterTests.cs
-│   │   ├── BehaviorComparisonTests.cs
-│   │   ├── Adapters/
-│   │   │   └── AwaiterAdapter.cs
-│   │   ├── DummyException.cs
-│   │   ├── On.cs
-│   │   └── SpySynchronizationContext.cs
-│   ├── TaskTupleAwaiter.AotSmokeTest/     # NativeAOT downstream-consumer smoke-test (net8.0, net9.0, net11.0)
-│   │   ├── TaskTupleAwaiter.AotSmokeTest.csproj
-│   │   └── Program.cs
-│   └── TaskTupleAwaiter.Benchmarks/        # BenchmarkDotNet harness (net8.0, net9.0)
-│       ├── TaskTupleAwaiter.Benchmarks.csproj  # xUnit/Shouldly inheritance from test/Directory.Build.props is bypassed via the MSBuildProjectName condition there, not via a local Directory.Build.props.
+├── tests/
+│   ├── unit/
+│   │   └── TaskTupleAwaiter.Tests/        # xUnit v3 test project (net11.0, net10.0, net9.0, net8.0, net472; runtime-async=on for net11.0)
+│   │       ├── TaskTupleAwaiterTests.cs
+│   │       ├── BehaviorComparisonTests.cs
+│   │       ├── Adapters/                  #   AwaiterAdapter partial classes
+│   │       ├── DummyException.cs
+│   │       ├── On.cs
+│   │       ├── CopyableSynchronizationContext.cs
+│   │       └── SpySynchronizationContext.cs
+│   └── smoke/
+│       └── TaskTupleAwaiter.AotSmokeTest/ # NativeAOT downstream-consumer smoke-test (net8.0, net9.0, net11.0)
+│           ├── TaskTupleAwaiter.AotSmokeTest.csproj
+│           └── Program.cs
+├── benches/
+│   └── TaskTupleAwaiter.Benchmarks/       # BenchmarkDotNet harness (net8.0, net9.0)
+│       ├── TaskTupleAwaiter.Benchmarks.csproj  # Sibling of tests/, so it doesn't inherit xUnit/Shouldly from tests/unit/Directory.Build.props.
 │       ├── Program.cs                     #   BenchmarkSwitcher entry point.
 │       ├── TypedTupleAwaitBenchmarks.cs
 │       ├── NonGenericTupleAwaitBenchmarks.cs
@@ -59,7 +62,7 @@ TaskTupleAwaiter/
 - Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` / `net8.0` bind to `Task.WhenAll(params Task[])` (heap-allocated array — same IL as before), while `net9.0`+ binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
 - Emits a single file `TaskTupleExtensions.g.cs` into the `System.Threading.Tasks` namespace (suppressing `IDE0130`).
 - Arity-1 typed tuples (`ValueTuple<Task<T1>>`) delegate directly to the inner task's awaiter — no custom awaiter struct is generated.
-- Arities 2–16 emit `TupleTaskAwaiter<T1,...,TN>` and `TupleConfiguredTaskAwaitable<T1,...,TN>` `readonly record struct` types per arity.
+- Arities 2–16 emit `TupleTaskAwaiter<T1,...,TN>` and `TupleConfiguredTaskAwaitable<T1,...,TN>` `readonly struct` types per arity.
 - Non-generic `Task` tuples (arity 1–16) are emitted in a separate `#region Task` section; they return `TaskAwaiter` / `ConfiguredTaskAwaitable` directly via `Task.WhenAll(...)`.
 
 ### Awaiter Pattern
