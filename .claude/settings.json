@@ -1,4 +1,47 @@
 {
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "Bash"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(sudo rm *)",
+      "Bash(chmod -R 777 *)",
+      "Bash(chown -R *)",
+      "Bash(dd if=*)",
+      "Bash(mkfs*)",
+      "Bash(powershell.exe -Command Remove-Item *)",
+      "Bash(powershell.exe Remove-Item *)",
+      "Bash(pwsh -Command Remove-Item *)",
+      "Bash(pwsh Remove-Item *)",
+      "Bash(powershell.exe Format-Volume*)",
+      "Bash(Stop-Computer*)",
+      "Bash(Restart-Computer*)",
+      "Bash(powershell.exe Stop-Computer*)",
+      "Bash(powershell.exe Restart-Computer*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(git checkout .)",
+      "Bash(git restore .)",
+      "Bash(git branch -D*)",
+      "Bash(cat .env*)",
+      "Bash(cat ~/.ssh/*)",
+      "Bash(cat ~/.aws/*)",
+      "Bash(cat credentials.json)",
+      "Bash(docker system prune *)",
+      "Bash(kubectl delete *)",
+      "Bash(terraform destroy*)",
+      "Bash(npm publish*)",
+      "Bash(dotnet nuget push*)",
+      "Bash(gh repo delete*)",
+      "Bash(dotnet ef database drop*)"
+    ]
+  },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
   }

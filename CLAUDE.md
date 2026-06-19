@@ -4,6 +4,27 @@
 
 TaskTupleAwaiter provides extension methods that allow you to `await` a `ValueTuple` of `Task<T>` (or non-generic `Task`) instances and destructure the results in a single line. In this repository, a Roslyn incremental source generator (`src/TaskTupleAwaiter.Generator`) generates the extension-method source during library build under `namespace System.Threading.Tasks`, and that generated code is compiled into `TaskTupleAwaiter.dll` for each target framework. Consumers install and reference the compiled package binaries; the generator is a private build-time implementation detail.
 
+## Development Workflow — Use Superpowers
+
+This repo has the `superpowers` plugin enabled (`.claude/settings.json`). It's not decorative —
+use the skill tree for real work here, and it maps directly onto the spec-first, plan-second,
+code-last workflow:
+
+| Phase | Skill |
+|---|---|
+| Design/spec iteration | `brainstorming` |
+| Plan once the spec settles | `writing-plans` |
+| Implementation | `executing-plans` (pairs with `test-driven-development`) |
+| Bug fixes (spec-first exception) | `systematic-debugging` |
+| Before calling anything done | `verification-before-completion` |
+| Opening/handling a PR | `requesting-code-review` / `receiving-code-review` |
+| Wrapping up a branch | `finishing-a-development-branch` |
+
+If a skill applies to what you're doing, invoke it — don't just read the table and proceed
+manually. The transition points (spec → plan, plan → code) are still explicit human decisions,
+per the global CLAUDE.md; the skills are how each phase gets executed, not a way around the
+hand-off.
+
 ## Repository Layout
 
 ```
@@ -38,6 +59,7 @@ TaskTupleAwaiter/
 ├── docs/superpowers/                      # Specs and implementation plans
 ├── README.md
 ├── LICENSE.txt
+├── test.sh                                # Linux/WSL2 test runner — see Build & Test below
 └── CLAUDE.md                              # This file
 ```
 
@@ -73,12 +95,31 @@ TaskTupleAwaiter/
 ## Build & Test
 
 ```sh
-# Restore, build, and run all tests
 dotnet build
-dotnet test
+```
 
-# Run only a specific test class
-dotnet test --filter "FullyQualifiedName~TaskTupleAwaiterTests"
+**On Windows:** bare `dotnet test` works fine and runs the full matrix, including the net472 leg.
+
+**On Linux/WSL2:** bare `dotnet test` (and even `dotnet test -f net472`) fails immediately with
+`Unhandled exception: ... Ensure you have a runnable project type ... A runnable project should
+target a runnable TFM` the instant it hits the net472 leg — MTP's orchestrator enumerates every
+TFM up front, and net472 isn't launchable through the `dotnet` muxer on Linux. Use the repo's
+`test.sh` instead:
+
+```sh
+./test.sh
+```
+
+It runs the modern TFMs one at a time via `dotnet test -f <tfm>` (net11.0/net10.0/net9.0/net8.0),
+then builds `TaskTupleAwaiter.Tests` for net472 and runs the resulting `.exe` directly under
+**Mono** (`sudo dnf install -y mono-complete` or equivalent — see `TOOLCHAIN.md` in the
+`buvinghausen` repo). Verified against the real MTP test host, not a build-only stand-in.
+`set -euo pipefail` — any failure stops the script with a non-zero exit.
+
+To run only a specific test class on a single TFM:
+
+```sh
+dotnet test -f net9.0 --filter "FullyQualifiedName~TaskTupleAwaiterTests"
 ```
 
 ## Coding Conventions
