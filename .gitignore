@@ -158,12 +158,12 @@ coverage.*.json
 coverage.*.xml
 
 
-# BenchmarkDotNet output
+.fake
+*.*nupkg
+
+# Local agent + benchmark artifacts
+.claude/*
+!.claude/settings.json
 BenchmarkDotNet.Artifacts/
-
-# Local `dotnet pack` artifacts (we publish from CI, not from working copies)
-*.nupkg
-*.snupkg
-
-# Claude worktree fiesta
-.claude/
+aot-out/
+bench-*.txt
