@@ -36,7 +36,7 @@ TaskTupleAwaiter/
 │       └── TaskTupleExtensionsGenerator.cs
 ├── tests/
 │   ├── unit/
-│   │   └── TaskTupleAwaiter.Tests/        # xUnit v3 test project (net11.0, net10.0, net9.0, net8.0, net472; runtime-async=on for net11.0)
+│   │   └── TaskTupleAwaiter.Tests/        # xUnit v3 test project (net11.0, net10.0, net472; runtime-async=on for net11.0)
 │   │       ├── TaskTupleAwaiterTests.cs
 │   │       ├── BehaviorComparisonTests.cs
 │   │       ├── Adapters/                  #   AwaiterAdapter partial classes
@@ -45,7 +45,7 @@ TaskTupleAwaiter/
 │   │       ├── CopyableSynchronizationContext.cs
 │   │       └── SpySynchronizationContext.cs
 │   └── smoke/
-│       └── TaskTupleAwaiter.AotSmokeTest/ # NativeAOT downstream-consumer smoke-test (net8.0, net9.0, net11.0)
+│       └── TaskTupleAwaiter.AotSmokeTest/ # NativeAOT downstream-consumer smoke-test (net11.0, runtime-async=on)
 │           ├── TaskTupleAwaiter.AotSmokeTest.csproj
 │           └── Program.cs
 ├── benches/
@@ -110,7 +110,7 @@ TFM up front, and net472 isn't launchable through the `dotnet` muxer on Linux. U
 ./test.sh
 ```
 
-It runs the modern TFMs one at a time via `dotnet test -f <tfm>` (net11.0/net10.0/net9.0/net8.0),
+It runs the modern TFMs one at a time via `dotnet test -f <tfm>` (net11.0/net10.0),
 then builds `TaskTupleAwaiter.Tests` for net472 and runs the resulting `.exe` directly under
 **Mono** (`sudo dnf install -y mono-complete` or equivalent — see `TOOLCHAIN.md` in the
 `buvinghausen` repo). Verified against the real MTP test host, not a build-only stand-in.
@@ -119,7 +119,7 @@ then builds `TaskTupleAwaiter.Tests` for net472 and runs the resulting `.exe` di
 To run only a specific test class on a single TFM:
 
 ```sh
-dotnet test -f net9.0 --filter "FullyQualifiedName~TaskTupleAwaiterTests"
+dotnet test -f net10.0 --filter "FullyQualifiedName~TaskTupleAwaiterTests"
 ```
 
 ## Coding Conventions

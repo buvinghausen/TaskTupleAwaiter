@@ -8,7 +8,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-MODERN_TFMS=(net11.0 net10.0 net9.0 net8.0)
+MODERN_TFMS=(net11.0 net10.0)
 
 # Test projects whose TargetFrameworks (tests/unit/Directory.Build.props) include net472.
 NET472_PROJECTS=(
