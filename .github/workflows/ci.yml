@@ -8,13 +8,11 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: |
-          8.0.*
-          9.0.*
           10.0.*
           11.0.*
       env:
@@ -26,13 +24,9 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build -v n /p:CollectCoverage=true /p:CoverletOutput='../../' /p:CoverletOutputFormat=opencover /p:Threshold=91 /p:SkipAutoProps=true /p:UseSourceLink=true
-    - name: AOT smoke test (net8.0)
+    - name: AOT smoke test
       run: |
-        dotnet publish tests/smoke/TaskTupleAwaiter.AotSmokeTest -c Release -f net8.0 -r win-x64 -o aot-out  --no-restore
+        dotnet publish tests/smoke/TaskTupleAwaiter.AotSmokeTest -c Release -r win-x64 -o aot-out --no-restore
         .\aot-out\TaskTupleAwaiter.AotSmokeTest.exe
-      shell: pwsh
-    - name: AOT smoke test (net11.0)
-      run: |
-        dotnet publish tests/smoke/TaskTupleAwaiter.AotSmokeTest -c Release -f net11.0 -r win-x64 -o aot-out  --no-restore
-        .\aot-out\TaskTupleAwaiter.AotSmokeTest.exe
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       shell: pwsh

@@ -7,10 +7,16 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      # Required for NuGet trusted publishing — lets NuGet/login exchange the
+      # workflow's OIDC token for a short-lived nuget.org API key. No rolling
+      # secret involved; the trust policy lives on nuget.org.
+      id-token: write
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 11.0.*
       env:
@@ -18,5 +24,10 @@ jobs:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
     - name: Create NuGet Package
       run: dotnet pack -c Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/buvinghausen/TaskTupleAwaiter/releases/tag/${{ github.event.release.tag_name }}"
+    - name: NuGet login (OIDC -> temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ vars.NUGET_TRUSTED_PUBLISHER_USER }}
     - name: Publish NuGet Package
-      run: dotnet nuget push *.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json  --skip-duplicate
+      run: dotnet nuget push *.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
