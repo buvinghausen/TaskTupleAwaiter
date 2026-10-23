@@ -1,0 +1,56 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: '27 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - language: actions
+          build-mode: none
+        # Default setup scans C# with build-mode none, which never runs the source
+        # generator — and the library has no hand-authored sources, so there's
+        # nothing to analyze. A traced (manual) build lets the extractor see the
+        # generated TaskTupleExtensions.g.cs as the compiler does.
+        - language: csharp
+          build-mode: manual
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      if: matrix.language == 'csharp'
+      uses: actions/setup-dotnet@v6
+      with:
+        global-json-file: global.json
+      env:
+        DOTNET_NOLOGO: 1
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+        queries: security-and-quality
+    - name: Build
+      if: matrix.build-mode == 'manual'
+      run: dotnet build src/TaskTupleAwaiter -c Release
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: /language:${{ matrix.language }}
