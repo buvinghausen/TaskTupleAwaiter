@@ -13,6 +13,9 @@ Based on the work of Joseph Musser https://github.com/jnm2
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
+    <SupportedPlatform Include="Android" />
+    <SupportedPlatform Include="iOS" />
+    <SupportedPlatform Include="MacCatalyst" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">

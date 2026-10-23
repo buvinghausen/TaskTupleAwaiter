@@ -14,9 +14,9 @@ jobs:
       # secret involved; the trust policy lives on nuget.org.
       id-token: write
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Setup .NET
-      uses: actions/setup-dotnet@v6
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: 11.0.*
       env:
@@ -25,7 +25,7 @@ jobs:
     - name: Create NuGet Package
       run: dotnet pack -c Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/buvinghausen/TaskTupleAwaiter/releases/tag/${{ github.event.release.tag_name }}"
     - name: NuGet login (OIDC -> temp API key)
-      uses: NuGet/login@v1
+      uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
       id: login
       with:
         user: ${{ vars.NUGET_TRUSTED_PUBLISHER_USER }}
