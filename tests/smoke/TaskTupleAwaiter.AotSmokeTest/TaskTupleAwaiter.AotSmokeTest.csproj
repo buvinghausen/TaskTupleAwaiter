@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Features>runtime-async=on</Features>
-    <IsPackable>false</IsPackable>
-    <OutputType>Exe</OutputType>
-    <PublishAot>true</PublishAot>
-    <SelfContained>true</SelfContained>
-    <TargetFramework>net11.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<Features>runtime-async=on</Features>
+		<IsPackable>false</IsPackable>
+		<OutputType>Exe</OutputType>
+		<PublishAot>true</PublishAot>
+		<SelfContained>true</SelfContained>
+		<TargetFramework>net11.0</TargetFramework>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
+	</ItemGroup>
 </Project>

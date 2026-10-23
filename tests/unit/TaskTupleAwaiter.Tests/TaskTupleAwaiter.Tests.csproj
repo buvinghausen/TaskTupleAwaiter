@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
-    <Features>runtime-async=on</Features>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
+		<Features>runtime-async=on</Features>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\TaskTupleAwaiter\TaskTupleAwaiter.csproj" />
+	</ItemGroup>
 </Project>

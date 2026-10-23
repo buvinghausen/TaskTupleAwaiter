@@ -1,29 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net462;net8.0;net9.0</TargetFrameworks>
-    <Title>TaskTupleAwaiter</Title>
-    <Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net462;net8.0;net9.0</TargetFrameworks>
+		<Title>TaskTupleAwaiter</Title>
+		<Description>Enable using the new Value Tuple structure to write elegant code that allows async methods to be fired in parallel despite having different return types
 
 var (result1, result2) = await (GetStringAsync(), GetGuidAsync());
 
 Based on the work of Joseph Musser https://github.com/jnm2
-    </Description>
-  </PropertyGroup>
+		</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-    <SupportedPlatform Include="Android" />
-    <SupportedPlatform Include="iOS" />
-    <SupportedPlatform Include="MacCatalyst" />
-  </ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+		<SupportedPlatform Include="Android" />
+		<SupportedPlatform Include="iOS" />
+		<SupportedPlatform Include="MacCatalyst" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="System.ValueTuple" Version="4.6.2" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+		<PackageReference Include="System.ValueTuple" Version="4.6.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\TaskTupleAwaiter.Generator\TaskTupleAwaiter.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
 
 </Project>

@@ -1,26 +1,26 @@
 <Solution>
-  <Folder Name="/Solution Items/">
-    <File Path=".editorconfig" />
-    <File Path=".gitattributes" />
-    <File Path=".github/workflows/ci.yml" />
-    <File Path=".github/workflows/release.yml" />
-    <File Path=".gitignore" />
-    <File Path="CLAUDE.md" />
-    <File Path="CODE_OF_CONDUCT.md" />
-    <File Path="Directory.Build.props" />
-    <File Path="global.json" />
-    <File Path="LICENSE.txt" />
-    <File Path="README.md" />
-  </Folder>
-  <Folder Name="/Solution Items/src/">
-    <File Path="src/Directory.Build.props" />
-  </Folder>
-  <Folder Name="/Solution Items/tests/unit/">
-    <File Path="tests/unit/Directory.Build.props" />
-  </Folder>
-  <Project Path="benches/TaskTupleAwaiter.Benchmarks/TaskTupleAwaiter.Benchmarks.csproj" />
-  <Project Path="src/TaskTupleAwaiter.Generator/TaskTupleAwaiter.Generator.csproj" />
-  <Project Path="src/TaskTupleAwaiter/TaskTupleAwaiter.csproj" />
-  <Project Path="tests/smoke/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj" />
-  <Project Path="tests/unit/TaskTupleAwaiter.Tests/TaskTupleAwaiter.Tests.csproj" />
+	<Folder Name="/Solution Items/">
+		<File Path=".editorconfig" />
+		<File Path=".gitattributes" />
+		<File Path=".github/workflows/ci.yml" />
+		<File Path=".github/workflows/release.yml" />
+		<File Path=".gitignore" />
+		<File Path="CLAUDE.md" />
+		<File Path="CODE_OF_CONDUCT.md" />
+		<File Path="Directory.Build.props" />
+		<File Path="global.json" />
+		<File Path="LICENSE.txt" />
+		<File Path="README.md" />
+	</Folder>
+	<Folder Name="/Solution Items/src/">
+		<File Path="src/Directory.Build.props" />
+	</Folder>
+	<Folder Name="/Solution Items/tests/unit/">
+		<File Path="tests/unit/Directory.Build.props" />
+	</Folder>
+	<Project Path="benches/TaskTupleAwaiter.Benchmarks/TaskTupleAwaiter.Benchmarks.csproj" />
+	<Project Path="src/TaskTupleAwaiter.Generator/TaskTupleAwaiter.Generator.csproj" />
+	<Project Path="src/TaskTupleAwaiter/TaskTupleAwaiter.csproj" />
+	<Project Path="tests/smoke/TaskTupleAwaiter.AotSmokeTest/TaskTupleAwaiter.AotSmokeTest.csproj" />
+	<Project Path="tests/unit/TaskTupleAwaiter.Tests/TaskTupleAwaiter.Tests.csproj" />
 </Solution>
