@@ -7,17 +7,25 @@ on:
 permissions:
   contents: read
 
+env:
+  # Branch coverage gate (0–100), merged across every TFM. Ratchet this up, never down.
+  MINIMUM_BRANCH_COVERAGE: 100
+
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Setup .NET
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: |
-          10.0.*
-          11.0.*
+        # SDK version comes from global.json. 10.0.x is only here so the net10.0 test
+        # legs have a 10.0 runtime to execute on — it is not the build SDK.
+        global-json-file: global.json
+        dotnet-version: 10.0.x
       env:
         DOTNET_NOLOGO: 1
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -26,7 +34,43 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build -v n /p:CollectCoverage=true /p:CoverletOutput='../../' /p:CoverletOutputFormat=opencover /p:Threshold=91 /p:SkipAutoProps=true /p:UseSourceLink=true
+      # Deliberately no --coverage-output: a fixed filename collides across the concurrent
+      # test hosts `dotnet test` spawns per project/TFM, racing each other for the same path
+      # (some runs silently drop assemblies from the merge, reporting phantom 0% coverage).
+      # Omitting it lets each host default to its own GUID-named *.cobertura.xml.
+      run: dotnet test --no-build --coverage --coverage-output-format cobertura
+    - name: Install ReportGenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool --version 5.*
+    - name: Generate coverage report
+      shell: bash
+      run: |
+        COVERAGE_FILES=$(find . -iname "*.cobertura.xml" -not -path "*/obj/*" -not -path "*/merged/*" | tr '\n' ';' | sed 's/;$//')
+        echo "Coverage files: $COVERAGE_FILES"
+        reportgenerator \
+          -reports:"$COVERAGE_FILES" \
+          -targetdir:./coverage-report \
+          -reporttypes:"MarkdownSummaryGithub;JsonSummary"
+    - name: Write coverage summary
+      shell: bash
+      run: cat ./coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+    - name: Post coverage comment
+      if: github.event_name == 'pull_request'
+      continue-on-error: true
+      uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+      with:
+        header: coverage
+        path: ./coverage-report/SummaryGithub.md
+    - name: Enforce branch coverage threshold
+      shell: pwsh
+      run: |
+        $summary = Get-Content ./coverage-report/Summary.json -Raw | ConvertFrom-Json
+        $branch = if ($null -ne $summary.summary.branchcoverage) { [double]$summary.summary.branchcoverage } else { 100 }
+        $threshold = [double]$env:MINIMUM_BRANCH_COVERAGE
+        Write-Host "Branch coverage: $branch%  |  Required: $threshold%"
+        if ($branch -lt $threshold) {
+          Write-Host "::error::Branch coverage $branch% is below the required $threshold%"
+          exit 1
+        }
     - name: AOT smoke test
       run: |
         dotnet publish tests/smoke/TaskTupleAwaiter.AotSmokeTest -c Release -r win-x64 -o aot-out --no-restore
