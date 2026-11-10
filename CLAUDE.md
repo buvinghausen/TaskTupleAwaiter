@@ -30,7 +30,7 @@ hand-off.
 ```
 TaskTupleAwaiter/
 ├── src/
-│   ├── TaskTupleAwaiter/                  # Main library shell (netstandard2.0, net462, net8.0, net9.0)
+│   ├── TaskTupleAwaiter/                  # Main library shell (net10.0, net462, netstandard2.0)
 │   │                                      #   No hand-authored .cs sources — code is generated at build and compiled into the library.
 │   └── TaskTupleAwaiter.Generator/        # Roslyn incremental source generator (netstandard2.0)
 │       └── TaskTupleExtensionsGenerator.cs
@@ -49,7 +49,7 @@ TaskTupleAwaiter/
 │           ├── TaskTupleAwaiter.AotSmokeTest.csproj
 │           └── Program.cs
 ├── benches/
-│   └── TaskTupleAwaiter.Benchmarks/       # BenchmarkDotNet harness (net8.0, net9.0)
+│   └── TaskTupleAwaiter.Benchmarks/       # BenchmarkDotNet harness (net11.0)
 │       ├── TaskTupleAwaiter.Benchmarks.csproj  # Sibling of tests/, so it doesn't inherit xUnit/Shouldly from tests/unit/Directory.Build.props.
 │       ├── Program.cs                     #   BenchmarkSwitcher entry point.
 │       ├── TypedTupleAwaitBenchmarks.cs
@@ -68,9 +68,9 @@ TaskTupleAwaiter/
 | Concern | Choice |
 |---|---|
 | Language | C# 14.0 |
-| Library TFMs | netstandard2.0, net462, net8.0, net9.0 |
+| Library TFMs | net10.0, net462, netstandard2.0 — deliberately **no** `net11.0` (see below) |
 | Generator target | netstandard2.0 (Roslyn analyzer requirement) |
-| AOT-compatible TFMs | net8.0+ (`<IsAotCompatible>true</IsAotCompatible>` via `IsTargetFrameworkCompatible`) |
+| AOT-compatible TFMs | net10.0 (`<IsAotCompatible>true</IsAotCompatible>` via `IsTargetFrameworkCompatible`) |
 | Generator framework | Roslyn `IIncrementalGenerator` |
 | Test framework | xUnit v3 |
 | Assertion library | Shouldly |
@@ -78,10 +78,15 @@ TaskTupleAwaiter/
 
 ## Key Design Decisions
 
+### Target Frameworks
+- The library ships exactly one modern TFM, `net10.0`, plus `net462` and `netstandard2.0`. **Do not add `net11.0`** (or later) — the maintainers want the package download kept minimal, and `net11.0` consumers resolve the `net10.0` asset, which already has the span `WhenAll` and `ConfigureAwaitOptions` overloads. Bump the single modern TFM only when its runtime goes out of support.
+- Tests still run on `net11.0`, `net10.0`, and `net472`, so the `net10.0` asset is verified on the newest runtime too.
+- `global.json` pins the .NET 11 RTM SDK (`11.0.100`, `rollForward: latestFeature`, `allowPrerelease: false`); CI, release, and CodeQL all read the SDK version from it.
+
 ### Source Generator (`TaskTupleExtensionsGenerator`)
 - Implements `IIncrementalGenerator` (not the older `ISourceGenerator`).
 - **Feature-detects** `ConfigureAwaitOptions` at compile time by resolving the type `System.Threading.Tasks.ConfigureAwaitOptions` from the target compilation — **do not use** `#if NET8_0_OR_GREATER` or preprocessor symbols.
-- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` / `net8.0` bind to `Task.WhenAll(params Task[])` (heap-allocated array — same IL as before), while `net9.0`+ binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
+- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` bind to `Task.WhenAll(params Task[])` (heap-allocated array), while `net10.0` (any `net9.0`+ TFM) binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
 - Emits a single file `TaskTupleExtensions.g.cs` into the `System.Threading.Tasks` namespace (suppressing `IDE0130`).
 - Arity-1 typed tuples (`ValueTuple<Task<T1>>`) delegate directly to the inner task's awaiter — no custom awaiter struct is generated.
 - Arities 2–16 emit `TupleTaskAwaiter<T1,...,TN>` and `TupleConfiguredTaskAwaitable<T1,...,TN>` `readonly struct` types per arity.
@@ -115,6 +120,11 @@ then builds `TaskTupleAwaiter.Tests` for net472 and runs the resulting `.exe` di
 **Mono** (`sudo dnf install -y mono-complete` or equivalent — see `TOOLCHAIN.md` in the
 `buvinghausen` repo). Verified against the real MTP test host, not a build-only stand-in.
 `set -euo pipefail` — any failure stops the script with a non-zero exit.
+
+**Coverage:** the test project references `Microsoft.Testing.Extensions.CodeCoverage` (via
+`tests/unit/Directory.Build.props`). CI runs `dotnet test --coverage --coverage-output-format
+cobertura`, merges the per-host files with ReportGenerator, posts a sticky PR comment, and fails
+below `MINIMUM_BRANCH_COVERAGE` in `.github/workflows/ci.yml`.
 
 To run only a specific test class on a single TFM:
 

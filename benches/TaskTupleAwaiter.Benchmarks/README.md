@@ -7,34 +7,21 @@ BenchmarkDotNet harness measuring the allocation and time profile of awaiting `V
 - Pre-completed (`Task.FromResult`) and async (`Task.Yield`) completion modes
 - `ConfigureAwait(bool)` and `ConfigureAwait(ConfigureAwaitOptions)` paths
 
-The point of these benchmarks is to compare allocation profiles between `net8.0` (where the generated `Task.WhenAll(...)` call binds to `params Task[]` and heap-allocates the array) and `net9.0` (where compiling the library for `net9.0` binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates).
+The harness runs on `net11.0` and consumes the library's `net10.0` asset — the same asset a .NET 11 app gets from the package. That asset's generated `Task.WhenAll(...)` call binds to `Task.WhenAll(ReadOnlySpan<Task>)`, so the `Task[N]` array is stack-allocated rather than heap-allocated (the original net8.0 → net9.0 comparison is recorded in `docs/superpowers/specs/2026-05-13-net9-span-whenall-benchmark-results.md`).
 
 ## Running
 
-Run all benchmarks on net9.0:
+Run all benchmarks:
 
 ```sh
-dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0
-```
-
-Run all benchmarks on net8.0:
-
-```sh
-dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net8.0
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks
 ```
 
 Filter to one class:
 
 ```sh
-dotnet run -c Release --project test/TaskTupleAwaiter.Benchmarks -f net9.0 -- --filter "*TypedTupleAwaitBenchmarks*"
+dotnet run -c Release --project benches/TaskTupleAwaiter.Benchmarks -- --filter "*TypedTupleAwaitBenchmarks*"
 ```
-
-## Expected outcome
-
-With the `net9.0` library target in place:
-
-- **net8.0:** allocations and timing unchanged from baseline. Same IL as today.
-- **net9.0:** `Allocated` per op drops by approximately `24 + 8·N` bytes (the `Task[N]` array we no longer allocate). Mean time per op is flat or slightly improved due to reduced GC pressure.
 
 ## Not run in CI
 

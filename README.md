@@ -27,11 +27,11 @@ var (user, orders) = await (GetUserAsync(id), GetOrdersAsync(id));
 
 - **Tuple-based `await`** — fire multiple async calls in parallel and destructure results with a single `await`
 - **Supports up to 16 tasks** — mix and match any combination of return types
-- **`ConfigureAwait` support** — works with `ConfigureAwait(false)` and .NET 8+ `ConfigureAwaitOptions`
+- **`ConfigureAwait` support** — works with `ConfigureAwait(false)` and `ConfigureAwaitOptions` (.NET 10+)
 - **Non-generic `Task` support** — await tuples of `Task` (not just `Task<T>`) when you don't need return values
 - **Zero dependencies** — a single file, no external packages (except `System.ValueTuple` on .NET Framework 4.6.2)
-- **Broad compatibility** — supports .NET Standard 2.0+, .NET Framework 4.6.2+, and .NET 8+
-- **NativeAOT ready** — the package sets `<IsAotCompatible>true</IsAotCompatible>` for .NET 8+ targets, and CI publishes downstream NativeAOT smoke tests
+- **Broad compatibility** — supports .NET Standard 2.0+, .NET Framework 4.6.2+, and .NET 10+
+- **NativeAOT ready** — the package sets `<IsAotCompatible>true</IsAotCompatible>` for .NET 10+ targets, and CI publishes downstream NativeAOT smoke tests
 
 ## Installation
 
@@ -62,7 +62,7 @@ var (policy, preferences) = await (
 ).ConfigureAwait(false);
 ```
 
-### ConfigureAwaitOptions (.NET 8+)
+### ConfigureAwaitOptions (.NET 10+)
 
 ```csharp
 var (user, settings) = await (
@@ -99,7 +99,7 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 |---|---|
 | .NET Standard | 2.0 |
 | .NET Framework | 4.6.2+ |
-| .NET | 8.0+ |
+| .NET | 10.0+ |
 
 ## Credits
 
