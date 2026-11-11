@@ -30,7 +30,7 @@ hand-off.
 ```
 TaskTupleAwaiter/
 ├── src/
-│   ├── TaskTupleAwaiter/                  # Main library shell (net10.0, net462, netstandard2.0)
+│   ├── TaskTupleAwaiter/                  # Main library shell (net10.0, netstandard2.0)
 │   │                                      #   No hand-authored .cs sources — code is generated at build and compiled into the library.
 │   └── TaskTupleAwaiter.Generator/        # Roslyn incremental source generator (netstandard2.0)
 │       └── TaskTupleExtensionsGenerator.cs
@@ -68,7 +68,7 @@ TaskTupleAwaiter/
 | Concern | Choice |
 |---|---|
 | Language | C# 14.0 |
-| Library TFMs | net10.0, net462, netstandard2.0 — deliberately **no** `net11.0` (see below) |
+| Library TFMs | net10.0, netstandard2.0 — deliberately **no** `net11.0` (see below) |
 | Generator target | netstandard2.0 (Roslyn analyzer requirement) |
 | AOT-compatible TFMs | net10.0 (`<IsAotCompatible>true</IsAotCompatible>` via `IsTargetFrameworkCompatible`) |
 | Generator framework | Roslyn `IIncrementalGenerator` |
@@ -79,14 +79,14 @@ TaskTupleAwaiter/
 ## Key Design Decisions
 
 ### Target Frameworks
-- The library ships exactly one modern TFM, `net10.0`, plus `net462` and `netstandard2.0`. **Do not add `net11.0`** (or later) — the maintainers want the package download kept minimal, and `net11.0` consumers resolve the `net10.0` asset, which already has the span `WhenAll` and `ConfigureAwaitOptions` overloads. Bump the single modern TFM only when its runtime goes out of support.
-- Tests still run on `net11.0`, `net10.0`, and `net472`, so the `net10.0` asset is verified on the newest runtime too.
+- The library ships exactly one modern TFM, `net10.0`, plus `netstandard2.0` (which also serves .NET Framework 4.7.2+; `net462` was dropped ahead of its January 12, 2027 end of support, removing the `System.ValueTuple` dependency). **Do not add `net11.0`** (or later) — the maintainers want the package download kept minimal, and `net11.0` consumers resolve the `net10.0` asset, which already has the span `WhenAll` and `ConfigureAwaitOptions` overloads. Bump the single modern TFM only when its runtime goes out of support.
+- Tests still run on `net11.0`, `net10.0`, and `net472`, so the `net10.0` asset is verified on the newest runtime too. The `net472` leg is the **only** one that exercises the shipped `netstandard2.0` asset — keep it (and Mono in `test.sh`).
 - `global.json` pins the .NET 11 RTM SDK (`11.0.100`, `rollForward: latestFeature`, `allowPrerelease: false`); CI, release, and CodeQL all read the SDK version from it.
 
 ### Source Generator (`TaskTupleExtensionsGenerator`)
 - Implements `IIncrementalGenerator` (not the older `ISourceGenerator`).
 - **Feature-detects** `ConfigureAwaitOptions` at compile time by resolving the type `System.Threading.Tasks.ConfigureAwaitOptions` from the target compilation — **do not use** `#if NET8_0_OR_GREATER` or preprocessor symbols.
-- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` / `net462` bind to `Task.WhenAll(params Task[])` (heap-allocated array), while `net10.0` (any `net9.0`+ TFM) binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
+- Emits `Task.WhenAll([tasks.Item1, ..., tasks.ItemN])`. Overload binding is determined by the library TFM: `netstandard2.0` binds to `Task.WhenAll(params Task[])` (heap-allocated array), while `net10.0` (any `net9.0`+ TFM) binds to `Task.WhenAll(ReadOnlySpan<Task>)` and stack-allocates the buffer. No runtime feature detection needed for this — overload preference is purely a compiler/TFM concern.
 - Emits a single file `TaskTupleExtensions.g.cs` into the `System.Threading.Tasks` namespace (suppressing `IDE0130`).
 - Arity-1 typed tuples (`ValueTuple<Task<T1>>`) delegate directly to the inner task's awaiter — no custom awaiter struct is generated.
 - Arities 2–16 emit `TupleTaskAwaiter<T1,...,TN>` and `TupleConfiguredTaskAwaitable<T1,...,TN>` `readonly struct` types per arity.
