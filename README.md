@@ -29,8 +29,8 @@ var (user, orders) = await (GetUserAsync(id), GetOrdersAsync(id));
 - **Supports up to 16 tasks** — mix and match any combination of return types
 - **`ConfigureAwait` support** — works with `ConfigureAwait(false)` and `ConfigureAwaitOptions` (.NET 10+)
 - **Non-generic `Task` support** — await tuples of `Task` (not just `Task<T>`) when you don't need return values
-- **Zero dependencies** — a single file, no external packages (except `System.ValueTuple` on .NET Framework 4.6.2)
-- **Broad compatibility** — supports .NET Standard 2.0+, .NET Framework 4.6.2+, and .NET 10+
+- **Zero dependencies** — a single file, no external packages
+- **Broad compatibility** — supports .NET Standard 2.0+, .NET Framework 4.7.2+, and .NET 10+
 - **NativeAOT ready** — the package sets `<IsAotCompatible>true</IsAotCompatible>` for .NET 10+ targets, and CI publishes downstream NativeAOT smoke tests
 
 ## Installation
@@ -98,12 +98,16 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 | Target | Version |
 |---|---|
 | .NET Standard | 2.0 |
-| .NET Framework | 4.6.2+ |
+| .NET Framework | 4.7.2+ |
 | .NET | 10.0+ |
 
 ## Credits
 
 Based on the original work by [Joseph Musser (@jnm2)](https://github.com/jnm2) — [original gist](https://gist.github.com/jnm2/3660db29457d391a34151f764bfe6ef7).
+
+## Changelog
+
+See [CHANGELOG.md](https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/CHANGELOG.md) for release history and upgrade notes.
 
 ## License
 
