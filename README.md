@@ -105,6 +105,10 @@ TaskTupleAwaiter provides extension methods on `ValueTuple<Task<T1>, ..., Task<T
 
 Based on the original work by [Joseph Musser (@jnm2)](https://github.com/jnm2) — [original gist](https://gist.github.com/jnm2/3660db29457d391a34151f764bfe6ef7).
 
+## Changelog
+
+See [CHANGELOG.md](https://github.com/buvinghausen/TaskTupleAwaiter/blob/master/CHANGELOG.md) for release history and upgrade notes.
+
 ## License
 
 [MIT](LICENSE.txt) © Brian Buvinghausen

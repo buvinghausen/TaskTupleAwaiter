@@ -132,6 +132,15 @@ To run only a specific test class on a single TFM:
 dotnet test -f net10.0 --filter "FullyQualifiedName~TaskTupleAwaiterTests"
 ```
 
+## Changelog
+
+`CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every user-visible change goes
+under `## [Unreleased]` in the same PR, grouped as Added / Changed / Deprecated / Removed / Fixed / Security. Leave
+out internal-only changes (CI, tests, repo layout) unless they affect what ships. At release time, rename
+`[Unreleased]` to the version and date, add a fresh empty `[Unreleased]`, and update the compare links at the
+bottom. The release tag sets the package version (`release.yml` passes `/p:Version=<tag>`), so nothing in code needs
+bumping.
+
 ## Coding Conventions
 
 - Use **tabs** for indentation (consistent with existing source files).
